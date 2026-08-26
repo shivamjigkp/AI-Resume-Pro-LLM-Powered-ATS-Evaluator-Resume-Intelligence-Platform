@@ -1,0 +1,14 @@
+# Environment & secrets
+.env
+token.json
+credentials.json
+secrets.json
+
+# Backups & Temporary files
+backups/
+output_resumes/
+*.bak
+*.pyc
+__pycache__/
+.pytest_cache/
+.DS_Store

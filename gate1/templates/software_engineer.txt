@@ -1,0 +1,15 @@
+Subject: {{role}} Application — {{sender_name}} for {{company}}
+
+Hi {{recruiter_name}},
+
+I'm {{sender_name}}, a software engineer reaching out about the {{role}} role at {{company}}. I build and ship production code across the stack, and I'm drawn to what your team is working on.
+
+{{experience_summary}}
+
+My resume is attached with more detail on relevant projects and experience. Happy to share code samples or walk through anything in more depth — would welcome the chance to talk.
+
+Best regards,
+{{sender_name}}
+{{sender_phone}} | {{sender_email}}
+{{sender_linkedin}}
+{{sender_github}}
