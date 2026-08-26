@@ -701,3 +701,13 @@ def call_agent_router_llm(prompt_text, system_prompt="You are a helpful AI assis
 
 
 
+
+
+@app.route("/api/auth/verify-pin", methods=["POST"])
+def verify_master_pin_route():
+    data = request.get_json(silent=True) or {}
+    pin = data.get("pin", "").strip()
+    correct_pin = os.getenv("OUTREACH_MASTER_PIN", "shivam2026")
+    if pin == correct_pin:
+        return jsonify({"success": True, "message": "Authenticated"})
+    return jsonify({"success": False, "error": "Invalid PIN"}), 401
