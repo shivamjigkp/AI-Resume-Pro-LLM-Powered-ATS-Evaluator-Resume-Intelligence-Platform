@@ -5175,7 +5175,18 @@ function fallbackLazyBoxParse(text, targetSec){
 // ════════════════════════════════════════════════════════════════
 // 👑 PRO OUTREACH PIN AUTHORIZATION (₹4,999 / Year Protected)
 // ════════════════════════════════════════════════════════════════
-const MASTER_OUTREACH_PIN = "shivam2026";
+let MASTER_OUTREACH_PIN = localStorage.getItem('outreach_custom_pin') || "shivam2026";
+
+function saveCustomPin(){
+  const val = document.getElementById('iCustomMasterPin')?.value?.trim();
+  if(!val){ toast('PIN cannot be empty!', 'warning'); return; }
+  MASTER_OUTREACH_PIN = val;
+  localStorage.setItem('outreach_custom_pin', val);
+  localStorage.setItem('outreach_unlocked', 'true');
+  localStorage.setItem('outreach_pin_val', val);
+  toast(`👑 Master PIN updated to: "${val}"`, 'success', 3500);
+}
+
 
 function isOutreachUnlocked(){
   return localStorage.getItem('outreach_unlocked') === 'true';
@@ -5201,7 +5212,8 @@ function verifyOutreachPin(){
   const val = (inp?.value || '').trim();
   const err = document.getElementById('pinErrorMsg');
   
-  if(val === MASTER_OUTREACH_PIN || val.toLowerCase() === 'shivam2026'){
+  const activePin = localStorage.getItem('outreach_custom_pin') || MASTER_OUTREACH_PIN || "shivam2026";
+  if(val === activePin || val.toLowerCase() === activePin.toLowerCase() || val === "shivam2026"){
     localStorage.setItem('outreach_unlocked', 'true');
     localStorage.setItem('outreach_pin_val', val);
     closePinModal();
