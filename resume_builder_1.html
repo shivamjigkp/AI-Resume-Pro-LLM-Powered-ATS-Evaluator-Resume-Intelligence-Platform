@@ -3465,6 +3465,9 @@ function swTab(id){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('pane-'+id)?.classList.add('active');
   if(id === 'hyperlinks') setTimeout(renderHyperlinksEditor, 20);
+  if(id === 'outreach' && !isOutreachUnlocked() && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'){
+    openPinModal();
+  }
   updateTabNav();
 }
 
@@ -3628,7 +3631,7 @@ function openApiModal(){
 
   // Pull the current Google Sheet ID from the local backend (Gate 1), if it's reachable
   const sheetIdStatus=document.getElementById('gate1SheetIdStatus');
-  fetch("http://127.0.0.1:8000/api/config/get")
+  fetch("/api/config/get")
     .then(r=>r.json())
     .then(data=>{
       s('gate1SheetIdInput', data?.env?.GOOGLE_SHEET_ID || '');
@@ -3680,7 +3683,7 @@ function saveKey(){
   // Push the Google Sheet ID (Gate 1) to the local backend so campaigns can find the lead sheet
   const sheetIdStatus=document.getElementById('gate1SheetIdStatus');
   const sheetId=g('gate1SheetIdInput');
-  fetch("http://127.0.0.1:8000/api/config/save", {
+  fetch("/api/config/save", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({GOOGLE_SHEET_ID:sheetId})
@@ -5490,7 +5493,7 @@ async function triggerBrowserAutofill() {
   const autofillAIStrategy = document.getElementById("autofillAIStrategy")?.value || "pure_ai";
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/gate4/autofill", {
+    const response = await fetch("/api/gate4/autofill", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -5675,7 +5678,7 @@ async function triggerEmailOutreach(overrideMode) {
   toast(`📧 Launching outreach campaign for rows ${startRow} to ${endRow}...`, "info", 3000);
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/gate1/send-emails", {
+    const response = await fetch("/api/gate1/send-emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -5706,7 +5709,7 @@ async function triggerEmailOutreach(overrideMode) {
 // ════════════════════════════════════════════════════════════════
 // GATE 1 UI — Fast Apply / Advanced Mode container
 // ════════════════════════════════════════════════════════════════
-const GATE1_API = "http://127.0.0.1:8000/api/gate1";
+const GATE1_API = "/api/gate1";
 const GATE1_AUTO_OPTION = { value: "", label: "Auto (latest PDF / role-matched)" };
 
 function switchGate1Mode(tab) {
@@ -6679,6 +6682,63 @@ function fallbackLazyBoxParse(text, targetSec){
   }
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 👑 PRO OUTREACH PIN AUTHORIZATION (₹4,999 / Year Protected)
+// ════════════════════════════════════════════════════════════════
+const MASTER_OUTREACH_PIN = "shivam2026";
+
+function isOutreachUnlocked(){
+  return localStorage.getItem('outreach_unlocked') === 'true';
+}
+
+function openPinModal(callback){
+  window._pinCallback = callback;
+  const overlay = document.getElementById('outreachPinModal');
+  if(overlay) overlay.style.display = 'flex';
+  const inp = document.getElementById('outreachPinInput');
+  if(inp){ inp.value = ''; inp.focus(); }
+  const err = document.getElementById('pinErrorMsg');
+  if(err) err.style.display = 'none';
+}
+
+function closePinModal(){
+  const overlay = document.getElementById('outreachPinModal');
+  if(overlay) overlay.style.display = 'none';
+}
+
+function verifyOutreachPin(){
+  const inp = document.getElementById('outreachPinInput');
+  const val = (inp?.value || '').trim();
+  const err = document.getElementById('pinErrorMsg');
+  
+  if(val === MASTER_OUTREACH_PIN || val.toLowerCase() === 'shivam2026'){
+    localStorage.setItem('outreach_unlocked', 'true');
+    localStorage.setItem('outreach_pin_val', val);
+    closePinModal();
+    toast('👑 Pro VIP Outreach Suite Unlocked! Welcome, Shivam.', 'success', 3500);
+    if(window._pinCallback){
+      window._pinCallback();
+      window._pinCallback = null;
+    }
+  } else {
+    if(err){
+      err.style.display = 'block';
+      err.textContent = '❌ Invalid Passcode! Pro Subscription (₹4,999) required.';
+    }
+  }
+}
+
+// Add Master PIN header to all fetch requests for protected API calls
+function getAuthHeaders(){
+  const pin = localStorage.getItem('outreach_pin_val') || MASTER_OUTREACH_PIN;
+  return {
+    'Content-Type': 'application/json',
+    'X-Outreach-PIN': pin
+  };
+}
+
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════ -->
@@ -6728,6 +6788,44 @@ function fallbackLazyBoxParse(text, targetSec){
         <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('aiLazyRawText').value='';">Clear</button>
         <button type="button" id="aiLazySubmitBtn" class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;border:none;padding:7px 16px;box-shadow:0 3px 10px rgba(124,58,237,0.35);" onclick="submitAiLazyBox()">
           ✨ Magic Add to Resume
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- PRO / VIP OUTREACH ACCESS PIN MODAL -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="overlay" id="outreachPinModal" style="display:none;z-index:10000;">
+  <div class="modal w-md" style="max-width:440px;border:2px solid #f59e0b;box-shadow:0 25px 50px rgba(245,158,11,0.25);border-radius:12px;overflow:hidden;">
+    <div class="m-head" style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:14px 18px;border-bottom:1px solid #fcd34d;">
+      <div class="m-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:22px;">👑</span>
+        <div>
+          <div style="font-weight:900;font-size:15px;color:#92400e;">VIP Outreach & Sheets Suite</div>
+          <div style="font-size:10.5px;color:#b45309;font-weight:600;">Automated Cold Outreach & Sheet Automation</div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="closePinModal()" style="font-weight:700;">✕</button>
+    </div>
+    <div class="m-body" style="padding:18px;">
+      <div style="background:#fffbeb;border:1px solid #fef08a;border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:#78350f;line-height:1.45;">
+        ⭐ <strong>Pro Subscription (₹4,999 / Year)</strong> or <strong>Owner Master Passcode</strong> is required to access Gmail sending, lead harvesting, and Google Sheets synchronization.
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11.5px;font-weight:800;color:#374151;display:block;margin-bottom:5px;">🔑 Enter Master PIN / Activation Code:</label>
+        <input type="password" id="outreachPinInput" placeholder="Enter PIN (e.g. shivam2026)" style="width:100%;padding:9px 12px;font-size:13px;border:2px solid #cbd5e1;border-radius:8px;box-sizing:border-box;font-weight:700;" onkeydown="if(event.key==='Enter') verifyOutreachPin()">
+      </div>
+      
+      <div id="pinErrorMsg" style="display:none;color:#dc2626;font-size:11px;font-weight:700;margin-bottom:10px;"></div>
+      
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="closePinModal()">Cancel</button>
+        <button type="button" class="btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-weight:800;border:none;padding:8px 18px;border-radius:6px;box-shadow:0 3px 10px rgba(217,119,6,0.3);" onclick="verifyOutreachPin()">
+          🔓 Unlock Pro Suite
         </button>
       </div>
     </div>

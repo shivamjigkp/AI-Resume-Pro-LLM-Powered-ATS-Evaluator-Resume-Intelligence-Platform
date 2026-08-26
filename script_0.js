@@ -1953,6 +1953,9 @@ function swTab(id){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('pane-'+id)?.classList.add('active');
   if(id === 'hyperlinks') setTimeout(renderHyperlinksEditor, 20);
+  if(id === 'outreach' && !isOutreachUnlocked() && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'){
+    openPinModal();
+  }
   updateTabNav();
 }
 
@@ -2116,7 +2119,7 @@ function openApiModal(){
 
   // Pull the current Google Sheet ID from the local backend (Gate 1), if it's reachable
   const sheetIdStatus=document.getElementById('gate1SheetIdStatus');
-  fetch("http://127.0.0.1:8000/api/config/get")
+  fetch("/api/config/get")
     .then(r=>r.json())
     .then(data=>{
       s('gate1SheetIdInput', data?.env?.GOOGLE_SHEET_ID || '');
@@ -2168,7 +2171,7 @@ function saveKey(){
   // Push the Google Sheet ID (Gate 1) to the local backend so campaigns can find the lead sheet
   const sheetIdStatus=document.getElementById('gate1SheetIdStatus');
   const sheetId=g('gate1SheetIdInput');
-  fetch("http://127.0.0.1:8000/api/config/save", {
+  fetch("/api/config/save", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({GOOGLE_SHEET_ID:sheetId})
@@ -3978,7 +3981,7 @@ async function triggerBrowserAutofill() {
   const autofillAIStrategy = document.getElementById("autofillAIStrategy")?.value || "pure_ai";
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/gate4/autofill", {
+    const response = await fetch("/api/gate4/autofill", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -4163,7 +4166,7 @@ async function triggerEmailOutreach(overrideMode) {
   toast(`📧 Launching outreach campaign for rows ${startRow} to ${endRow}...`, "info", 3000);
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/gate1/send-emails", {
+    const response = await fetch("/api/gate1/send-emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -4194,7 +4197,7 @@ async function triggerEmailOutreach(overrideMode) {
 // ════════════════════════════════════════════════════════════════
 // GATE 1 UI — Fast Apply / Advanced Mode container
 // ════════════════════════════════════════════════════════════════
-const GATE1_API = "http://127.0.0.1:8000/api/gate1";
+const GATE1_API = "/api/gate1";
 const GATE1_AUTO_OPTION = { value: "", label: "Auto (latest PDF / role-matched)" };
 
 function switchGate1Mode(tab) {
@@ -5165,5 +5168,62 @@ function fallbackLazyBoxParse(text, targetSec){
       item: { label: lines[0] || 'My Link', url: urlMatch[0] || '' }
     };
   }
+}
+
+
+
+// ════════════════════════════════════════════════════════════════
+// 👑 PRO OUTREACH PIN AUTHORIZATION (₹4,999 / Year Protected)
+// ════════════════════════════════════════════════════════════════
+const MASTER_OUTREACH_PIN = "shivam2026";
+
+function isOutreachUnlocked(){
+  return localStorage.getItem('outreach_unlocked') === 'true';
+}
+
+function openPinModal(callback){
+  window._pinCallback = callback;
+  const overlay = document.getElementById('outreachPinModal');
+  if(overlay) overlay.style.display = 'flex';
+  const inp = document.getElementById('outreachPinInput');
+  if(inp){ inp.value = ''; inp.focus(); }
+  const err = document.getElementById('pinErrorMsg');
+  if(err) err.style.display = 'none';
+}
+
+function closePinModal(){
+  const overlay = document.getElementById('outreachPinModal');
+  if(overlay) overlay.style.display = 'none';
+}
+
+function verifyOutreachPin(){
+  const inp = document.getElementById('outreachPinInput');
+  const val = (inp?.value || '').trim();
+  const err = document.getElementById('pinErrorMsg');
+  
+  if(val === MASTER_OUTREACH_PIN || val.toLowerCase() === 'shivam2026'){
+    localStorage.setItem('outreach_unlocked', 'true');
+    localStorage.setItem('outreach_pin_val', val);
+    closePinModal();
+    toast('👑 Pro VIP Outreach Suite Unlocked! Welcome, Shivam.', 'success', 3500);
+    if(window._pinCallback){
+      window._pinCallback();
+      window._pinCallback = null;
+    }
+  } else {
+    if(err){
+      err.style.display = 'block';
+      err.textContent = '❌ Invalid Passcode! Pro Subscription (₹4,999) required.';
+    }
+  }
+}
+
+// Add Master PIN header to all fetch requests for protected API calls
+function getAuthHeaders(){
+  const pin = localStorage.getItem('outreach_pin_val') || MASTER_OUTREACH_PIN;
+  return {
+    'Content-Type': 'application/json',
+    'X-Outreach-PIN': pin
+  };
 }
 

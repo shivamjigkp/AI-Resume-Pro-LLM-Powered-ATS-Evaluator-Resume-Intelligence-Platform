@@ -16,6 +16,17 @@ logger = logging.getLogger("OutreachBackend")
 
 app = Flask(__name__, static_folder=".")
 
+MASTER_PIN = os.getenv("OUTREACH_MASTER_PIN", "shivam2026")
+
+def is_authorized(req):
+    pin = req.headers.get("X-Outreach-PIN") or req.args.get("pin") or (req.is_json and req.get_json(silent=True) and req.get_json().get("pin"))
+    # If running on localhost/127.0.0.1, auto-allow or require pin
+    client_ip = req.remote_addr or ""
+    if client_ip in ("127.0.0.1", "localhost", "::1") and not os.getenv("RENDER"):
+        return True
+    return pin == MASTER_PIN
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_FILE_PATH = os.path.join(BASE_DIR, "resume_builder_1.html")
 
@@ -584,6 +595,10 @@ def list_gate1_resumes():
 
 
 @app.route("/api/gate1/send-emails", methods=["POST"])
+def check_send_auth():
+    if not is_authorized(request):
+        return jsonify({"success": False, "error": "🔒 Unauthorized: Master PIN required (₹4,999 Pro Access)"}), 401
+
 def send_emails_endpoint():
     """
     Runs a Gate 1 cold-email campaign for a row range from the configured
