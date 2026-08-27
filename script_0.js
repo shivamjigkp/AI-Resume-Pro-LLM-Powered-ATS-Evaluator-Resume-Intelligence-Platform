@@ -5530,78 +5530,12 @@ Warm regards,
 Shivam Gupta
 +91-8081513780 | quantxcoder@gmail.com`;
 
-async function syncGate1LiveTemplateEditor(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  const tplId = sel?.value || '1_mastermind_comprehensive';
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const subInp = document.getElementById('gate1EmailSubject');
-  if(!ta) return;
-
-  localStorage.setItem('rsai_active_template', tplId);
-
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
-    const data = await res.json();
-    if(data.status === 'success' && data.content){
-      const raw = data.content;
-      const lines = raw.split('\n');
-      if(lines[0].toLowerCase().startsWith('subject:')){
-        if(subInp) subInp.value = lines[0].substring(8).trim();
-        ta.value = lines.slice(1).join('\n').trim();
-      } else {
-        ta.value = raw.trim();
-      }
-    } else {
-      ta.value = MASTER_TEMPLATE_1_FALLBACK;
-      if(subInp) subInp.value = 'Application for Opportunities at {{company}} — Shivam Gupta';
-    }
-  } catch(e){
-    ta.value = MASTER_TEMPLATE_1_FALLBACK;
-  }
-
-  updateGate1LivePreview();
-}
 
 
-function updateGate1LivePreview(){
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const box = document.getElementById('gate1LivePreviewBox');
-  if(!ta || !box) return;
 
-  let raw = ta.value || '';
-  const myName = D.basics?.name || 'Shivam Gupta';
-  
-  // Sample merge variables for preview
-  raw = raw.replace(/\{\{recruiter_name\}\}/g, 'Hiring Manager')
-           .replace(/\{\{company_name\}\}/g, 'INDmoney')
-           .replace(/\{\{role\}\}/g, 'Software Engineer')
-           .replace(/\{\{my_name\}\}/g, myName);
 
-  box.textContent = raw || 'Type in the box above to edit template...';
-}
 
-async function saveGate1LiveTemplate(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  const tplName = sel?.value || 'default';
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const content = ta?.value || '';
 
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ content: content })
-    });
-    const data = await res.json();
-    if(data.status === 'success'){
-      toast(`💾 Saved edits to template "${tplName}"!`, 'success');
-    } else {
-      toast('Failed to save template edits', 'error');
-    }
-  } catch(e) {
-    toast(`💾 Saved template "${tplName}" locally!`, 'success');
-  }
-}
 
 function updateGate1Progress(current, total, currentItemMsg, isDone, errCount){
   const card = document.getElementById('gate1ProgressCard');
@@ -5917,36 +5851,7 @@ function autoExtractGate1SheetId(val){
   }
 }
 
-function updateGate1LivePreview(){
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const box = document.getElementById('gate1LivePreviewBox');
-  if(!ta || !box) return;
 
-  let raw = ta.value || '';
-  if(!raw.trim()){
-    raw = `Subject: Application for {{role}} at {{company}} — {{sender_name}}\n\nHi {{recruiter_name}},\n\nI hope you're doing well. I'm {{sender_name}}, a B.Tech student (ECE - Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, and algorithmic backtesting.\n\nI'm writing to express interest in {{role}} opportunities at {{company}}, and to introduce myself.\n\n{{experience_summary}}\n\nBest regards,\n{{sender_name}}`;
-    ta.value = raw;
-  }
-
-  const myName = D.basics?.name || 'Shivam Gupta';
-  const myEmail = D.basics?.email || 'quantxcoder@gmail.com';
-  const myPhone = D.basics?.phone || '+91-8081513780';
-  const expSummary = '• Engineered full-stack ML platforms, algorithmic backtesting engines, and sub-200ms API microservices.';
-
-  // Comprehensive placeholder replacements for all template formats
-  let merged = raw
-    .replace(/\{\{recruiter_name\}\}/gi, 'Rahul Sharma')
-    .replace(/\{\{company_name\}\}/gi, 'INDmoney')
-    .replace(/\{\{company\}\}/gi, 'INDmoney')
-    .replace(/\{\{role\}\}/gi, 'Software Engineer')
-    .replace(/\{\{my_name\}\}/gi, myName)
-    .replace(/\{\{sender_name\}\}/gi, myName)
-    .replace(/\{\{sender_email\}\}/gi, myEmail)
-    .replace(/\{\{sender_phone\}\}/gi, myPhone)
-    .replace(/\{\{experience_summary\}\}/gi, expSummary);
-
-  box.textContent = merged;
-}
 
 // Auto sync template content when Gate 1 panel opens
 const oldOpenGate1 = window.openGate1Panel;
@@ -6034,17 +5939,7 @@ function populateSheetDropdown(){
   }).join('');
 }
 
-function populateTemplateDropdown(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  if(!sel) return;
-  const templates = getStoredTemplates();
-  const activeTpl = localStorage.getItem('rsai_active_template') || templates[0]?.name || 'default';
 
-  sel.innerHTML = templates.map(t => {
-    const isSel = (t.name === activeTpl) ? 'selected' : '';
-    return `<option value="${t.name}" ${isSel}>${t.label || t.name}</option>`;
-  }).join('');
-}
 
 function connectExistingGate1Sheet(){
   const input = document.getElementById('gate1NewSheetId');
@@ -6371,32 +6266,7 @@ function loadGate1ProfileFieldsToUI(){
 }
 
 // Comprehensive Live Preview with all placeholders
-function updateGate1LivePreview(){
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const box = document.getElementById('gate1LivePreviewBox');
-  if(!ta || !box) return;
 
-  let raw = ta.value || '';
-  const prof = getGate1SenderProfile();
-
-  let merged = raw
-    .replace(/\{\{recruiter_name\}\}/gi, 'Radhika')
-    .replace(/\{\{company_name\}\}/gi, 'Impact Analytics')
-    .replace(/\{\{company\}\}/gi, 'Impact Analytics')
-    .replace(/\{\{role\}\}/gi, 'AI/ML & Quant Developer')
-    .replace(/\{\{sender_name\}\}/gi, prof.name || 'Shivam Gupta')
-    .replace(/\{\{my_name\}\}/gi, prof.name || 'Shivam Gupta')
-    .replace(/\{\{college\}\}/gi, prof.college || 'MMMUT, Gorakhpur')
-    .replace(/\{\{branch\}\}/gi, prof.branch || 'ECE – Data Science & Machine Learning')
-    .replace(/\{\{sender_email\}\}/gi, prof.email || 'quantxcoder@gmail.com')
-    .replace(/\{\{sender_phone\}\}/gi, prof.phone || '+91-8081513780')
-    .replace(/\{\{sender_github\}\}/gi, prof.github || 'https://github.com/shivamjigkp')
-    .replace(/\{\{sender_linkedin\}\}/gi, prof.linkedin || 'https://linkedin.com/in/shivam-gupta-05209a279')
-    .replace(/\{\{other_links\}\}/gi, prof.other_links ? `Other: ${prof.other_links}` : '')
-    .replace(/\{\{experience_summary\}\}/gi, prof.experience_summary || '');
-
-  box.textContent = merged;
-}
 
 // Update runGate1Action to use Gate 1 sender profile
 const oldRunGate1Action = runGate1Action;
@@ -6497,210 +6367,30 @@ Warm regards,
 Shivam Gupta
 +91-8081513780 | quantxcoder@gmail.com`;
 
-async function syncGate1LiveTemplateEditor(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  const tplName = sel?.value || 'default';
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  if(!ta) return;
 
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName));
-    const data = await res.json();
-    if(data.status === 'success' && data.template && data.template.content){
-      ta.value = data.template.content;
-    } else {
-      ta.value = EXACT_SHIVAM_MASTER_TEMPLATE;
-    }
-  } catch(e) {
-    ta.value = EXACT_SHIVAM_MASTER_TEMPLATE;
-  }
-  updateGate1LivePreview();
-}
 
-function updateGate1LivePreview(){
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const box = document.getElementById('gate1LivePreviewBox');
-  if(!ta || !box) return;
 
-  let raw = ta.value || '';
-  if(!raw.trim()){
-    raw = EXACT_SHIVAM_MASTER_TEMPLATE;
-    ta.value = raw;
-  }
 
-  // Simple direct replacement of only 3 placeholders:
-  let merged = raw
-    .replace(/\{\{recruiter_name\}\}/gi, 'Preeth')
-    .replace(/\{\{company_name\}\}/gi, 'BRIDGEi2i Analytics Solutions')
-    .replace(/\{\{company\}\}/gi, 'BRIDGEi2i Analytics Solutions')
-    .replace(/\{\{role\}\}/gi, 'Data Science, Machine Learning, Full-Stack, or Quantitative Analyst');
 
-  box.textContent = merged;
-}
-
-function populateTemplateDropdown(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  if(!sel) return;
-  
-  const templates = [
-    { name: 'default', label: '⭐ 1 — Mastermind Official (Shivam Gupta Exact)' },
-    { name: 'mastermind_official', label: '⭐ 2 — Mastermind ChatGPT Exact' },
-    { name: 'quant_algo_trader', label: '📈 3 — Quant & Algorithmic Trading Specialist' },
-    { name: 'ai_ml_engineer', label: '🤖 4 — AI / ML Systems & LLM Pipelines' },
-    { name: 'fullstack_sde', label: '💻 5 — Full-Stack SDE (Next.js 15 & FastAPI)' },
-    { name: 'short_startup_pitch', label: '🔥 6 — Ultra-Short Startup Pitch (Under 90 words)' }
-  ];
-
-  const activeTpl = localStorage.getItem('rsai_active_template') || 'default';
-
-  sel.innerHTML = templates.map(t => {
-    const isSel = (t.name === activeTpl) ? 'selected' : '';
-    return `<option value="${t.name}" ${isSel}>${t.label || t.name}</option>`;
-  }).join('');
-}
 
 
 
 // ════════════════════════════════════════════════════════════════
 // 🌟 11 MASTER TEMPLATES REGISTRY & 4-STEP COMPOSER JS
 // ════════════════════════════════════════════════════════════════
-const MASTER_TEMPLATES_COLLECTION = [
-  { id: '1_mastermind_comprehensive', name: '⭐ 1 — Mastermind Comprehensive (Shivam Gupta Exact)' },
-  { id: '2_quant_algo_trader', name: '📈 2 — Quant & Algorithmic Trading Specialist' },
-  { id: '3_ai_ml_engineer', name: '🤖 3 — AI / ML Systems & LLM Pipelines' },
-  { id: '4_fullstack_sde', name: '💻 4 — Full-Stack SDE (Next.js 15 & FastAPI)' },
-  { id: '5_short_startup_pitch', name: '🔥 5 — Ultra-Short Founder Pitch (Under 85 words)' },
-  { id: '6_alumni_referral', name: '🎓 6 — Alumni & Warm Referral Request' },
-  { id: '7_problem_solver_pitch', name: '🛠️ 7 — Problem-Solver / Value-First Pitch' },
-  { id: '8_fintech_investment_banking', name: '💼 8 — Fintech & Investment Banking Tech' },
-  { id: '9_immediate_availability', name: '⏳ 9 — Immediate Availability & 24hr Trial' },
-  { id: '10_follow_up_gentle', name: '🔄 10 — Gentle Follow-Up (2nd Touchpoint)' },
-  { id: '11_data_analyst_bi', name: '📊 11 — Data Analyst & Business Intelligence' }
-];
 
-function populateTemplateDropdown(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  if(!sel) return;
 
-  const activeTpl = localStorage.getItem('rsai_active_template') || '1_mastermind_comprehensive';
 
-  sel.innerHTML = MASTER_TEMPLATES_COLLECTION.map(t => {
-    const isSel = (t.id === activeTpl || t.id === activeTpl.replace('.txt','')) ? 'selected' : '';
-    return `<option value="${t.id}" ${isSel}>${t.name}</option>`;
-  }).join('');
-}
 
-async function syncGate1LiveTemplateEditor(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  const tplId = sel?.value || '1_mastermind_comprehensive';
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const subInp = document.getElementById('gate1EmailSubject');
-  if(!ta) return;
 
-  localStorage.setItem('rsai_active_template', tplId);
 
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
-    const data = await res.json();
-    if(data.status === 'success' && data.template && data.template.content){
-      const raw = data.template.content;
-      // Extract Subject if present
-      const lines = raw.split('\n');
-      if(lines[0].toLowerCase().startsWith('subject:')){
-        if(subInp) subInp.value = lines[0].substring(8).trim();
-        ta.value = lines.slice(1).join('\n').trim();
-      } else {
-        ta.value = raw.trim();
-      }
-    }
-  } catch(e){}
 
-  updateGate1LivePreview();
-}
-
-function updateGate1LivePreview(){
-  const subInp = document.getElementById('gate1EmailSubject');
-  const ta = document.getElementById('gate1LiveTemplateContent');
-  const prevTo = document.getElementById('prevTo');
-  const prevSub = document.getElementById('prevSubject');
-  const prevBox = document.getElementById('gate1LivePreviewBox');
-  const prevAtt = document.getElementById('prevAttachment');
-  const resumeSel = document.getElementById('gate1DefaultResume');
-  const companyBadge = document.getElementById('gate1PreviewTargetCompany');
-
-  if(!ta || !prevBox) return;
-
-  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
-
-  // Sample lead data for preview
-  const sampleLead = {
-    name: 'Hiring Team',
-    email: 'careers@zerodha.com',
-    company: 'Zerodha',
-    role: 'Software Development / Quantitative Analyst'
-  };
-
-  if(companyBadge) companyBadge.textContent = `Target: ${sampleLead.company} (Row ${startRow})`;
-  if(prevTo) prevTo.textContent = sampleLead.email;
-
-  // Render Subject
-  let rawSub = subInp?.value || 'Application for Opportunities at {{company}} — Shivam Gupta';
-  let renderedSub = rawSub
-    .replace(/\{\{company\}\}/gi, sampleLead.company)
-    .replace(/\{\{company_name\}\}/gi, sampleLead.company)
-    .replace(/\{\{role\}\}/gi, sampleLead.role)
-    .replace(/\{\{sender_name\}\}/gi, 'Shivam Gupta')
-    .replace(/\{\{recruiter_name\}\}/gi, sampleLead.name);
-  if(prevSub) prevSub.textContent = renderedSub;
-
-  // Render Body
-  let rawBody = ta.value || '';
-  let renderedBody = rawBody
-    .replace(/\{\{recruiter_name\}\}/gi, sampleLead.name)
-    .replace(/\{\{company\}\}/gi, sampleLead.company)
-    .replace(/\{\{company_name\}\}/gi, sampleLead.company)
-    .replace(/\{\{role\}\}/gi, sampleLead.role)
-    .replace(/\{\{sender_name\}\}/gi, 'Shivam Gupta')
-    .replace(/\{\{sender_email\}\}/gi, 'quantxcoder@gmail.com')
-    .replace(/\{\{sender_phone\}\}/gi, '+91-8081513780')
-    .replace(/\{\{sender_github\}\}/gi, 'https://github.com/shivamjigkp')
-    .replace(/\{\{sender_linkedin\}\}/gi, 'https://linkedin.com/in/shivam-gupta-05209a279');
-
-  prevBox.textContent = renderedBody;
-
-  // Render Attachment
-  const resumeFile = resumeSel?.value || 'resume.pdf';
-  if(prevAtt) prevAtt.textContent = `Attachment: ${resumeFile}`;
-}
 
 function updateGate1PreviewForActiveRow(){
   updateGate1LivePreview();
 }
 
-async function saveGate1LiveTemplate(){
-  const sel = document.getElementById('gate1DefaultTemplate');
-  const tplId = sel?.value || '1_mastermind_comprehensive';
-  const sub = document.getElementById('gate1EmailSubject')?.value || 'Application for Opportunities at {{company}} — Shivam Gupta';
-  const body = document.getElementById('gate1LiveTemplateContent')?.value || '';
 
-  const fullContent = `Subject: ${sub}\n\n${body}`;
-
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: fullContent })
-    });
-    const data = await res.json();
-    if(data.status === 'success'){
-      toast(`💾 Saved template "${tplId}" successfully!`, 'success', 3500);
-    } else {
-      toast('Failed to save template', 'error');
-    }
-  } catch(e){
-    toast('Saved template locally', 'info');
-  }
-}
 
 async function runGate1Action(mode){
   if(mode === 'send'){
@@ -6783,4 +6473,152 @@ setTimeout(() => {
   fetchAndRenderGate1Leads();
   refreshGate1Resumes();
 }, 200);
+
+
+
+// ════════════════════════════════════════════════════════════════
+// 🌟 BULLETPROOF 11 MASTER TEMPLATES SUITE (INSTANT 0MS PRE-LOADED)
+// ════════════════════════════════════════════════════════════════
+const ALL_MASTER_TEMPLATES = {"1": "Subject: Application for Opportunities at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI hope you are doing well.\n\nI am Shivam Gupta, a B.Tech student in Electronics & Communication Engineering (ECE), specializing in Data Science and Machine Learning at MMMUT, Gorakhpur. I am writing to express my strong interest in internship and entry-level opportunities at {{company}} across Software Development, Full-Stack Engineering, AI/ML, Data, Fintech, and Quantitative/Algorithmic Trading.\n\nI bring a hands-on, builder-oriented background in developing real-world software products, machine learning applications, and financial analytics solutions. I am also the Founder of Mastermind Research Technologies, an MSME/Udyam-registered technology venture focused on AI/ML, software, and web-development solutions, and I run Mastermind Algo Trader, a YouTube-based trading education platform sharing practical insights on algorithmic trading, price action, risk management, and market analysis.\n\nA brief overview of my work:\n\u2022 Full-Stack & Web Engineering: Built and deployed production-oriented full-stack applications using Next.js, React, FastAPI, TypeScript, JavaScript, Supabase/PostgreSQL, REST APIs, Cloudflare, Vercel, and Render. Shipped multiple healthcare & institutional platforms including a production hospital platform for Rajendra Hospital, Gorakhpur (appointment workflows, symptom-triage matcher, PM-JAY cashless calculator, appointment passes) and the MMMUT Hockey portal.\n\u2022 Enterprise & Outreach Platforms: Developed platforms for Mastermind Research Technologies and Mastermind Algo Trader with secure authentication, cloud deployment, payment webhooks, and live trading-signal workflows. Built this LLM-powered ATS resume intelligence and outreach platform with automated lead sync, Google Sheets integration, and Gmail API outreach.\n\u2022 Machine Learning & Data Engineering: Engineered end-to-end ML pipelines for forecasting, prediction, and analytics using Python, Pandas, NumPy, Scikit-learn, TensorFlow, XGBoost, Flask/FastAPI, Docker, AWS, and MLflow across electricity-demand forecasting, weather intelligence, and stock-price prediction.\n\u2022 Algorithmic Trading & Quantitative Systems: Designed, tested, and backtested rule-based algorithmic strategies (Pine Script v5, Python, FastAPI, TradingView, Chartink) with liquidity-sweep detection, EMA crossover logic, live signals, and risk analytics.\n\u2022 Competitions & Industry Simulations: Achieved Rank 3 and won the XM Global Daily Trading Competition in algorithmic trading, and cleared both phases of the FundingPips prop-firm challenge. Completed virtual job simulations in Risk Management (Goldman Sachs), Quantitative Research (J.P. Morgan), and Global Markets Sales & Trading (Bank of America).\n\nI am especially interested in opportunities where I can combine engineering, data, and analytical thinking\u2014whether through building scalable software products, AI-powered applications, data platforms, or fintech and quantitative solutions.\n\nMy resume is attached for your consideration. You can also review my work here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI would be grateful for the opportunity to be considered for any suitable current or future role at {{company}}. Thank you for your time and consideration.\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "10_follow_up_gentle": "Subject: Re: Application for {{role}} at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI wanted to quickly follow up on my previous email regarding {{role}} opportunities at {{company}}.\n\nI understand you have a busy schedule, so I wanted to re-share my resume and GitHub repository in case my previous message got buried:\n\n\u2022 GitHub: https://github.com/shivamjigkp\n\u2022 LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\u2022 Highlights: Full-Stack (Next.js/FastAPI), ML Pipelines, Algorithmic Trading Systems, Stanford & UC San Diego Certifications.\n\nI remain very excited about the work {{company}} is doing and would love a 5-minute chat if you have an opening.\n\nThank you again for your time and consideration!\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "11_data_analyst_bi": "Subject: Application for Data Analyst / BI Role at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI am writing to express my interest in Data Analyst and Business Intelligence opportunities at {{company}}.\n\nAs a B.Tech student in ECE (Data Science & ML) at MMMUT, I have extensive experience translating raw data into actionable dashboards, statistical insights, and automated reports.\n\nCore Competencies:\n\u2022 Advanced Data Analysis: Python (Pandas, NumPy, Scikit-learn), SQL (PostgreSQL), and automated ETL pipelines.\n\u2022 Predictive Modeling: Built forecasting models for electricity demand, weather intelligence, and asset price forecasting.\n\u2022 Visualization & Dashboards: Developed interactive analytics dashboards with live risk metrics and Monte Carlo simulations.\n\nMy resume is attached for your review. You can explore my data science projects here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI would welcome the opportunity to discuss how my analytical skills can support {{company}}'s data-driven growth.\n\nBest regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "1_mastermind_comprehensive": "Subject: Application for Opportunities at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI hope you are doing well.\n\nI am Shivam Gupta, a B.Tech student in Electronics & Communication Engineering (ECE), specializing in Data Science and Machine Learning at MMMUT, Gorakhpur. I am writing to express my strong interest in internship and entry-level opportunities at {{company}} across Software Development, Full-Stack Engineering, AI/ML, Data, Fintech, and Quantitative/Algorithmic Trading.\n\nI bring a hands-on, builder-oriented background in developing real-world software products, machine learning applications, and financial analytics solutions. I am also the Founder of Mastermind Research Technologies, an MSME/Udyam-registered technology venture focused on AI/ML, software, and web-development solutions, and I run Mastermind Algo Trader, a YouTube-based trading education platform sharing practical insights on algorithmic trading, price action, risk management, and market analysis.\n\nA brief overview of my work:\n\u2022 Full-Stack & Web Engineering: Built and deployed production-oriented full-stack applications using Next.js, React, FastAPI, TypeScript, JavaScript, Supabase/PostgreSQL, REST APIs, Cloudflare, Vercel, and Render. Shipped multiple healthcare & institutional platforms including a production hospital platform for Rajendra Hospital, Gorakhpur (appointment workflows, symptom-triage matcher, PM-JAY cashless calculator, appointment passes) and the MMMUT Hockey portal.\n\u2022 Enterprise & Outreach Platforms: Developed platforms for Mastermind Research Technologies and Mastermind Algo Trader with secure authentication, cloud deployment, payment webhooks, and live trading-signal workflows. Built this LLM-powered ATS resume intelligence and outreach platform with automated lead sync, Google Sheets integration, and Gmail API outreach.\n\u2022 Machine Learning & Data Engineering: Engineered end-to-end ML pipelines for forecasting, prediction, and analytics using Python, Pandas, NumPy, Scikit-learn, TensorFlow, XGBoost, Flask/FastAPI, Docker, AWS, and MLflow across electricity-demand forecasting, weather intelligence, and stock-price prediction.\n\u2022 Algorithmic Trading & Quantitative Systems: Designed, tested, and backtested rule-based algorithmic strategies (Pine Script v5, Python, FastAPI, TradingView, Chartink) with liquidity-sweep detection, EMA crossover logic, live signals, and risk analytics.\n\u2022 Competitions & Industry Simulations: Achieved Rank 3 and won the XM Global Daily Trading Competition in algorithmic trading, and cleared both phases of the FundingPips prop-firm challenge. Completed virtual job simulations in Risk Management (Goldman Sachs), Quantitative Research (J.P. Morgan), and Global Markets Sales & Trading (Bank of America).\n\nI am especially interested in opportunities where I can combine engineering, data, and analytical thinking\u2014whether through building scalable software products, AI-powered applications, data platforms, or fintech and quantitative solutions.\n\nMy resume is attached for your consideration. You can also review my work here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI would be grateful for the opportunity to be considered for any suitable current or future role at {{company}}. Thank you for your time and consideration.\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "2_quant_algo_trader": "Subject: Quant / Algorithmic Trading Application at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI've been closely following {{company}}'s quantitative trading and market-making strategies, and I'm writing to explore {{role}} opportunities on your quantitative team.\n\nI am a B.Tech student (ECE \u2013 Data Science & ML) at MMMUT and Founder of Mastermind Research Technologies & Mastermind Algo Trader, specializing in quantitative modeling, statistical backtesting, and low-latency execution engines.\n\nKey Technical Highlights:\n\u2022 Algorithmic Strategy Development: Built and backtested automated price-action strategies (Pine Script v5 + Python) with live backtesting engines, Monte Carlo risk simulation, and drawdown optimization. Cleared both phases of FundingPips prop-firm evaluation and won Rank 3 in XM Global Daily Trading Competition.\n\u2022 Mathematical & ML Models: Developed predictive price forecasting pipelines using XGBoost, Scikit-learn, and statistical time-series analysis.\n\u2022 Industry Simulations: Completed quantitative research simulations with Goldman Sachs (Risk Management) and J.P. Morgan (Quantitative Research).\n\u2022 Core Certifications: NISM Securities Markets Certification, Stanford Machine Learning, and UC San Diego Algorithmic Toolbox / DSA.\n\nMy resume is attached. You can explore my live repositories here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI would appreciate a brief conversation to discuss how my quantitative modeling and analytical skill set can add value to {{company}}.\n\nBest regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "3_ai_ml_engineer": "Subject: Application for {{role}} at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI'm writing to express strong interest in {{role}} opportunities at {{company}}.\n\nI'm a B.Tech (ECE \u2013 Data Science & Machine Learning) student at MMMUT Gorakhpur with hands-on experience building and deploying end-to-end Machine Learning pipelines and AI-driven applications.\n\nSnapshot of ML & Data Engineering Work:\n\u2022 End-to-End ML Pipelines: Developed and deployed predictive ML models (XGBoost, TensorFlow, Scikit-learn) with automated feature engineering, Docker containerization, and AWS hosting.\n\u2022 Production Apps: Built an electricity demand forecasting engine and a real-time weather intelligence platform with sub-200ms API inference using FastAPI.\n\u2022 LLM & NLP Platform: Architected an LLM-powered ATS resume intelligence system with automatic embedding comparison, scoring, and automated recruiter outreach.\n\u2022 Rigorous Background: Certified in Machine Learning by Stanford Online and Algorithmic Toolbox / DSA by UC San Diego.\n\nMy resume is attached. Live code & project architectures can be found here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI am available for immediate onboarding (internship or entry-level) and would love to discuss how I can contribute to {{company}}'s AI initiatives.\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "4_fullstack_sde": "Subject: Full-Stack SDE Application for {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI hope you're having a productive week.\n\nI'm Shivam Gupta, a Full-Stack developer and founder of Mastermind Research Technologies. I noticed {{company}} is scaling rapidly and wanted to reach out regarding {{role}} opportunities.\n\nMy Core Stack & Proof of Work:\n\u2022 Modern Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS, Framer Motion (optimized for 60fps animations and sub-second load times). Shipped platforms for Rajendra Hospital Gorakhpur, MMMUT Hockey, and Mastermind platform.\n\u2022 Scalable Backend: FastAPI, Flask, Supabase, PostgreSQL, REST/WebSocket APIs with robust error handling and microservice architecture.\n\u2022 Problem Solving: Solved 140+ DSA problems across LeetCode & GeeksforGeeks with strong fundamentals in algorithms and system design.\n\nMy resume is attached for your review. Please feel free to check out my work:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI'm open to completing a 24-hour trial assignment to demonstrate my code quality and delivery speed. Looking forward to hearing from you!\n\nBest regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "5_short_startup_pitch": "Subject: Quick intro / {{role}} at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI'm Shivam Gupta, a builder & founder (Mastermind Research Tech) specializing in full-stack platforms (Next.js 15, FastAPI) and ML/quantitative systems.\n\nI'm eager to contribute to {{company}} as a {{role}}.\n\nProof of Work:\n\u2022 Full-stack platforms in production with sub-200ms response times (Hospital portals, Trading dashboards).\n\u2022 Quantitative trading backtesting engines with Monte Carlo risk simulation (Rank 3 XM Global Trading).\n\u2022 GitHub: https://github.com/shivamjigkp | LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nMy resume is attached. I'm ready to build a 24-hour trial project or jump on a 10-minute intro call.\n\nBest,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "6_alumni_referral": "Subject: MMMUT Student reaching out / Guidance on {{role}} at {{company}}\n\nDear {{recruiter_name}},\n\nI hope this email finds you well.\n\nI'm Shivam Gupta, currently pursuing my B.Tech in ECE (Data Science & ML) at MMMUT, Gorakhpur. I noticed your inspiring journey at {{company}} and wanted to reach out.\n\nI have been actively building production software across Machine Learning, algorithmic trading systems, and modern full-stack development (Next.js, FastAPI, Supabase). I am deeply interested in {{role}} openings at {{company}} and would appreciate any guidance on how to best position myself for the team.\n\nMy resume and GitHub are attached below for your reference:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nIf you have 5 minutes for a quick word or could refer my profile to the hiring team, it would mean a lot. Thank you for your time!\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "7_problem_solver_pitch": "Subject: Ideas for {{company}}'s engineering & {{role}} application \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI've been exploring {{company}}'s product and engineering architecture, and I'm deeply impressed by how your team is solving key challenges in your industry.\n\nAs a full-stack & ML developer (B.Tech at MMMUT), I focus on building high-performance, production-ready systems with sub-200ms latency, clean architecture, and data-driven algorithms.\n\nI'm writing to express interest in the {{role}} opening at {{company}}.\n\nWhat I bring to your engineering team:\n1. End-to-end execution: From schema design (PostgreSQL/Supabase) to high-speed backend APIs (FastAPI) and clean UI (Next.js 15).\n2. Data & ML expertise: Practical experience training, optimizing, and deploying ML models in production (AWS, Docker, MLflow).\n3. Fast turnaround: Strong product sense and ability to ship production-ready features independently.\n\nMy resume is attached. You can view my source code here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI would love to share a few ideas on how I can add immediate value to {{company}}.\n\nBest regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "8_fintech_investment_banking": "Subject: Fintech & Quantitative Tech Application at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI am writing to express my interest in {{role}} opportunities at {{company}}.\n\nI am a B.Tech student (ECE \u2013 Data Science & ML) at MMMUT with a dedicated focus on financial engineering, high-throughput microservices, and quantitative risk systems.\n\nRelevant Background & Credentials:\n\u2022 Virtual Job Simulations: Completed hands-on simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading).\n\u2022 Financial Market Expertise: NISM Securities Markets Certified with deep understanding of market microstructure, order execution, and derivatives risk metrics.\n\u2022 Technical Stack: Python, Pine Script, Next.js, FastAPI, PostgreSQL, and Docker.\n\nMy resume is attached for your review. Feel free to inspect my projects:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI am available for an immediate start and would welcome the opportunity to interview with your team.\n\nSincerely,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "9_immediate_availability": "Subject: Immediate Availability for {{role}} at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI'm reaching out regarding {{role}} opportunities at {{company}}.\n\nI am an engineering student at MMMUT (ECE \u2013 Data Science & ML) and can start working immediately on a full-time or internship basis with zero onboarding friction.\n\nWhy I can contribute from Day 1:\n\u2022 Production Experience: Shipped production full-stack apps (Next.js, FastAPI, Supabase) and ML pipelines (AWS, Docker).\n\u2022 Self-Driven Builder: Built and backtested algorithmic trading systems and risk management dashboards.\n\u2022 Work Sample Ready: Happy to complete any technical assessment or build a working proof-of-concept for your team within 24 hours.\n\nMy resume is attached. Check out my live repos:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nLooking forward to connecting!\n\nBest regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "ai_ml_engineer": "Subject: Application for {{role}} at {{company}} \u2014 {{sender_name}}\n\nHi {{recruiter_name}},\n\nI'm {{sender_name}}, a B.Tech ({{branch}}) student at {{college}} with hands-on experience building and deploying end-to-end Machine Learning, LLM, and high-performance backend systems.\n\nI'm writing to express strong interest in {{role}} opportunities at {{company}}.\n\nA quick snapshot of my work:\n\u2022 ML & AI Pipelines: Built and deployed end-to-end ML forecasting pipelines (XGBoost, TensorFlow, Scikit-learn) with Docker, FastAPI, and AWS.\n\u2022 Full-Stack Production Systems: Developed Next.js 15, FastAPI, and Supabase platforms with sub-200ms latency and 99.9% uptime.\n\u2022 Certifications: Stanford Online (Machine Learning - Regression & Classification), UC San Diego (Algorithmic Toolbox / DSA).\n\nMy resume is attached for your reference. You can explore my live code here:\nGitHub: {{sender_github}}\nLinkedIn: {{sender_linkedin}}\n{{other_links}}\n\nI am available to start immediately and would appreciate an opportunity to connect with your engineering team.\n\nBest regards,\n{{sender_name}}\n{{sender_phone}} | {{sender_email}}", "default": "Subject: Application for Opportunities at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI hope you are doing well.\n\nI am Shivam Gupta, a B.Tech student in Electronics & Communication Engineering (ECE), specializing in Data Science and Machine Learning at MMMUT, Gorakhpur. I am writing to express my strong interest in internship and entry-level opportunities at {{company}} across Software Development, Full-Stack Engineering, AI/ML, Data, Fintech, and Quantitative/Algorithmic Trading.\n\nI bring a hands-on, builder-oriented background in developing real-world software products, machine learning applications, and financial analytics solutions. I am also the Founder of Mastermind Research Technologies, an MSME/Udyam-registered technology venture focused on AI/ML, software, and web-development solutions, and I run Mastermind Algo Trader, a YouTube-based trading education platform sharing practical insights on algorithmic trading, price action, risk management, and market analysis.\n\nA brief overview of my work:\n\u2022 Full-Stack & Web Engineering: Built and deployed production-oriented full-stack applications using Next.js, React, FastAPI, TypeScript, JavaScript, Supabase/PostgreSQL, REST APIs, Cloudflare, Vercel, and Render. Shipped multiple healthcare & institutional platforms including a production hospital platform for Rajendra Hospital, Gorakhpur (appointment workflows, symptom-triage matcher, PM-JAY cashless calculator, appointment passes) and the MMMUT Hockey portal.\n\u2022 Enterprise & Outreach Platforms: Developed platforms for Mastermind Research Technologies and Mastermind Algo Trader with secure authentication, cloud deployment, payment webhooks, and live trading-signal workflows. Built this LLM-powered ATS resume intelligence and outreach platform with automated lead sync, Google Sheets integration, and Gmail API outreach.\n\u2022 Machine Learning & Data Engineering: Engineered end-to-end ML pipelines for forecasting, prediction, and analytics using Python, Pandas, NumPy, Scikit-learn, TensorFlow, XGBoost, Flask/FastAPI, Docker, AWS, and MLflow across electricity-demand forecasting, weather intelligence, and stock-price prediction.\n\u2022 Algorithmic Trading & Quantitative Systems: Designed, tested, and backtested rule-based algorithmic strategies (Pine Script v5, Python, FastAPI, TradingView, Chartink) with liquidity-sweep detection, EMA crossover logic, live signals, and risk analytics.\n\u2022 Competitions & Industry Simulations: Achieved Rank 3 and won the XM Global Daily Trading Competition in algorithmic trading, and cleared both phases of the FundingPips prop-firm challenge. Completed virtual job simulations in Risk Management (Goldman Sachs), Quantitative Research (J.P. Morgan), and Global Markets Sales & Trading (Bank of America).\n\nI am especially interested in opportunities where I can combine engineering, data, and analytical thinking\u2014whether through building scalable software products, AI-powered applications, data platforms, or fintech and quantitative solutions.\n\nMy resume is attached for your consideration. You can also review my work here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI would be grateful for the opportunity to be considered for any suitable current or future role at {{company}}. Thank you for your time and consideration.\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "fullstack_sde": "Subject: Full-Stack / SDE Application for {{company}} \u2014 {{sender_name}}\n\nHi {{recruiter_name}},\n\nI hope you're having a great week.\n\nI'm {{sender_name}}, a B.Tech student ({{branch}}) at {{college}} and Founder of Mastermind Research Technologies. I build scalable, high-performance web platforms and API microservices.\n\nI noticed {{company}} is building impactful products and wanted to express my interest in {{role}} opportunities.\n\nTechnical Highlights:\n\u2022 Next.js 15, React, TypeScript, FastAPI, PostgreSQL, Supabase, and Tailwind CSS.\n\u2022 Engineered production platforms handling high-throughput user interactions and sub-200ms response times.\n\u2022 Solved 140+ algorithmic challenges across LeetCode and GeeksforGeeks.\n\nMy resume is attached. Please feel free to check out my repositories:\nGitHub: {{sender_github}}\nLinkedIn: {{sender_linkedin}}\n{{other_links}}\n\nI'd welcome the chance to discuss how my skill set aligns with {{company}}'s engineering roadmap.\n\nWarm regards,\n{{sender_name}}\n{{sender_phone}} | {{sender_email}}", "mastermind_official": "Subject: Application for {{role}} at {{company}} \u2014 Shivam Gupta\n\nDear {{recruiter_name}},\n\nI hope you're doing well.\n\nI'm Shivam Gupta, a B.Tech student (ECE \u2013 Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, algorithmic backtesting, and quantitative trading.\n\nI'm writing to express interest in {{role}} opportunities (internship or entry-level) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.\n\nA quick snapshot of my work:\n- Built and deployed end-to-end ML pipelines (XGBoost, TensorFlow, Scikit-learn) for forecasting problems, deployed via Flask/FastAPI on AWS and Docker, with experiments tracked in MLflow\n- Full-stack projects in production: a Next.js/FastAPI/Supabase platform, an electricity demand forecasting app, and a weather intelligence app\n- Designed and backtested a price-action algorithmic trading strategy (Pine Script v5 + Python), including a live backtesting dashboard with Monte Carlo simulation, AdaBoost, and risk metrics\n- Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)\n- Certifications: Machine Learning \u2013 Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification\n\nAcross these projects, I've consistently focused on translating data into deployable, production-ready solutions rather than just models on paper.\n\nMy resume is attached for your reference. You're welcome to look through my work here:\nGitHub: https://github.com/shivamjigkp\nLinkedIn: https://linkedin.com/in/shivam-gupta-05209a279\n\nI'm available to start immediately and open to both internship and full-time opportunities, whichever fits best with your current openings.\n\nI'd really appreciate a few minutes of your time to discuss any suitable openings at {{company}}, or to be considered for future roles. Thank you for your time and consideration.\n\nWarm regards,\nShivam Gupta\n+91-8081513780 | quantxcoder@gmail.com", "mastermind_shivam_exact": "Subject: Application for {{role}} at {{company}} \u2014 {{sender_name}}\n\nDear {{recruiter_name}},\n\nI hope you're doing well.\n\nI'm {{sender_name}}, a B.Tech student ({{branch}}) at {{college}}, with hands-on experience in machine learning, full-stack development, algorithmic & quantitative trading. I am also founder of Mastermind Research Technologies.\n\nI'm writing to express interest in {{role}} opportunities (internship or entry-level job) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.\n\n{{experience_summary}}\n\nAcross these projects, I've consistently focused on translating data into deployable, production-ready solutions rather than just models on paper.\n\nMy resume is attached for your reference. You're welcome to look through my work here:\nGitHub: {{sender_github}}\nLinkedIn: {{sender_linkedin}}\n{{other_links}}\n\nI'm available to start immediately and open to both internship and full-time opportunities, whichever fits best with your current openings.\n\nI'd really appreciate a few minutes of your time to discuss any suitable openings at {{company}}, or to be considered for future roles. Thank you for your time and consideration.\n\nWarm regards,\n{{sender_name}}\n{{sender_phone}} | {{sender_email}}", "quant_algo_trader": "Subject: Quant / Algorithmic Trading Application at {{company}} \u2014 {{sender_name}}\n\nHi {{recruiter_name}},\n\nI'm {{sender_name}}, a B.Tech student ({{branch}}) at {{college}} and Founder of Mastermind Research Technologies, specializing in quantitative trading algorithms and low-latency systems.\n\nI've been closely following {{company}}'s leadership in the market, and I am writing to explore {{role}} opportunities on your team.\n\nKey Highlights of My Work:\n\u2022 Algorithmic Trading Systems: Designed and backtested price-action algorithms (Pine Script v5 + Python) with live backtesting dashboards, Monte Carlo risk metrics, and sub-200ms API execution.\n\u2022 ML & Financial Engineering: Built predictive demand and price forecasting pipelines using XGBoost, TensorFlow, and Pandas.\n\u2022 Job Simulations: Completed simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets).\n\u2022 Certifications: Stanford Machine Learning, UC San Diego Algorithmic Toolbox / DSA, NISM Securities Markets.\n\nLinks to My Code & Portfolio:\nGitHub: {{sender_github}}\nLinkedIn: {{sender_linkedin}}\n{{other_links}}\n\nMy resume is attached. I'd love a quick 10-minute conversation to discuss how I can contribute to {{company}}'s trading and technology initiatives.\n\nBest regards,\n{{sender_name}}\n{{sender_phone}} | {{sender_email}}", "short_startup_pitch": "Subject: Quick intro / {{role}} at {{company}} \u2014 {{sender_name}}\n\nHi {{recruiter_name}},\n\nI'm {{sender_name}}, a software engineer & founder with hands-on experience in full-stack platforms (Next.js, FastAPI), ML pipelines, and algorithmic trading systems.\n\nI'm eager to contribute to {{company}}'s mission as a {{role}} (internship or full-time).\n\nKey Proof of Work:\n\u2022 Full-stack platforms in production with sub-200ms response times.\n\u2022 Quant trading algorithms & risk analytics dashboard.\n\u2022 GitHub: {{sender_github}} | LinkedIn: {{sender_linkedin}}\n\nMy resume is attached. I'm ready to build a 24-hour trial project or jump on a 10-minute introductory call.\n\nBest,\n{{sender_name}}\n{{sender_phone}} | {{sender_email}}", "software_engineer": "Subject: {{role}} Application \u2014 {{sender_name}} for {{company}}\n\nHi {{recruiter_name}},\n\nI'm {{sender_name}}, a software engineer reaching out about the {{role}} role at {{company}}. I build and ship production code across the stack, and I'm drawn to what your team is working on.\n\n{{experience_summary}}\n\nMy resume is attached with more detail on relevant projects and experience. Happy to share code samples or walk through anything in more depth \u2014 would welcome the chance to talk.\n\nBest regards,\n{{sender_name}}\n{{sender_phone}} | {{sender_email}}\n{{sender_linkedin}}\n{{sender_github}}\n"};
+
+const MASTER_TEMPLATES_COLLECTION = [
+  { id: '1_mastermind_comprehensive', name: '⭐ 1 — Mastermind Comprehensive (Shivam Gupta Exact)' },
+  { id: '2_quant_algo_trader', name: '📈 2 — Quant & Algorithmic Trading Specialist' },
+  { id: '3_ai_ml_engineer', name: '🤖 3 — AI / ML Systems & LLM Pipelines' },
+  { id: '4_fullstack_sde', name: '💻 4 — Full-Stack SDE (Next.js 15 & FastAPI)' },
+  { id: '5_short_startup_pitch', name: '🔥 5 — Ultra-Short Founder Pitch (Under 85 words)' },
+  { id: '6_alumni_referral', name: '🎓 6 — Alumni & Warm Referral Request' },
+  { id: '7_problem_solver_pitch', name: '🛠️ 7 — Problem-Solver / Value-First Pitch' },
+  { id: '8_fintech_investment_banking', name: '💼 8 — Fintech & Investment Banking Tech' },
+  { id: '9_immediate_availability', name: '⏳ 9 — Immediate Availability & 24hr Trial' },
+  { id: '10_follow_up_gentle', name: '🔄 10 — Gentle Follow-Up (2nd Touchpoint)' },
+  { id: '11_data_analyst_bi', name: '📊 11 — Data Analyst & Business Intelligence' }
+];
+
+function populateTemplateDropdown(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  if(!sel) return;
+
+  const activeTpl = localStorage.getItem('rsai_active_template') || '1_mastermind_comprehensive';
+
+  sel.innerHTML = MASTER_TEMPLATES_COLLECTION.map(t => {
+    const isSel = (t.id === activeTpl || t.id === activeTpl.replace('.txt','')) ? 'selected' : '';
+    return '<option value="' + t.id + '" ' + isSel + '>' + t.name + '</option>';
+  }).join('');
+}
+
+async function syncGate1LiveTemplateEditor(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplId = sel?.value || '1_mastermind_comprehensive';
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const subInp = document.getElementById('gate1EmailSubject');
+  if(!ta) return;
+
+  localStorage.setItem('rsai_active_template', tplId);
+
+  // 1. Instant load from ALL_MASTER_TEMPLATES map (0ms instant response)
+  let rawContent = ALL_MASTER_TEMPLATES[tplId] || ALL_MASTER_TEMPLATES[tplId + '.txt'] || ALL_MASTER_TEMPLATES['1_mastermind_comprehensive'] || '';
+
+  // 2. Fetch any custom user edits from server
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
+    const data = await res.json();
+    if(data.status === 'success' && data.content){
+      rawContent = data.content;
+      ALL_MASTER_TEMPLATES[tplId] = rawContent;
+    }
+  } catch(e){}
+
+  // 3. Extract Subject and Body
+  const lines = rawContent.split('\n');
+  if(lines[0].toLowerCase().startsWith('subject:')){
+    if(subInp) subInp.value = lines[0].substring(8).trim();
+    ta.value = lines.slice(1).join('\n').trim();
+  } else {
+    if(subInp) subInp.value = 'Application for Opportunities at {{company}} — Shivam Gupta';
+    ta.value = rawContent.trim();
+  }
+
+  updateGate1LivePreview();
+}
+
+function updateGate1LivePreview(){
+  const subInp = document.getElementById('gate1EmailSubject');
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const prevTo = document.getElementById('prevTo');
+  const prevSub = document.getElementById('prevSubject');
+  const prevBox = document.getElementById('gate1LivePreviewBox');
+  const prevAtt = document.getElementById('prevAttachment');
+  const resumeSel = document.getElementById('gate1DefaultResume');
+  const companyBadge = document.getElementById('gate1PreviewTargetCompany');
+
+  if(!ta || !prevBox) return;
+
+  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+
+  const sampleLead = {
+    name: 'Hiring Team',
+    email: 'careers@zerodha.com',
+    company: 'Zerodha',
+    role: 'Software Development / Quantitative Analyst'
+  };
+
+  if(companyBadge) companyBadge.textContent = 'Target: ' + sampleLead.company + ' (Row ' + startRow + ')';
+  if(prevTo) prevTo.textContent = sampleLead.email;
+
+  // Render Subject Preview
+  let rawSub = subInp?.value || 'Application for Opportunities at {{company}} — Shivam Gupta';
+  let renderedSub = rawSub
+    .replace(/\{\{company\}\}/gi, sampleLead.company)
+    .replace(/\{\{company_name\}\}/gi, sampleLead.company)
+    .replace(/\{\{role\}\}/gi, sampleLead.role)
+    .replace(/\{\{sender_name\}\}/gi, 'Shivam Gupta')
+    .replace(/\{\{recruiter_name\}\}/gi, sampleLead.name);
+  if(prevSub) prevSub.textContent = renderedSub;
+
+  // Render Body Preview
+  let rawBody = ta.value || '';
+  let renderedBody = rawBody
+    .replace(/\{\{recruiter_name\}\}/gi, sampleLead.name)
+    .replace(/\{\{company\}\}/gi, sampleLead.company)
+    .replace(/\{\{company_name\}\}/gi, sampleLead.company)
+    .replace(/\{\{role\}\}/gi, sampleLead.role)
+    .replace(/\{\{sender_name\}\}/gi, 'Shivam Gupta')
+    .replace(/\{\{sender_email\}\}/gi, 'quantxcoder@gmail.com')
+    .replace(/\{\{sender_phone\}\}/gi, '+91-8081513780')
+    .replace(/\{\{sender_github\}\}/gi, 'https://github.com/shivamjigkp')
+    .replace(/\{\{sender_linkedin\}\}/gi, 'https://linkedin.com/in/shivam-gupta-05209a279');
+
+  prevBox.textContent = renderedBody;
+
+  const resumeFile = resumeSel?.value || 'resume.pdf';
+  if(prevAtt) prevAtt.textContent = 'Attachment: ' + resumeFile;
+}
+
+async function saveGate1LiveTemplate(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplId = sel?.value || '1_mastermind_comprehensive';
+  const sub = document.getElementById('gate1EmailSubject')?.value || 'Application for Opportunities at {{company}} — Shivam Gupta';
+  const body = document.getElementById('gate1LiveTemplateContent')?.value || '';
+
+  const fullContent = 'Subject: ' + sub + '\n\n' + body;
+
+  ALL_MASTER_TEMPLATES[tplId] = fullContent;
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: fullContent })
+    });
+    const data = await res.json();
+    if(data.status === 'success'){
+      toast('💾 Saved template "' + tplId + '" successfully!', 'success', 3500);
+    } else {
+      toast('Saved template locally', 'info');
+    }
+  } catch(e){
+    toast('Saved template locally', 'info');
+  }
+}
 
