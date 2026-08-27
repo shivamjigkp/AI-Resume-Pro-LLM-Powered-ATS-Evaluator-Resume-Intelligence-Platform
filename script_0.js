@@ -1074,117 +1074,108 @@ function delProj(i){if(!confirm('Delete this project?'))return;D.proj.splice(i,1
 // label/URL (old freeform text like "Live Demo | GitHub" — still rendered
 // exactly as before, since it has no "::").
 function parseLinksField(raw){
-  if(!raw) return [];
-  return raw.split(/\s*\|\s*/).map(part=>part.trim()).filter(Boolean).map(part=>{
-    const idx=part.indexOf('::');
-    if(idx>-1) return {label:part.slice(0,idx).trim(), url:part.slice(idx+2).trim()};
-    return {label:part, url:''};
+  if(!raw || !raw.trim()) return [{label:'', url:''}];
+  const parts = raw.split(/\s*\|\s*/).map(p=>p.trim()).filter(Boolean);
+  if(!parts.length) return [{label:'', url:''}];
+  return parts.map(part=>{
+    const idx = part.indexOf('::');
+    if(idx > -1){
+      return { label: part.slice(0, idx).trim(), url: part.slice(idx + 2).trim() };
+    }
+    if(/^https?:\/\//i.test(part)){
+      return { label: 'Link', url: part };
+    }
+    return { label: part, url: '' };
   });
 }
+
 function serializeLinksField(rows){
+  if(!Array.isArray(rows)) return '';
   return rows.map(r=>{
-    const label=(r.label||'').trim(), url=(r.url||'').trim();
-    if(!label && !url) return '';
-    if(url) return `${label||'Link'}::${url}`;
-    return label;
+    const label = (r.label || '').trim();
+    const url = (r.url || '').trim();
+    if(url && label) return `${label}::${url}`;
+    if(url) return `Link::${url}`;
+    if(label) return `${label}::`;
+    return '';
   }).filter(Boolean).join(' | ');
 }
 
-function getResumeSvgIcon(type, customColor){
-  const c = customColor || 'var(--tpl-theme)';
-  const base = 'style="display:inline-block;vertical-align:-1.5px;width:11px;height:11px;margin-right:3px;color:' + c + ';fill:currentColor;flex-shrink:0;"';
-  switch(type){
-    case 'loc': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
-    case 'phone': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
-    case 'email': case 'mail': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>';
-    case 'li': case 'linkedin': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>';
-    case 'gh': case 'github': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>';
-    case 'leetcode': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .271 3.543 5.629 5.629 0 0 0 2.123 2.692l5.874 4.187a1.376 1.376 0 1 0 1.6-2.247l-5.873-4.187a2.88 2.88 0 0 1-1.087-1.377 2.827 2.827 0 0 1-.139-1.815 2.7 2.7 0 0 1 .62-1.077L9.07 8.523l4.953-5.308a1.378 1.378 0 0 0-.54-2.215zm6.51 14.156h-8.8a1.375 1.375 0 0 0 0 2.75h8.8a1.375 1.375 0 1 0 0-2.75z"/></svg>';
-    case 'gfg': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>';
-    case 'codeforces': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M4.5 7.5A1.5 1.5 0 0 1 6 9v10.5A1.5 1.5 0 0 1 4.5 21h-3A1.5 1.5 0 0 1 0 19.5V9a1.5 1.5 0 0 1 1.5-1.5h3zm7.5-4.5A1.5 1.5 0 0 1 13.5 4.5v15a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 7.5 19.5v-15A1.5 1.5 0 0 1 9 3h3zm7.5 9a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5h-3a1.5 1.5 0 0 1-1.5-1.5v-6a1.5 1.5 0 0 1 1.5-1.5h3z"/></svg>';
-    case 'globe': case 'port': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
-    case 'youtube': return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>';
-    default: return '<svg ' + base + ' viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>';
-  }
-}
-
-function iconForLink(label,url){
-  const hay = (label + ' ' + url).toLowerCase();
-  if(/github\.com/.test(hay)) return getResumeSvgIcon('github');
-  if(/youtube\.com|youtu\.be/.test(hay)) return getResumeSvgIcon('youtube');
-  if(/linkedin/.test(hay)) return getResumeSvgIcon('linkedin');
-  if(/leetcode/.test(hay)) return getResumeSvgIcon('leetcode');
-  if(/geeksforgeeks|gfg/.test(hay)) return getResumeSvgIcon('gfg');
-  if(/demo|live|vercel|netlify|preview/.test(hay)) return getResumeSvgIcon('globe');
-  return getResumeSvgIcon('link');
-}
-// Renders the "+ Add Link" row editor for one project (Text shown | Actual URL | ❌)
-
-// Renders the "+ Add Link" row editor for Experience (Text shown | Actual URL | ❌)
+// ── EXP LINKS ──
 function expLinksRowsHtml(i){
-  const rows=parseLinksField(D.exp[i].links);
-  if(!rows.length) rows.push({label:'',url:''});
-  return rows.map((r,idx)=>`
+  const rows = parseLinksField(D.exp[i].links);
+  return rows.map((r, idx)=>`
     <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;">
-      <input type="text" placeholder="Text/label to show (e.g. Live Demo / GitHub)" value="${(r.label||'').replace(/"/g,'&quot;')}" style="flex:1;padding:4px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateExpLinkRow(${i},${idx},'label',this.value)">
-      <input type="text" placeholder="Actual link (https://...)" value="${(r.url||'').replace(/"/g,'&quot;')}" style="flex:1.4;padding:4px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateExpLinkRow(${i},${idx},'url',this.value)">
+      <input type="text" placeholder="Text to show (e.g. GitHub / Demo)" value="${(r.label||'').replace(/"/g,'&quot;')}" style="flex:1;padding:4px 6px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateExpLinkRow(${i},${idx},'label',this.value)">
+      <input type="text" placeholder="Actual URL (https://...)" value="${(r.url||'').replace(/"/g,'&quot;')}" style="flex:1.4;padding:4px 6px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateExpLinkRow(${i},${idx},'url',this.value)">
       <button type="button" onclick="removeExpLinkRow(${i},${idx})" title="Remove this link" style="background:#fee2e2;border:none;color:#ef4444;padding:4px 7px;font-size:11px;border-radius:4px;cursor:pointer;font-weight:700;">❌</button>
     </div>`).join('')
     + `<button type="button" onclick="addExpLinkRow(${i})" style="margin-top:2px;padding:4px 8px;font-size:10px;font-weight:700;background:#eff6ff;border:1px dashed #2563eb;color:#2563eb;border-radius:4px;cursor:pointer;width:100%;text-align:center;">+ Add Link</button>`;
 }
+
 function addExpLinkRow(i){
-  const rows=parseLinksField(D.exp[i].links);
-  rows.push({label:'',url:''});
-  D.exp[i].links=serializeLinksField(rows);
-  renderExpEditor();render();
-}
-function removeExpLinkRow(i,idx){
-  const rows=parseLinksField(D.exp[i].links);
-  rows.splice(idx,1);
-  D.exp[i].links=serializeLinksField(rows);
-  renderExpEditor();render();
-}
-function updateExpLinkRow(i,idx,field,value){
-  const rows=parseLinksField(D.exp[i].links);
-  while(rows.length<=idx) rows.push({label:'',url:''});
-  rows[idx][field]=value;
-  D.exp[i].links=serializeLinksField(rows);
+  const rows = parseLinksField(D.exp[i].links).filter(r=>r.label || r.url);
+  const defaultLabel = rows.length === 0 ? 'Live Demo' : (rows.length === 1 ? 'GitHub' : 'Link');
+  rows.push({ label: defaultLabel, url: '' });
+  D.exp[i].links = serializeLinksField(rows);
+  renderExpEditor();
   render();
 }
 
+function removeExpLinkRow(i, idx){
+  let rows = parseLinksField(D.exp[i].links);
+  rows.splice(idx, 1);
+  if(!rows.length) rows = [];
+  D.exp[i].links = serializeLinksField(rows);
+  renderExpEditor();
+  render();
+}
+
+function updateExpLinkRow(i, idx, field, value){
+  const rows = parseLinksField(D.exp[i].links);
+  while(rows.length <= idx) rows.push({ label: '', url: '' });
+  rows[idx][field] = value;
+  D.exp[i].links = serializeLinksField(rows);
+  render();
+}
+
+// ── PROJ LINKS ──
 function projLinksRowsHtml(i){
-  const rows=parseLinksField(D.proj[i].links);
-  if(!rows.length) rows.push({label:'',url:''});
-  return rows.map((r,idx)=>`
+  const rows = parseLinksField(D.proj[i].links);
+  return rows.map((r, idx)=>`
     <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;">
-      <input type="text" placeholder="Text/label to show (e.g. Live Demo)" value="${(r.label||'').replace(/"/g,'&quot;')}" style="flex:1;padding:4px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateProjLinkRow(${i},${idx},'label',this.value)">
-      <input type="text" placeholder="Actual link (https://...)" value="${(r.url||'').replace(/"/g,'&quot;')}" style="flex:1.4;padding:4px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateProjLinkRow(${i},${idx},'url',this.value)">
+      <input type="text" placeholder="Text to show (e.g. Live Demo / GitHub)" value="${(r.label||'').replace(/"/g,'&quot;')}" style="flex:1;padding:4px 6px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateProjLinkRow(${i},${idx},'label',this.value)">
+      <input type="text" placeholder="Actual URL (https://...)" value="${(r.url||'').replace(/"/g,'&quot;')}" style="flex:1.4;padding:4px 6px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateProjLinkRow(${i},${idx},'url',this.value)">
       <button type="button" onclick="removeProjLinkRow(${i},${idx})" title="Remove this link" style="background:#fee2e2;border:none;color:#ef4444;padding:4px 7px;font-size:11px;border-radius:4px;cursor:pointer;font-weight:700;">❌</button>
     </div>`).join('')
     + `<button type="button" onclick="addProjLinkRow(${i})" style="margin-top:2px;padding:4px 8px;font-size:10px;font-weight:700;background:#eff6ff;border:1px dashed #2563eb;color:#2563eb;border-radius:4px;cursor:pointer;width:100%;text-align:center;">+ Add Link</button>`;
 }
+
 function addProjLinkRow(i){
-  const rows=parseLinksField(D.proj[i].links);
-  rows.push({label:'',url:''});
-  D.proj[i].links=serializeLinksField(rows);
-  renderProjEditor();render();
-}
-function removeProjLinkRow(i,idx){
-  const rows=parseLinksField(D.proj[i].links);
-  rows.splice(idx,1);
-  D.proj[i].links=serializeLinksField(rows);
-  renderProjEditor();render();
-}
-function updateProjLinkRow(i,idx,field,value){
-  // Only updates data + the live preview — never re-renders the editor DOM
-  // here, or the input would lose focus/caret position on every keystroke.
-  const rows=parseLinksField(D.proj[i].links);
-  while(rows.length<=idx) rows.push({label:'',url:''});
-  rows[idx][field]=value;
-  D.proj[i].links=serializeLinksField(rows);
+  const rows = parseLinksField(D.proj[i].links).filter(r=>r.label || r.url);
+  const defaultLabel = rows.length === 0 ? 'Live Demo' : (rows.length === 1 ? 'GitHub' : 'Link');
+  rows.push({ label: defaultLabel, url: '' });
+  D.proj[i].links = serializeLinksField(rows);
+  renderProjEditor();
   render();
 }
 
+function removeProjLinkRow(i, idx){
+  let rows = parseLinksField(D.proj[i].links);
+  rows.splice(idx, 1);
+  if(!rows.length) rows = [];
+  D.proj[i].links = serializeLinksField(rows);
+  renderProjEditor();
+  render();
+}
+
+function updateProjLinkRow(i, idx, field, value){
+  const rows = parseLinksField(D.proj[i].links);
+  while(rows.length <= idx) rows.push({ label: '', url: '' });
+  rows[idx][field] = value;
+  D.proj[i].links = serializeLinksField(rows);
+  render();
+}
 
 function setParseStep(stepNum, statusText){
   const overlay = document.getElementById('parseOverlay');
