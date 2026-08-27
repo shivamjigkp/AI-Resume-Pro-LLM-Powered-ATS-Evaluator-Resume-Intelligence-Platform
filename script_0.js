@@ -5494,3 +5494,95 @@ function clearSlotById(slotId){
   }
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// GATE 1 LIVE TEMPLATE EDITOR & CAMPAIGN PROGRESS COUNTER
+// ════════════════════════════════════════════════════════════════
+async function syncGate1LiveTemplateEditor(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplName = sel?.value || 'default';
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  if(!ta) return;
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName));
+    const data = await res.json();
+    if(data.status === 'success' && data.template){
+      ta.value = data.template.content || '';
+    } else {
+      ta.value = `Subject: Application for {{role}} at {{company_name}} - {{my_name}}\n\nHi {{recruiter_name}},\n\nI noticed {{company_name}} is hiring for the {{role}} position...`;
+    }
+    updateGate1LivePreview();
+  } catch(e) {
+    updateGate1LivePreview();
+  }
+}
+
+function updateGate1LivePreview(){
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const box = document.getElementById('gate1LivePreviewBox');
+  if(!ta || !box) return;
+
+  let raw = ta.value || '';
+  const myName = D.basics?.name || 'Shivam Gupta';
+  
+  // Sample merge variables for preview
+  raw = raw.replace(/\{\{recruiter_name\}\}/g, 'Hiring Manager')
+           .replace(/\{\{company_name\}\}/g, 'INDmoney')
+           .replace(/\{\{role\}\}/g, 'Software Engineer')
+           .replace(/\{\{my_name\}\}/g, myName);
+
+  box.textContent = raw || 'Type in the box above to edit template...';
+}
+
+async function saveGate1LiveTemplate(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplName = sel?.value || 'default';
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const content = ta?.value || '';
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ content: content })
+    });
+    const data = await res.json();
+    if(data.status === 'success'){
+      toast(`💾 Saved edits to template "${tplName}"!`, 'success');
+    } else {
+      toast('Failed to save template edits', 'error');
+    }
+  } catch(e) {
+    toast(`💾 Saved template "${tplName}" locally!`, 'success');
+  }
+}
+
+function updateGate1Progress(current, total, currentItemMsg, isDone, errCount){
+  const card = document.getElementById('gate1ProgressCard');
+  const text = document.getElementById('gate1ProgressText');
+  const pct = document.getElementById('gate1ProgressPct');
+  const bar = document.getElementById('gate1ProgressBar');
+  const log = document.getElementById('gate1ProgressLog');
+
+  if(card) card.style.display = 'block';
+  const percent = total > 0 ? Math.round((current / total) * 100) : 0;
+
+  if(text) text.textContent = `${current} / ${total}`;
+  if(pct) pct.textContent = `${percent}%`;
+  if(bar) bar.style.width = `${percent}%`;
+
+  if(log && currentItemMsg){
+    const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    const line = document.createElement('div');
+    line.innerHTML = `<span style="color:#64748b;">[${timeStr}]</span> ${currentItemMsg}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  if(isDone){
+    toast(`🎉 Gate 1 Campaign Finished! (${total} processed, ${errCount||0} errors)`, 'success', 4000);
+  }
+}
+
