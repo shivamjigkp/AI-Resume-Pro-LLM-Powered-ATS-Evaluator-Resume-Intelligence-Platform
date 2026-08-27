@@ -621,11 +621,9 @@ def upload_gate1_resume_endpoint():
 
 
 @app.route("/api/gate1/send-emails", methods=["POST"])
-def check_send_auth():
-    if not is_authorized(request):
-        return jsonify({"success": False, "error": "🔒 Unauthorized: Master PIN required (₹4,999 Pro Access)"}), 401
-
 def send_emails_endpoint():
+    if not is_authorized(request):
+        return jsonify({"status": "error", "detail": "🔒 Unauthorized: Master PIN required (₹4,999 Pro Access)"}), 401
     """
     Runs a Gate 1 cold-email campaign for a row range from the configured
     Google Sheet lead tracker. Validates emails, personalizes a role-matched
