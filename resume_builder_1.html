@@ -387,7 +387,7 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
   }
 
   /* By default only main resume prints */
-  #sgSection, #gate1Section { display: none !important; }
+  #sgSection, #gate1Section, #gate2Section, .no-print-section, .no-print { display: none !important; }
 
   /* SGResume print overrides */
   body.print-sg #paperWrap { display: none !important; }
@@ -1311,24 +1311,12 @@ body.allow-page-split #paper .rb li {
 
     </div>
   </div>
-</div>
+</div><!-- /gate1Section -->
 
-<div class="sg-section no-print-section" <div id="gate1LivePreviewBox" style="font-size:10.5px;color:#1e1b4b;line-height:1.5;white-space:pre-wrap;background:#fff;padding:10px;border-radius:6px;border:1px solid #c7d2fe;max-height:220px;overflow-y:auto;font-family:sans-serif;">Loading merged email preview...</div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-    </div>
-  </div>
-</div>
-
-
-id="gate2Section" style="display:none;background:#f8fafc;">
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- 🔍 GATE 2: LEAD DISCOVERY SECTION (HIDDEN BY DEFAULT, NO-PRINT) -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="sg-section no-print-section" id="gate2Section" style="display:none;background:#f8fafc;">
   <div class="sg-section-hdr no-print">
     <div>
       <div class="sg-section-title" style="color:#166534">🔍 Gate 2 — Lead Discovery</div>
