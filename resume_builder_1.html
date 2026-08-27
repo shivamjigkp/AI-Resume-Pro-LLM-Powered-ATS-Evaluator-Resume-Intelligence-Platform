@@ -1205,9 +1205,13 @@ body.allow-page-split #paper .rb li {
               <div id="gate1ResumeStatus" style="font-size:9.5px;color:#059669;font-weight:600;margin-top:3px;"></div>
             </div>
 
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-orange" onclick="runGate1FastDrafts()" id="btnFastDrafts" style="flex:1;justify-content:center;padding:10px;font-weight:800;font-size:13px;box-shadow:0 3px 10px rgba(249,115,22,0.3);">⚡ Create Drafts</button>
-              <button class="btn btn-primary" onclick="runGate1FastSend()" id="btnFastSend" style="display:none;flex:1;justify-content:center;padding:10px;font-weight:800;font-size:13px;">🚀 Send Now</button>
+            <div style="display:flex;gap:10px;margin-top:14px;">
+              <button type="button" class="btn btn-orange" onclick="runGate1Action('draft')" id="btnGate1Draft" style="flex:1;justify-content:center;padding:12px;font-weight:800;font-size:13px;box-shadow:0 3px 10px rgba(249,115,22,0.35);">
+                ⚡ Create Drafts (Test in Gmail)
+              </button>
+              <button type="button" class="btn" onclick="runGate1Action('send')" id="btnGate1Send" style="flex:1;justify-content:center;padding:12px;font-weight:800;font-size:13px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;box-shadow:0 3px 10px rgba(5,150,105,0.35);">
+                🚀 Send Directly (Send Now)
+              </button>
             </div>
           </div>
         </div>
@@ -7824,6 +7828,79 @@ async function uploadGate1PdfFile(event){
 
 // Auto call on Gate 1 open
 setTimeout(refreshGate1Resumes, 250);
+
+
+
+// ════════════════════════════════════════════════════════════════
+// ⚡ GATE 1 CAMPAIGN EXECUTION (DRAFTS & DIRECT SEND)
+// ════════════════════════════════════════════════════════════════
+async function runGate1Action(mode){
+  if(mode === 'send'){
+    if(!confirm('⚠️ ARE YOU SURE? This will SEND emails directly to the recipients via Gmail API without drafting.')) return;
+  }
+
+  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+  const endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  const sheetSel = document.getElementById('gate1ActiveSheet');
+  const sheetId = extractCleanSheetId(sheetSel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const tplSel = document.getElementById('gate1DefaultTemplate');
+  const templateName = tplSel?.value || 'default';
+  const resumeSel = document.getElementById('gate1DefaultResume');
+  const resumeFilename = resumeSel?.value || 'auto';
+
+  const senderProfile = {
+    name: D.basics?.name || 'Shivam Gupta',
+    email: D.basics?.email || 'quantxcoder@gmail.com',
+    phone: D.basics?.phone || '+91-8081513780',
+    linkedin: D.basics?.linkedin || 'https://linkedin.com/in/shivam-gupta-05209a279',
+    github: D.basics?.github || 'https://github.com/shivamjigkp'
+  };
+
+  const totalRows = Math.max(1, endRow - startRow + 1);
+  const card = document.getElementById('gate1ProgressCard');
+  if(card) card.style.display = 'block';
+
+  updateGate1Progress(0, totalRows, `🚀 Starting Gate 1 campaign: Rows ${startRow} to ${endRow}... Mode: ${mode.toUpperCase()}`);
+
+  const draftBtn = document.getElementById('btnGate1Draft');
+  const sendBtn = document.getElementById('btnGate1Send');
+  if(draftBtn) draftBtn.disabled = true;
+  if(sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/gate1/send-emails', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        mode: mode,
+        start_row: startRow,
+        end_row: endRow,
+        sheet_id: sheetId,
+        template_name: templateName,
+        resume_filename: resumeFilename,
+        sender_profile: senderProfile
+      })
+    });
+
+    const data = await res.json();
+    if(res.ok && data.status === 'success'){
+      updateGate1Progress(totalRows, totalRows, `✅ Campaign Complete! ${data.detail || 'Processed successfully.'}`, true, 0);
+      toast(`🎉 Gate 1: ${mode === 'draft' ? 'Drafts created in Gmail!' : 'Emails sent successfully!'} Check Gmail.`, 'success', 6000);
+      // Refresh leads table to show updated status
+      setTimeout(fetchAndRenderGate1Leads, 1500);
+    } else {
+      const errMsg = data.detail || data.error || 'Campaign failed to execute.';
+      updateGate1Progress(0, totalRows, `❌ Error: ${errMsg}`, false, 1);
+      toast(`Gate 1: ${errMsg}`, 'error', 6000);
+    }
+  } catch(err) {
+    updateGate1Progress(0, totalRows, `❌ Network Error: ${err.message}`, false, 1);
+    toast(`Network error connecting to backend: ${err.message}`, 'error');
+  } finally {
+    if(draftBtn) draftBtn.disabled = false;
+    if(sendBtn) sendBtn.disabled = false;
+  }
+}
 
 </script>
 

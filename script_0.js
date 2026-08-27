@@ -6194,3 +6194,76 @@ async function uploadGate1PdfFile(event){
 // Auto call on Gate 1 open
 setTimeout(refreshGate1Resumes, 250);
 
+
+
+// ════════════════════════════════════════════════════════════════
+// ⚡ GATE 1 CAMPAIGN EXECUTION (DRAFTS & DIRECT SEND)
+// ════════════════════════════════════════════════════════════════
+async function runGate1Action(mode){
+  if(mode === 'send'){
+    if(!confirm('⚠️ ARE YOU SURE? This will SEND emails directly to the recipients via Gmail API without drafting.')) return;
+  }
+
+  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+  const endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  const sheetSel = document.getElementById('gate1ActiveSheet');
+  const sheetId = extractCleanSheetId(sheetSel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const tplSel = document.getElementById('gate1DefaultTemplate');
+  const templateName = tplSel?.value || 'default';
+  const resumeSel = document.getElementById('gate1DefaultResume');
+  const resumeFilename = resumeSel?.value || 'auto';
+
+  const senderProfile = {
+    name: D.basics?.name || 'Shivam Gupta',
+    email: D.basics?.email || 'quantxcoder@gmail.com',
+    phone: D.basics?.phone || '+91-8081513780',
+    linkedin: D.basics?.linkedin || 'https://linkedin.com/in/shivam-gupta-05209a279',
+    github: D.basics?.github || 'https://github.com/shivamjigkp'
+  };
+
+  const totalRows = Math.max(1, endRow - startRow + 1);
+  const card = document.getElementById('gate1ProgressCard');
+  if(card) card.style.display = 'block';
+
+  updateGate1Progress(0, totalRows, `🚀 Starting Gate 1 campaign: Rows ${startRow} to ${endRow}... Mode: ${mode.toUpperCase()}`);
+
+  const draftBtn = document.getElementById('btnGate1Draft');
+  const sendBtn = document.getElementById('btnGate1Send');
+  if(draftBtn) draftBtn.disabled = true;
+  if(sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/gate1/send-emails', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        mode: mode,
+        start_row: startRow,
+        end_row: endRow,
+        sheet_id: sheetId,
+        template_name: templateName,
+        resume_filename: resumeFilename,
+        sender_profile: senderProfile
+      })
+    });
+
+    const data = await res.json();
+    if(res.ok && data.status === 'success'){
+      updateGate1Progress(totalRows, totalRows, `✅ Campaign Complete! ${data.detail || 'Processed successfully.'}`, true, 0);
+      toast(`🎉 Gate 1: ${mode === 'draft' ? 'Drafts created in Gmail!' : 'Emails sent successfully!'} Check Gmail.`, 'success', 6000);
+      // Refresh leads table to show updated status
+      setTimeout(fetchAndRenderGate1Leads, 1500);
+    } else {
+      const errMsg = data.detail || data.error || 'Campaign failed to execute.';
+      updateGate1Progress(0, totalRows, `❌ Error: ${errMsg}`, false, 1);
+      toast(`Gate 1: ${errMsg}`, 'error', 6000);
+    }
+  } catch(err) {
+    updateGate1Progress(0, totalRows, `❌ Network Error: ${err.message}`, false, 1);
+    toast(`Network error connecting to backend: ${err.message}`, 'error');
+  } finally {
+    if(draftBtn) draftBtn.disabled = false;
+    if(sendBtn) sendBtn.disabled = false;
+  }
+}
+
