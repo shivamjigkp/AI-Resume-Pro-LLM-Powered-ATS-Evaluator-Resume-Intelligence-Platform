@@ -745,19 +745,28 @@ body.allow-page-split #paper .rb li {
 
 
     <!-- SKILLS -->
+        <!-- SKILLS -->
     <div class="pane" id="pane-skills">
-      <div class="vis-toggle-row" style="margin-bottom:8px;">
+      <div class="vis-toggle-row">
         <span style="font-weight:800;font-size:12.5px">Technical Skills</span>
         <span id="visBtn-skills"></span>
       </div>
+      <div class="fg"><label>Languages / Programming</label><input id="sLang" placeholder="C, C++, Python, Verilog..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
+      <div class="fg"><label>Tools & Frameworks</label><input id="sTools" placeholder="MATLAB, React, Docker..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
+      <div class="fg"><label>Core Domain / Stack</label><input id="sDomain" placeholder="RTL Design, Embedded, Full Stack..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
+      <div class="fg"><label>Cloud / Databases</label><input id="sCloud" placeholder="Firebase, AWS, PostgreSQL..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
+      <div class="fg"><label>Coursework</label><input id="sCourse" placeholder="Microprocessors, VLSI, DSP, AI Fundamentals..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
       
-      <!-- Dynamic Skills Categories List -->
-      <div id="skillsCategoriesList" style="margin-bottom:10px;"></div>
-      
-      <!-- Add Skill Category Button -->
-      <button type="button" class="btn btn-outline" style="width:100%;font-size:11px;font-weight:800;margin-bottom:12px;border:1.5px dashed #6366f1;color:#4f46e5;background:#f5f3ff;padding:8px;" onclick="addSkillCategory()">+ Add New Skill Category</button>
+      <!-- Additional / Custom Skill Categories -->
+      <div style="margin-top:14px;padding-top:10px;border-top:1.5px dashed #cbd5e1;">
+        <div style="font-size:11px;font-weight:800;color:#4338ca;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+          <span>➕ Additional Custom Skill Categories:</span>
+          <button type="button" class="btn btn-outline btn-xs" style="font-size:9.5px;font-weight:700;color:#4f46e5;border-color:#c7d2fe;background:#eff6ff;" onclick="addCustomSkillRow()">+ Add Category</button>
+        </div>
+        <div id="customSkillsContainer"></div>
+      </div>
 
-      <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:9px 11px">
+      <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:9px 11px;margin-top:12px;">
         <label class="mini-toggle"><input type="checkbox" id="chkCertsTop" onchange="D.showCertsTop=this.checked;render()"> 📍 Show Certifications inline in Technical Skills (comma-separated, one line)</label>
         <div style="font-size:9.5px;color:#6b21a8;margin-top:4px;line-height:1.4">Certifications ka full list Education tab mein hai — wahan bhi apni alag Show/Hide toggle se independently control hoti hai, taaki duplicate na ho.</div>
       </div>
@@ -4541,24 +4550,18 @@ function render(){
   const showCourseInSkills = !!D.showCertsTop && certList.length;
   const courseInlineText = showCourseInSkills ? certList.map(c=>parseCertEntry(c).label).filter(Boolean).join(', ') : '';
 
-  const skillsListActive = (Array.isArray(D.skillsList) && D.skillsList.length) ? D.skillsList.filter(it=>it.val && it.val.trim()) : null;
-  const hasSk = vis.skills!==false && ((skillsListActive && skillsListActive.length) || s.lang || s.tools || s.domain || s.cloud || s.course || showCourseInSkills);
-  let renderedSkillsGrid = '';
-  if(skillsListActive && skillsListActive.length){
-    renderedSkillsGrid = skillsListActive.map(it=>`<div class="rsk">${it.label || 'Skills'}:</div><div class="rsv">${it.val}</div>`).join('');
-  } else {
-    renderedSkillsGrid = `
-      ${s.lang?`<div class="rsk">Languages:</div><div class="rsv">${s.lang}</div>`:''}
-      ${s.tools?`<div class="rsk">Tools & Frameworks:</div><div class="rsv">${s.tools}</div>`:''}
-      ${s.domain?`<div class="rsk">Domain / Stack:</div><div class="rsv">${s.domain}</div>`:''}
-      ${s.cloud?`<div class="rsk">Cloud / Databases:</div><div class="rsv">${s.cloud}</div>`:''}
-      ${s.course?`<div class="rsk">Coursework:</div><div class="rsv">${s.course}</div>`:''}
-    `;
-  }
-  if(showCourseInSkills && courseInlineText){
-    renderedSkillsGrid += `<div class="rsk">Certifications:</div><div class="rsv">${courseInlineText}</div>`;
-  }
-  const skills = hasSk ? `<div class="rs">Technical Skills</div><div class="rsg">${renderedSkillsGrid}</div>`:'';
+  const customSkillsActive = (Array.isArray(D.customSkills) && D.customSkills.length) ? D.customSkills.filter(it=>it.val && it.val.trim()) : [];
+  const hasSk = vis.skills!==false && (s.lang || s.tools || s.domain || s.cloud || s.course || customSkillsActive.length || showCourseInSkills);
+  let customSkillsHtml = customSkillsActive.map(it=>`<div class="rsk">${it.label || 'Skills'}:</div><div class="rsv">${it.val}</div>`).join('');
+  const skills = hasSk ? `<div class="rs">Technical Skills</div><div class="rsg">
+    ${s.lang?`<div class="rsk">Languages:</div><div class="rsv">${s.lang}</div>`:''}
+    ${s.tools?`<div class="rsk">Tools & Frameworks:</div><div class="rsv">${s.tools}</div>`:''}
+    ${s.domain?`<div class="rsk">Domain / Stack:</div><div class="rsv">${s.domain}</div>`:''}
+    ${s.cloud?`<div class="rsk">Cloud / Databases:</div><div class="rsv">${s.cloud}</div>`:''}
+    ${s.course?`<div class="rsk">Coursework:</div><div class="rsv">${s.course}</div>`:''}
+    ${customSkillsHtml}
+    ${showCourseInSkills?`<div class="rsk">Certifications:</div><div class="rsv">${courseInlineText}</div>`:''}
+  </div>`:'';
 
   const exp=(vis.exp!==false && (D.exp||[]).length)?`<div class="rs">Professional Experience</div>`+
     D.exp.map(x=>{
@@ -8407,7 +8410,7 @@ function addSkillCategory(){
   list.push({ key: 'custom_' + Date.now(), label: 'New Skill Category', val: '' });
   D.skillsList = list;
   syncSkillsToD();
-  renderSkillsEditor();
+  renderCustomSkillsEditor();
   render();
 }
 
@@ -8416,7 +8419,7 @@ function removeSkillCategory(idx){
   list.splice(idx, 1);
   D.skillsList = list;
   syncSkillsToD();
-  renderSkillsEditor();
+  renderCustomSkillsEditor();
   render();
   liveATS();
 }

@@ -2859,24 +2859,18 @@ function render(){
   const showCourseInSkills = !!D.showCertsTop && certList.length;
   const courseInlineText = showCourseInSkills ? certList.map(c=>parseCertEntry(c).label).filter(Boolean).join(', ') : '';
 
-  const skillsListActive = (Array.isArray(D.skillsList) && D.skillsList.length) ? D.skillsList.filter(it=>it.val && it.val.trim()) : null;
-  const hasSk = vis.skills!==false && ((skillsListActive && skillsListActive.length) || s.lang || s.tools || s.domain || s.cloud || s.course || showCourseInSkills);
-  let renderedSkillsGrid = '';
-  if(skillsListActive && skillsListActive.length){
-    renderedSkillsGrid = skillsListActive.map(it=>`<div class="rsk">${it.label || 'Skills'}:</div><div class="rsv">${it.val}</div>`).join('');
-  } else {
-    renderedSkillsGrid = `
-      ${s.lang?`<div class="rsk">Languages:</div><div class="rsv">${s.lang}</div>`:''}
-      ${s.tools?`<div class="rsk">Tools & Frameworks:</div><div class="rsv">${s.tools}</div>`:''}
-      ${s.domain?`<div class="rsk">Domain / Stack:</div><div class="rsv">${s.domain}</div>`:''}
-      ${s.cloud?`<div class="rsk">Cloud / Databases:</div><div class="rsv">${s.cloud}</div>`:''}
-      ${s.course?`<div class="rsk">Coursework:</div><div class="rsv">${s.course}</div>`:''}
-    `;
-  }
-  if(showCourseInSkills && courseInlineText){
-    renderedSkillsGrid += `<div class="rsk">Certifications:</div><div class="rsv">${courseInlineText}</div>`;
-  }
-  const skills = hasSk ? `<div class="rs">Technical Skills</div><div class="rsg">${renderedSkillsGrid}</div>`:'';
+  const customSkillsActive = (Array.isArray(D.customSkills) && D.customSkills.length) ? D.customSkills.filter(it=>it.val && it.val.trim()) : [];
+  const hasSk = vis.skills!==false && (s.lang || s.tools || s.domain || s.cloud || s.course || customSkillsActive.length || showCourseInSkills);
+  let customSkillsHtml = customSkillsActive.map(it=>`<div class="rsk">${it.label || 'Skills'}:</div><div class="rsv">${it.val}</div>`).join('');
+  const skills = hasSk ? `<div class="rs">Technical Skills</div><div class="rsg">
+    ${s.lang?`<div class="rsk">Languages:</div><div class="rsv">${s.lang}</div>`:''}
+    ${s.tools?`<div class="rsk">Tools & Frameworks:</div><div class="rsv">${s.tools}</div>`:''}
+    ${s.domain?`<div class="rsk">Domain / Stack:</div><div class="rsv">${s.domain}</div>`:''}
+    ${s.cloud?`<div class="rsk">Cloud / Databases:</div><div class="rsv">${s.cloud}</div>`:''}
+    ${s.course?`<div class="rsk">Coursework:</div><div class="rsv">${s.course}</div>`:''}
+    ${customSkillsHtml}
+    ${showCourseInSkills?`<div class="rsk">Certifications:</div><div class="rsv">${courseInlineText}</div>`:''}
+  </div>`:'';
 
   const exp=(vis.exp!==false && (D.exp||[]).length)?`<div class="rs">Professional Experience</div>`+
     D.exp.map(x=>{
@@ -6725,7 +6719,7 @@ function addSkillCategory(){
   list.push({ key: 'custom_' + Date.now(), label: 'New Skill Category', val: '' });
   D.skillsList = list;
   syncSkillsToD();
-  renderSkillsEditor();
+  renderCustomSkillsEditor();
   render();
 }
 
@@ -6734,7 +6728,7 @@ function removeSkillCategory(idx){
   list.splice(idx, 1);
   D.skillsList = list;
   syncSkillsToD();
-  renderSkillsEditor();
+  renderCustomSkillsEditor();
   render();
   liveATS();
 }
