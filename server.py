@@ -716,14 +716,26 @@ def verify_master_pin_route():
 @app.route("/api/gate1/sheet-rows", methods=["GET"])
 def get_gate1_sheet_rows_endpoint():
     """Fetches active real lead rows from Google Sheet."""
-    sheet_id = request.args.get("sheet_id", "").strip() or os.getenv("GOOGLE_SHEET_ID", "1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI")
+    raw_id = request.args.get("sheet_id", "").strip() or os.getenv("GOOGLE_SHEET_ID", "1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI")
+    
+    # Extract clean 25+ char Google Sheet ID
+    m = re.search(r'([a-zA-Z0-9-_]{25,})', raw_id)
+    sheet_id = m.group(1) if m else "1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI"
+
     try:
         from gate1.google_auth import get_credentials
         from googleapiclient.discovery import build
         creds = get_credentials()
         service = build("sheets", "v4", credentials=creds)
-        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:F50").execute()
-        raw_rows = result.get("values", [])
+        
+        # Try fetching 'Leads' tab range first, fallback to default range
+        raw_rows = []
+        try:
+            res = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="Leads!A1:F100").execute()
+            raw_rows = res.get("values", [])
+        except Exception:
+            res = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:F100").execute()
+            raw_rows = res.get("values", [])
         
         parsed = []
         if len(raw_rows) > 1:
@@ -731,7 +743,7 @@ def get_gate1_sheet_rows_endpoint():
                 if any(r):
                     parsed.append({
                         "row": idx,
-                        "name": r[0] if len(r)>0 else "Hiring Team",
+                        "name": r[0] if len(r)>0 and r[0].strip() else "Hiring Team",
                         "email": r[1] if len(r)>1 else "",
                         "company": r[2] if len(r)>2 else "",
                         "role": r[3] if len(r)>3 else "",
@@ -739,5 +751,5 @@ def get_gate1_sheet_rows_endpoint():
                     })
         return jsonify({"status": "success", "sheet_id": sheet_id, "rows": parsed})
     except Exception as e:
-        logger.error(f"Error fetching sheet rows: {e}")
+        logger.error(f"Error fetching sheet rows for {sheet_id}: {e}")
         return jsonify({"status": "error", "detail": str(e)}), 500

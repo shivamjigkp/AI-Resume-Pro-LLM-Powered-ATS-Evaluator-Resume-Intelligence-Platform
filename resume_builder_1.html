@@ -7354,7 +7354,7 @@ async function fetchAndRenderGate1Leads(){
   if(!box) return;
 
   const sel = document.getElementById('gate1ActiveSheet');
-  const sheetId = sel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI';
+  const sheetId = extractCleanSheetId(sel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
 
   box.innerHTML = '<div style="padding:10px;color:#6366f1;text-align:center;font-weight:600;">🔄 Fetching real Google Sheet rows...</div>';
 
@@ -7481,16 +7481,14 @@ window.openGate1Panel = function(){
 // 📊 ROBUST GATE 1 SHEET & TEMPLATE REGISTRY (NEVER EMPTY DROPDOWNS)
 // ════════════════════════════════════════════════════════════════
 const DEFAULT_SHEETS_FALLBACK = [
-  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'SHIVAM (Default)', key: 'shivam_default' },
-  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'Software Lead Tracker', key: 'software_leads' }
+  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'SHIVAM (Default Sheet)', key: 'shivam_default' }
 ];
 
-const DEFAULT_TEMPLATES_FALLBACK = [
-  { name: 'default', label: '1 — Default Cold Email Template' },
-  { name: 'software_engineer', label: '2 — Software Engineer / AI-ML Outreach' },
-  { name: 'data_science', label: '3 — Data Science & Analytics' },
-  { name: 'quant_developer', label: '4 — Quant Developer & Algo Trader' }
-];
+function extractCleanSheetId(str){
+  if(!str) return '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI';
+  const m = str.match(/([a-zA-Z0-9-_]{25,})/);
+  return m ? m[1] : str.trim();
+}
 
 function getStoredSheets(){
   try{
@@ -7500,6 +7498,8 @@ function getStoredSheets(){
       sheets = DEFAULT_SHEETS_FALLBACK;
       localStorage.setItem('rsai_gate1_sheets', JSON.stringify(sheets));
     }
+    // Sanitize all sheet IDs
+    sheets.forEach(s => { s.id = extractCleanSheetId(s.id); });
     return sheets;
   }catch(e){
     return DEFAULT_SHEETS_FALLBACK;
