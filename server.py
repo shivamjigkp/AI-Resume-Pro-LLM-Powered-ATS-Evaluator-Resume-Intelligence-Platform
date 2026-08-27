@@ -711,3 +711,33 @@ def verify_master_pin_route():
     if pin == correct_pin:
         return jsonify({"success": True, "message": "Authenticated"})
     return jsonify({"success": False, "error": "Invalid PIN"}), 401
+
+
+@app.route("/api/gate1/sheet-rows", methods=["GET"])
+def get_gate1_sheet_rows_endpoint():
+    """Fetches active real lead rows from Google Sheet."""
+    sheet_id = request.args.get("sheet_id", "").strip() or os.getenv("GOOGLE_SHEET_ID", "1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI")
+    try:
+        from gate1.google_auth import get_credentials
+        from googleapiclient.discovery import build
+        creds = get_credentials()
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:F50").execute()
+        raw_rows = result.get("values", [])
+        
+        parsed = []
+        if len(raw_rows) > 1:
+            for idx, r in enumerate(raw_rows[1:], start=2):
+                if any(r):
+                    parsed.append({
+                        "row": idx,
+                        "name": r[0] if len(r)>0 else "Hiring Team",
+                        "email": r[1] if len(r)>1 else "",
+                        "company": r[2] if len(r)>2 else "",
+                        "role": r[3] if len(r)>3 else "",
+                        "status": r[4] if len(r)>4 else "Pending"
+                    })
+        return jsonify({"status": "success", "sheet_id": sheet_id, "rows": parsed})
+    except Exception as e:
+        logger.error(f"Error fetching sheet rows: {e}")
+        return jsonify({"status": "error", "detail": str(e)}), 500
