@@ -2765,8 +2765,14 @@ function delProj(i){if(!confirm('Delete this project?'))return;D.proj.splice(i,1
 // label/URL (old freeform text like "Live Demo | GitHub" — still rendered
 // exactly as before, since it has no "::").
 function parseLinksField(raw){
-  if(!raw || !raw.trim()) return [{label:'', url:''}];
-  const parts = raw.split(/\s*\|\s*/).map(p=>p.trim()).filter(Boolean);
+  if(!raw) return [{label:'', url:''}];
+  if(Array.isArray(raw)){
+    return raw.length ? raw.map(r=>({label:r.label||r.name||'', url:r.url||r.link||''})) : [{label:'', url:''}];
+  }
+  if(typeof raw !== 'string') return [{label:'', url:''}];
+  const str = raw.trim();
+  if(!str) return [{label:'', url:''}];
+  const parts = str.split(/\s*\|\s*/).map(p=>p.trim()).filter(Boolean);
   if(!parts.length) return [{label:'', url:''}];
   return parts.map(part=>{
     const idx = part.indexOf('::');
@@ -7158,19 +7164,42 @@ function loadSlotById(slotId){
   if(hasCurrentContent && !confirm(`Load "${s.name}"? This will replace whatever is currently filled in.`)) return;
 
   try {
-    D = JSON.parse(JSON.stringify(s.data));
-    if(!D.basics) D.basics={};
-    if(!Array.isArray(D.exp)) D.exp=[];
-    if(!Array.isArray(D.proj)) D.proj=[];
-    if(!Array.isArray(D.ach)) D.ach=[];
-    if(!Array.isArray(D.certs)) D.certs=[];
-    if(!Array.isArray(D.eduExtra)) D.eduExtra=[];
-    if(!D.sectionVisibility) D.sectionVisibility=defaultVisibility();
-    populateForm(); render(); liveATS();
+    const rawData = JSON.parse(JSON.stringify(s.data));
+    D = {
+      basics: rawData.basics || {},
+      skills: rawData.skills || { lang:'', tools:'', domain:'', cloud:'', course:'' },
+      edu: rawData.edu || { uni:'', deg:'', yrs:'', gpa:'' },
+      eduExtra: Array.isArray(rawData.eduExtra) ? rawData.eduExtra : [],
+      exp: Array.isArray(rawData.exp) ? rawData.exp.map(x=>({
+        co: x.co || x.company || '',
+        role: x.role || x.position || '',
+        date: x.date || x.duration || '',
+        loc: x.loc || x.location || '',
+        links: x.links || x.link || '',
+        bullets: Array.isArray(x.bullets) ? x.bullets : (x.bullet ? [x.bullet] : [])
+      })) : [],
+      proj: Array.isArray(rawData.proj) ? rawData.proj.map(p=>({
+        title: p.title || p.name || '',
+        tech: p.tech || p.technologies || '',
+        links: p.links || p.link || '',
+        bullets: Array.isArray(p.bullets) ? p.bullets : (p.bullet ? [p.bullet] : [])
+      })) : [],
+      ach: Array.isArray(rawData.ach) ? rawData.ach : (Array.isArray(rawData.achievements) ? rawData.achievements : []),
+      certs: Array.isArray(rawData.certs) ? rawData.certs : (Array.isArray(rawData.certifications) ? rawData.certifications : []),
+      customSkills: Array.isArray(rawData.customSkills) ? rawData.customSkills : [],
+      sectionVisibility: rawData.sectionVisibility || defaultVisibility(),
+      showCertsTop: !!rawData.showCertsTop,
+      outreach: rawData.outreach || {}
+    };
+
+    populateForm();
+    render();
+    liveATS();
     swTab('basics');
     toast(`📂 Loaded "${s.name}" (Slot ${slotId}) successfully!`, 'success', 3500);
   } catch(err) {
-    toast(`Failed to load Slot ${slotId}`, 'error');
+    console.error("Failed to load slot:", err);
+    toast(`Failed to load Slot ${slotId}: ${err.message}`, 'error', 6000);
   }
 }
 
