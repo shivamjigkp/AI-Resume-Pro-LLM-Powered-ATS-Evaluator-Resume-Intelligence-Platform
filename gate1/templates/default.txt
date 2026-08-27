@@ -1,26 +1,30 @@
-Subject: Application for {{role}} at {{company}} — {{sender_name}}
+Subject: Application for {{role}} at {{company}} — Shivam Gupta
 
 Dear {{recruiter_name}},
 
 I hope you're doing well.
 
-I'm {{sender_name}}, a B.Tech student ({{branch}}) at {{college}}, with hands-on experience in machine learning, full-stack development, algorithmic & quantitative trading. I am also founder of Mastermind Research Technologies.
+I'm Shivam Gupta, a B.Tech student (ECE – Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, algorithmic backtesting, and quantitative trading.
 
-I'm writing to express interest in {{role}} opportunities (internship or entry-level job) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.
+I'm writing to express interest in {{role}} opportunities (internship or entry-level) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.
 
-{{experience_summary}}
+A quick snapshot of my work:
+- Built and deployed end-to-end ML pipelines (XGBoost, TensorFlow, Scikit-learn) for forecasting problems, deployed via Flask/FastAPI on AWS and Docker, with experiments tracked in MLflow
+- Full-stack projects in production: a Next.js/FastAPI/Supabase platform, an electricity demand forecasting app, and a weather intelligence app
+- Designed and backtested a price-action algorithmic trading strategy (Pine Script v5 + Python), including a live backtesting dashboard with Monte Carlo simulation, AdaBoost, and risk metrics
+- Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)
+- Certifications: Machine Learning – Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification
 
 Across these projects, I've consistently focused on translating data into deployable, production-ready solutions rather than just models on paper.
 
 My resume is attached for your reference. You're welcome to look through my work here:
-GitHub: {{sender_github}}
-LinkedIn: {{sender_linkedin}}
-{{other_links}}
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
 
 I'm available to start immediately and open to both internship and full-time opportunities, whichever fits best with your current openings.
 
 I'd really appreciate a few minutes of your time to discuss any suitable openings at {{company}}, or to be considered for future roles. Thank you for your time and consideration.
 
 Warm regards,
-{{sender_name}}
-{{sender_phone}} | {{sender_email}}
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

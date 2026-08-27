@@ -1164,28 +1164,7 @@ body.allow-page-split #paper .rb li {
           </div>
         </div>
 
-        <!-- CARD: SENDER PROFILE & OUTREACH DETAILS -->
-        <div style="background:#fff;border:1.5px solid #6366f1;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 4px 12px rgba(99,102,241,0.08);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #ede9fe;">
-            <div style="font-weight:900;font-size:12.5px;color:#3730a3;display:flex;align-items:center;gap:6px;">
-              <span>👤</span> Outreach Sender Details (Auto-Fills in Templates)
-            </div>
-            <button type="button" class="btn btn-outline btn-xs" onclick="toggleGate1ProfileCard()" style="font-size:10px;font-weight:700;color:#6366f1;border-color:#c7d2fe;">⚙️ Edit Profile Details ▾</button>
-          </div>
-
-          <div id="gate1ProfileFieldsContainer" style="display:none;margin-top:8px;">
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">Full Name ({{sender_name}}):</label>
-                <input type="text" id="g1_name" value="Shivam Gupta" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">College / University ({{college}}):</label>
-                <input type="text" id="g1_college" value="MMMUT, Gorakhpur" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-            </div>
-
-            <div class="row2" style="margin-bottom:8px;">
+        <div class="row2" style="margin-bottom:8px;">
               <div class="fg" style="margin-bottom:0;">
                 <label style="font-size:10.5px;font-weight:700;">Branch / Specialization ({{branch}}):</label>
                 <input type="text" id="g1_branch" value="ECE – Data Science & Machine Learning" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
@@ -1293,41 +1272,45 @@ body.allow-page-split #paper .rb li {
       </div>
 
       <!-- ════════════════════════════════════════════════════════════ -->
-      <!-- RIGHT COLUMN (40% WIDTH): LIVE TEMPLATE EDITOR & MERGED PREVIEW -->
+      <!-- RIGHT COLUMN (40% WIDTH): CHATGPT TEMPLATE EDITOR & LIVE PREVIEW -->
       <!-- ════════════════════════════════════════════════════════════ -->
-      <div style="flex:1;min-width:320px;">
+      <div style="flex:1.2;min-width:340px;">
         <div style="background:#fff;border:1.5px solid #6366f1;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(99,102,241,0.12);">
           
           <!-- Header Actions -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #ede9fe;">
-            <div style="font-weight:800;font-size:12.5px;color:#3730a3;display:flex;align-items:center;gap:6px;">
-              <span>📧</span> Template & Live Message Preview
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #ede9fe;">
+            <div>
+              <div style="font-weight:900;font-size:13px;color:#3730a3;display:flex;align-items:center;gap:6px;">
+                <span>📧</span> Email Template (Paste from ChatGPT)
+              </div>
+              <div style="font-size:9.5px;color:#6b7280;font-weight:600;">Only 3 placeholders needed: <code>{{recruiter_name}}</code>, <code>{{company}}</code>, <code>{{role}}</code></div>
             </div>
             <div style="display:flex;gap:6px;">
-              <button type="button" class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;font-size:10px;padding:4px 9px;border:none;" onclick="openAiEmailWriterModal()">🤖 AI Template Writer</button>
-              <button type="button" class="btn btn-outline btn-xs" onclick="saveGate1LiveTemplate()" style="font-size:10px;font-weight:700;color:#4f46e5;border-color:#c7d2fe;">💾 Save</button>
+              <button type="button" class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;font-size:10px;padding:4px 9px;border:none;" onclick="openAiEmailWriterModal()">🤖 AI Writer</button>
+              <button type="button" class="btn btn-purple btn-xs" onclick="saveGate1LiveTemplate()" style="font-size:10px;font-weight:800;padding:4px 10px;">💾 Save Template</button>
             </div>
           </div>
 
-          <!-- Editable Template Textarea -->
+          <!-- Full Raw Template Textarea -->
           <div style="margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <label style="font-size:10.5px;font-weight:700;color:#374151;">Edit Raw Email Template Code:</label>
-              <span style="font-size:9.5px;color:#6366f1;font-weight:600;">Placeholders: {{recruiter_name}}, {{company}}, {{role}}</span>
-            </div>
-            <textarea id="gate1LiveTemplateContent" rows="8" style="width:100%;padding:8px 10px;font-size:11px;border:1.5px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-family:inherit;line-height:1.45;color:#1e293b;" oninput="updateGate1LivePreview()"></textarea>
+            <textarea id="gate1LiveTemplateContent" rows="13" placeholder="Paste your complete email template here..." style="width:100%;padding:9px 11px;font-size:11px;border:1.5px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-family:inherit;line-height:1.45;color:#1e293b;resize:vertical;" oninput="updateGate1LivePreview()"></textarea>
           </div>
 
           <!-- Live Rendered Email Message Preview Box -->
           <div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:8px;padding:10px;">
-            <div style="font-weight:800;font-size:10px;color:#5b21b6;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;display:flex;align-items:center;gap:4px;">
-              <span>👁️</span> Live Rendered Email Preview (Realtime Merge):
+            <div style="font-weight:800;font-size:10.5px;color:#5b21b6;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="display:flex;align-items:center;gap:4px;"><span>👁️</span> LIVE RENDERED PREVIEW (What Recruiter Sees):</span>
+              <span style="font-size:9.5px;color:#7c3aed;font-weight:700;">Company: BRIDGEi2i Analytics</span>
             </div>
-            <div id="gate1LivePreviewBox" style="font-size:10.5px;color:#1e1b4b;line-height:1.45;white-space:pre-wrap;background:#fff;padding:10px;border-radius:6px;border:1px solid #c7d2fe;max-height:220px;overflow-y:auto;font-family:sans-serif;">Loading merged email preview...</div>
+            <div id="gate1LivePreviewBox" style="font-size:10.5px;color:#1e1b4b;line-height:1.5;white-space:pre-wrap;background:#fff;padding:10px;border-radius:6px;border:1px solid #c7d2fe;max-height:220px;overflow-y:auto;font-family:sans-serif;">Loading merged email preview...</div>
           </div>
 
         </div>
       </div>
+
+    </div>
+  </div>
+</div>
 
     </div>
   </div>
@@ -8113,6 +8096,104 @@ setTimeout(() => {
   loadGate1ProfileFieldsToUI();
   updateGate1LivePreview();
 }, 300);
+
+
+
+// ════════════════════════════════════════════════════════════════
+// 📧 CHATGPT DIRECT TEMPLATE ENGINE (SIMPLE & POWERFUL)
+// ════════════════════════════════════════════════════════════════
+const EXACT_SHIVAM_MASTER_TEMPLATE = `Subject: Application for {{role}} at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I hope you're doing well.
+
+I'm Shivam Gupta, a B.Tech student (ECE – Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, algorithmic backtesting, and quantitative trading.
+
+I'm writing to express interest in {{role}} opportunities (internship or entry-level) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.
+
+A quick snapshot of my work:
+- Built and deployed end-to-end ML pipelines (XGBoost, TensorFlow, Scikit-learn) for forecasting problems, deployed via Flask/FastAPI on AWS and Docker, with experiments tracked in MLflow
+- Full-stack projects in production: a Next.js/FastAPI/Supabase platform, an electricity demand forecasting app, and a weather intelligence app
+- Designed and backtested a price-action algorithmic trading strategy (Pine Script v5 + Python), including a live backtesting dashboard with Monte Carlo simulation, AdaBoost, and risk metrics
+- Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)
+- Certifications: Machine Learning – Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification
+
+Across these projects, I've consistently focused on translating data into deployable, production-ready solutions rather than just models on paper.
+
+My resume is attached for your reference. You're welcome to look through my work here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I'm available to start immediately and open to both internship and full-time opportunities, whichever fits best with your current openings.
+
+I'd really appreciate a few minutes of your time to discuss any suitable openings at {{company}}, or to be considered for future roles. Thank you for your time and consideration.
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com`;
+
+async function syncGate1LiveTemplateEditor(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplName = sel?.value || 'default';
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  if(!ta) return;
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName));
+    const data = await res.json();
+    if(data.status === 'success' && data.template && data.template.content){
+      ta.value = data.template.content;
+    } else {
+      ta.value = EXACT_SHIVAM_MASTER_TEMPLATE;
+    }
+  } catch(e) {
+    ta.value = EXACT_SHIVAM_MASTER_TEMPLATE;
+  }
+  updateGate1LivePreview();
+}
+
+function updateGate1LivePreview(){
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const box = document.getElementById('gate1LivePreviewBox');
+  if(!ta || !box) return;
+
+  let raw = ta.value || '';
+  if(!raw.trim()){
+    raw = EXACT_SHIVAM_MASTER_TEMPLATE;
+    ta.value = raw;
+  }
+
+  // Simple direct replacement of only 3 placeholders:
+  let merged = raw
+    .replace(/\{\{recruiter_name\}\}/gi, 'Preeth')
+    .replace(/\{\{company_name\}\}/gi, 'BRIDGEi2i Analytics Solutions')
+    .replace(/\{\{company\}\}/gi, 'BRIDGEi2i Analytics Solutions')
+    .replace(/\{\{role\}\}/gi, 'Data Science, Machine Learning, Full-Stack, or Quantitative Analyst');
+
+  box.textContent = merged;
+}
+
+function populateTemplateDropdown(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  if(!sel) return;
+  
+  const templates = [
+    { name: 'default', label: '⭐ 1 — Mastermind Official (Shivam Gupta Exact)' },
+    { name: 'mastermind_official', label: '⭐ 2 — Mastermind ChatGPT Exact' },
+    { name: 'quant_algo_trader', label: '📈 3 — Quant & Algorithmic Trading Specialist' },
+    { name: 'ai_ml_engineer', label: '🤖 4 — AI / ML Systems & LLM Pipelines' },
+    { name: 'fullstack_sde', label: '💻 5 — Full-Stack SDE (Next.js 15 & FastAPI)' },
+    { name: 'short_startup_pitch', label: '🔥 6 — Ultra-Short Startup Pitch (Under 90 words)' }
+  ];
+
+  const activeTpl = localStorage.getItem('rsai_active_template') || 'default';
+
+  sel.innerHTML = templates.map(t => {
+    const isSel = (t.name === activeTpl) ? 'selected' : '';
+    return `<option value="${t.name}" ${isSel}>${t.label || t.name}</option>`;
+  }).join('');
+}
 
 </script>
 

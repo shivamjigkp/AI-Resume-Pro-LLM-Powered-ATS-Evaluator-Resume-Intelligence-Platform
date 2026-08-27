@@ -6417,3 +6417,101 @@ setTimeout(() => {
   updateGate1LivePreview();
 }, 300);
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 📧 CHATGPT DIRECT TEMPLATE ENGINE (SIMPLE & POWERFUL)
+// ════════════════════════════════════════════════════════════════
+const EXACT_SHIVAM_MASTER_TEMPLATE = `Subject: Application for {{role}} at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I hope you're doing well.
+
+I'm Shivam Gupta, a B.Tech student (ECE – Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, algorithmic backtesting, and quantitative trading.
+
+I'm writing to express interest in {{role}} opportunities (internship or entry-level) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.
+
+A quick snapshot of my work:
+- Built and deployed end-to-end ML pipelines (XGBoost, TensorFlow, Scikit-learn) for forecasting problems, deployed via Flask/FastAPI on AWS and Docker, with experiments tracked in MLflow
+- Full-stack projects in production: a Next.js/FastAPI/Supabase platform, an electricity demand forecasting app, and a weather intelligence app
+- Designed and backtested a price-action algorithmic trading strategy (Pine Script v5 + Python), including a live backtesting dashboard with Monte Carlo simulation, AdaBoost, and risk metrics
+- Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)
+- Certifications: Machine Learning – Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification
+
+Across these projects, I've consistently focused on translating data into deployable, production-ready solutions rather than just models on paper.
+
+My resume is attached for your reference. You're welcome to look through my work here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I'm available to start immediately and open to both internship and full-time opportunities, whichever fits best with your current openings.
+
+I'd really appreciate a few minutes of your time to discuss any suitable openings at {{company}}, or to be considered for future roles. Thank you for your time and consideration.
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com`;
+
+async function syncGate1LiveTemplateEditor(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplName = sel?.value || 'default';
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  if(!ta) return;
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName));
+    const data = await res.json();
+    if(data.status === 'success' && data.template && data.template.content){
+      ta.value = data.template.content;
+    } else {
+      ta.value = EXACT_SHIVAM_MASTER_TEMPLATE;
+    }
+  } catch(e) {
+    ta.value = EXACT_SHIVAM_MASTER_TEMPLATE;
+  }
+  updateGate1LivePreview();
+}
+
+function updateGate1LivePreview(){
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const box = document.getElementById('gate1LivePreviewBox');
+  if(!ta || !box) return;
+
+  let raw = ta.value || '';
+  if(!raw.trim()){
+    raw = EXACT_SHIVAM_MASTER_TEMPLATE;
+    ta.value = raw;
+  }
+
+  // Simple direct replacement of only 3 placeholders:
+  let merged = raw
+    .replace(/\{\{recruiter_name\}\}/gi, 'Preeth')
+    .replace(/\{\{company_name\}\}/gi, 'BRIDGEi2i Analytics Solutions')
+    .replace(/\{\{company\}\}/gi, 'BRIDGEi2i Analytics Solutions')
+    .replace(/\{\{role\}\}/gi, 'Data Science, Machine Learning, Full-Stack, or Quantitative Analyst');
+
+  box.textContent = merged;
+}
+
+function populateTemplateDropdown(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  if(!sel) return;
+  
+  const templates = [
+    { name: 'default', label: '⭐ 1 — Mastermind Official (Shivam Gupta Exact)' },
+    { name: 'mastermind_official', label: '⭐ 2 — Mastermind ChatGPT Exact' },
+    { name: 'quant_algo_trader', label: '📈 3 — Quant & Algorithmic Trading Specialist' },
+    { name: 'ai_ml_engineer', label: '🤖 4 — AI / ML Systems & LLM Pipelines' },
+    { name: 'fullstack_sde', label: '💻 5 — Full-Stack SDE (Next.js 15 & FastAPI)' },
+    { name: 'short_startup_pitch', label: '🔥 6 — Ultra-Short Startup Pitch (Under 90 words)' }
+  ];
+
+  const activeTpl = localStorage.getItem('rsai_active_template') || 'default';
+
+  sel.innerHTML = templates.map(t => {
+    const isSel = (t.name === activeTpl) ? 'selected' : '';
+    return `<option value="${t.name}" ${isSel}>${t.label || t.name}</option>`;
+  }).join('');
+}
+
