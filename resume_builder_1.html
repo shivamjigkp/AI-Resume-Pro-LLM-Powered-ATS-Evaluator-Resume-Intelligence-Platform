@@ -1200,7 +1200,7 @@ body.allow-page-split #paper .rb li {
                 <div class="fg" style="margin-bottom:0;"><label style="font-size:9.5px;">Role</label><input type="text" id="gate1AiRole" style="padding:4px;font-size:11px;"></div>
               </div>
               <div class="fg" style="margin-bottom:6px;"><label style="font-size:9.5px;">Job Description</label><textarea id="gate1AiJD" rows="3" style="padding:4px;font-size:11px;width:100%;box-sizing:border-box;"></textarea></div>
-              <button type="button" class="btn btn-purple btn-sm" style="width:100%;justify-content:center;" onclick="aiTailorGate1Template()">✨ AI-Tailor Template</button>
+              <button type="button" class="btn btn-purple btn-sm" style="width:100%;justify-content:center;" onclick="openAiEmailWriterModal()">✨ AI-Tailor Template</button>
             </div>
 
             <div class="fg" style="margin-bottom:6px;">
@@ -7260,6 +7260,125 @@ function updateGate1Progress(current, total, currentItemMsg, isDone, errCount){
   }
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 🤖 AI COLD EMAIL TEMPLATE WRITER & CUSTOMIZER
+// ════════════════════════════════════════════════════════════════
+function openAiEmailWriterModal(){
+  const overlay = document.getElementById('aiEmailWriterOverlay');
+  if(overlay) overlay.style.display = 'flex';
+  const status = document.getElementById('aiEmailStatusBox');
+  if(status) status.style.display = 'none';
+  const resBox = document.getElementById('aiEmailResultBox');
+  if(resBox) resBox.style.display = 'none';
+  const applyBtn = document.getElementById('btnApplyAiEmail');
+  if(applyBtn) applyBtn.style.display = 'none';
+  setTimeout(() => document.getElementById('aiEmailPromptInput')?.focus(), 50);
+}
+
+function closeAiEmailWriterModal(){
+  const overlay = document.getElementById('aiEmailWriterOverlay');
+  if(overlay) overlay.style.display = 'none';
+}
+
+function fillAiEmailSamplePrompt(){
+  const ta = document.getElementById('aiEmailPromptInput');
+  if(ta){
+    ta.value = "Target Role: Software Engineer / AI-ML Engineer\nKey Highlights: Built full-stack healthcare platforms and algorithmic trading systems with Next.js 15, FastAPI, PostgreSQL, and Python. Solved 140+ problems on LeetCode.\nGoal: Concise, high-impact cold outreach under 120 words with strong call-to-action.";
+  }
+}
+
+async function generateAiEmailTemplate(){
+  const instructions = document.getElementById('aiEmailPromptInput')?.value?.trim();
+  const tone = document.getElementById('aiEmailToneSelect')?.value || 'high_impact';
+  const statusBox = document.getElementById('aiEmailStatusBox');
+  const resBox = document.getElementById('aiEmailResultBox');
+  const resTextarea = document.getElementById('aiEmailResultContent');
+  const applyBtn = document.getElementById('btnApplyAiEmail');
+  const genBtn = document.getElementById('btnGenAiEmail');
+
+  if(!instructions){
+    toast('Please enter custom highlights or instructions for AI!', 'warning');
+    return;
+  }
+
+  if(statusBox){
+    statusBox.style.display = 'block';
+    statusBox.style.background = '#f5f3ff';
+    statusBox.style.color = '#6d28d9';
+    statusBox.style.border = '1px solid #ddd6fe';
+    statusBox.innerHTML = '🤖 AI is crafting your cold email template...';
+  }
+  if(genBtn) genBtn.disabled = true;
+
+  const myName = D.basics?.name || 'Shivam Gupta';
+
+  const prompt = `You are a world-class Cold Outreach & Copywriting AI.
+Write a highly compelling, personalized cold email template.
+
+Tone / Style: "${tone}"
+User Instructions & Highlights:
+\"\"\"
+${instructions}
+\"\"\"
+
+CRITICAL INSTRUCTIONS:
+1. Start with the Subject line on the very first line as:
+Subject: <Catchy, high-open-rate subject line with {{company_name}} and {{role}}>
+
+2. Use these exact placeholders in the body for personalized merging:
+   - {{recruiter_name}}
+   - {{company_name}}
+   - {{role}}
+   - {{my_name}} (will automatically be replaced by ${myName})
+
+3. Keep it under 130 words. Make it punchy, professional, and results-driven.
+
+Return ONLY the raw template text (starting with Subject:) without markdown code blocks.`;
+
+  try {
+    let result = await callAI(prompt, 800);
+    if(result){
+      result = result.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/i, '').trim();
+    }
+    
+    if(!result){
+      result = `Subject: Application for {{role}} at {{company_name}} — ${myName}\n\nHi {{recruiter_name}},\n\nI noticed {{company_name}} is hiring for the {{role}} position. Given my hands-on background in Next.js 15, FastAPI, and Machine Learning systems, I've engineered high-performance platforms achieving sub-200ms latency and 99.9% uptime.\n\nI'd love to contribute to {{company_name}}'s engineering goals. Are you open to a brief 10-minute chat this week?\n\nBest regards,\n${myName}`;
+    }
+
+    if(resTextarea) resTextarea.value = result;
+    if(resBox) resBox.style.display = 'block';
+    if(applyBtn) applyBtn.style.display = 'inline-block';
+    if(statusBox){
+      statusBox.style.background = '#ecfdf5';
+      statusBox.style.color = '#059669';
+      statusBox.style.border = '1px solid #a7f3d0';
+      statusBox.innerHTML = '✅ Generated AI Template! Click <strong>Instate in Active Editor</strong> below.';
+    }
+  } catch(err) {
+    toast('Error generating template with AI', 'error');
+  } finally {
+    if(genBtn) genBtn.disabled = false;
+  }
+}
+
+function applyAiGeneratedEmailTemplate(){
+  const resTextarea = document.getElementById('aiEmailResultContent');
+  const val = resTextarea?.value?.trim();
+  if(!val){
+    toast('No template content to apply!', 'warning');
+    return;
+  }
+  const editorTa = document.getElementById('gate1LiveTemplateContent');
+  if(editorTa){
+    editorTa.value = val;
+    updateGate1LivePreview();
+  }
+  closeAiEmailWriterModal();
+  toast('✨ AI Template applied to active editor!', 'success', 3000);
+}
+
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════ -->
@@ -7347,6 +7466,65 @@ function updateGate1Progress(current, total, currentItemMsg, isDone, errCount){
         <button type="button" class="btn btn-outline btn-sm" onclick="closePinModal()">Cancel</button>
         <button type="button" class="btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-weight:800;border:none;padding:8px 18px;border-radius:6px;box-shadow:0 3px 10px rgba(217,119,6,0.3);" onclick="verifyOutreachPin()">
           🔓 Unlock Pro Suite
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- AI EMAIL TEMPLATE WRITER & CUSTOMIZER MODAL -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="overlay" id="aiEmailWriterOverlay" style="display:none;z-index:9999;">
+  <div class="modal w-md" style="max-width:540px;border:1.5px solid #6366f1;box-shadow:0 20px 40px rgba(99,102,241,0.25);">
+    <div class="m-head" style="background:linear-gradient(135deg,#eff6ff,#e0e7ff);border-bottom:1px solid #c7d2fe;padding:12px 16px;">
+      <div class="m-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">🤖</span>
+        <div>
+          <div style="font-weight:800;font-size:14px;color:#3730a3;">AI Cold Email Template Generator</div>
+          <div style="font-size:10px;color:#6b7280;font-weight:normal;">Tell AI what role or skills to emphasize — AI generates a high-converting cold email template!</div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="closeAiEmailWriterModal()" style="font-weight:700;">✕ Close</button>
+    </div>
+    <div class="m-body" style="padding:16px;">
+      <!-- Tone & Style Selector -->
+      <div style="margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;">🎯 Tone & Style:</label>
+        <select id="aiEmailToneSelect" style="width:100%;padding:6px 10px;font-size:11.5px;border:1.5px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:600;color:#1e293b;">
+          <option value="high_impact" selected>🚀 High-Impact & Concise (Under 120 words - Recommended)</option>
+          <option value="professional">💼 Professional & Formal</option>
+          <option value="startup_pitch">🔥 Direct Startup Pitch (Short & Punchy)</option>
+          <option value="referral">🎓 Referral Request / Networking</option>
+        </select>
+      </div>
+
+      <!-- Instruction Input -->
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:#374151;display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span>📝 Custom Prompt / Key Highlights:</span>
+          <span style="font-size:9.5px;color:#6366f1;cursor:pointer;" onclick="fillAiEmailSamplePrompt()">✨ Load Sample Prompt</span>
+        </label>
+        <textarea id="aiEmailPromptInput" rows="4" placeholder="Tell AI what to include in the email template... E.g.&#10;• Target Role: AI/ML Engineer or Fullstack Developer&#10;• Key Highlights: Next.js 15, FastAPI, 200ms latency, algorithmic trading models, 99.9% uptime&#10;• Ask: Willingness to build a 24-hr trial project or interview" style="width:100%;padding:9px;font-size:11px;border:1.5px solid #cbd5e1;border-radius:6px;box-sizing:border-box;line-height:1.4;resize:vertical;font-family:inherit;"></textarea>
+      </div>
+
+      <!-- Generated Result Preview -->
+      <div id="aiEmailResultBox" style="display:none;margin-bottom:12px;">
+        <label style="font-size:10.5px;font-weight:800;color:#3730a3;display:block;margin-bottom:4px;">✨ Generated Email Template:</label>
+        <textarea id="aiEmailResultContent" rows="7" style="width:100%;padding:8px;font-size:11px;border:1.5px solid #a5b4fc;border-radius:6px;box-sizing:border-box;font-family:inherit;line-height:1.45;background:#faf5ff;"></textarea>
+      </div>
+
+      <!-- Status Indicator -->
+      <div id="aiEmailStatusBox" style="display:none;margin-bottom:10px;padding:8px 12px;border-radius:6px;font-size:11px;font-weight:600;"></div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" id="btnGenAiEmail" class="btn" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:800;border:none;padding:7px 16px;box-shadow:0 3px 10px rgba(99,102,241,0.35);" onclick="generateAiEmailTemplate()">
+          🤖 Generate Template
+        </button>
+        <button type="button" id="btnApplyAiEmail" class="btn btn-purple" style="display:none;font-weight:800;" onclick="applyAiGeneratedEmailTemplate()">
+          ✨ Instate in Active Editor
         </button>
       </div>
     </div>

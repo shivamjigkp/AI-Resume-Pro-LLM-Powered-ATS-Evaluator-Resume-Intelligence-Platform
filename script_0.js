@@ -5586,3 +5586,122 @@ function updateGate1Progress(current, total, currentItemMsg, isDone, errCount){
   }
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 🤖 AI COLD EMAIL TEMPLATE WRITER & CUSTOMIZER
+// ════════════════════════════════════════════════════════════════
+function openAiEmailWriterModal(){
+  const overlay = document.getElementById('aiEmailWriterOverlay');
+  if(overlay) overlay.style.display = 'flex';
+  const status = document.getElementById('aiEmailStatusBox');
+  if(status) status.style.display = 'none';
+  const resBox = document.getElementById('aiEmailResultBox');
+  if(resBox) resBox.style.display = 'none';
+  const applyBtn = document.getElementById('btnApplyAiEmail');
+  if(applyBtn) applyBtn.style.display = 'none';
+  setTimeout(() => document.getElementById('aiEmailPromptInput')?.focus(), 50);
+}
+
+function closeAiEmailWriterModal(){
+  const overlay = document.getElementById('aiEmailWriterOverlay');
+  if(overlay) overlay.style.display = 'none';
+}
+
+function fillAiEmailSamplePrompt(){
+  const ta = document.getElementById('aiEmailPromptInput');
+  if(ta){
+    ta.value = "Target Role: Software Engineer / AI-ML Engineer\nKey Highlights: Built full-stack healthcare platforms and algorithmic trading systems with Next.js 15, FastAPI, PostgreSQL, and Python. Solved 140+ problems on LeetCode.\nGoal: Concise, high-impact cold outreach under 120 words with strong call-to-action.";
+  }
+}
+
+async function generateAiEmailTemplate(){
+  const instructions = document.getElementById('aiEmailPromptInput')?.value?.trim();
+  const tone = document.getElementById('aiEmailToneSelect')?.value || 'high_impact';
+  const statusBox = document.getElementById('aiEmailStatusBox');
+  const resBox = document.getElementById('aiEmailResultBox');
+  const resTextarea = document.getElementById('aiEmailResultContent');
+  const applyBtn = document.getElementById('btnApplyAiEmail');
+  const genBtn = document.getElementById('btnGenAiEmail');
+
+  if(!instructions){
+    toast('Please enter custom highlights or instructions for AI!', 'warning');
+    return;
+  }
+
+  if(statusBox){
+    statusBox.style.display = 'block';
+    statusBox.style.background = '#f5f3ff';
+    statusBox.style.color = '#6d28d9';
+    statusBox.style.border = '1px solid #ddd6fe';
+    statusBox.innerHTML = '🤖 AI is crafting your cold email template...';
+  }
+  if(genBtn) genBtn.disabled = true;
+
+  const myName = D.basics?.name || 'Shivam Gupta';
+
+  const prompt = `You are a world-class Cold Outreach & Copywriting AI.
+Write a highly compelling, personalized cold email template.
+
+Tone / Style: "${tone}"
+User Instructions & Highlights:
+\"\"\"
+${instructions}
+\"\"\"
+
+CRITICAL INSTRUCTIONS:
+1. Start with the Subject line on the very first line as:
+Subject: <Catchy, high-open-rate subject line with {{company_name}} and {{role}}>
+
+2. Use these exact placeholders in the body for personalized merging:
+   - {{recruiter_name}}
+   - {{company_name}}
+   - {{role}}
+   - {{my_name}} (will automatically be replaced by ${myName})
+
+3. Keep it under 130 words. Make it punchy, professional, and results-driven.
+
+Return ONLY the raw template text (starting with Subject:) without markdown code blocks.`;
+
+  try {
+    let result = await callAI(prompt, 800);
+    if(result){
+      result = result.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/i, '').trim();
+    }
+    
+    if(!result){
+      result = `Subject: Application for {{role}} at {{company_name}} — ${myName}\n\nHi {{recruiter_name}},\n\nI noticed {{company_name}} is hiring for the {{role}} position. Given my hands-on background in Next.js 15, FastAPI, and Machine Learning systems, I've engineered high-performance platforms achieving sub-200ms latency and 99.9% uptime.\n\nI'd love to contribute to {{company_name}}'s engineering goals. Are you open to a brief 10-minute chat this week?\n\nBest regards,\n${myName}`;
+    }
+
+    if(resTextarea) resTextarea.value = result;
+    if(resBox) resBox.style.display = 'block';
+    if(applyBtn) applyBtn.style.display = 'inline-block';
+    if(statusBox){
+      statusBox.style.background = '#ecfdf5';
+      statusBox.style.color = '#059669';
+      statusBox.style.border = '1px solid #a7f3d0';
+      statusBox.innerHTML = '✅ Generated AI Template! Click <strong>Instate in Active Editor</strong> below.';
+    }
+  } catch(err) {
+    toast('Error generating template with AI', 'error');
+  } finally {
+    if(genBtn) genBtn.disabled = false;
+  }
+}
+
+function applyAiGeneratedEmailTemplate(){
+  const resTextarea = document.getElementById('aiEmailResultContent');
+  const val = resTextarea?.value?.trim();
+  if(!val){
+    toast('No template content to apply!', 'warning');
+    return;
+  }
+  const editorTa = document.getElementById('gate1LiveTemplateContent');
+  if(editorTa){
+    editorTa.value = val;
+    updateGate1LivePreview();
+  }
+  closeAiEmailWriterModal();
+  toast('✨ AI Template applied to active editor!', 'success', 3000);
+}
+
