@@ -5770,3 +5770,77 @@ async function fetchAndRenderGate1Leads(){
   }
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// GOOGLE SHEET LINK AUTO-PARSER & LIVE PREVIEW REPLACEMENT
+// ════════════════════════════════════════════════════════════════
+function autoExtractGate1SheetId(val){
+  if(!val) return;
+  val = val.trim();
+  const status = document.getElementById('gate1SheetUrlStatus');
+  
+  // Extract ID if full Google Sheet URL was pasted
+  const m = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if(m && m[1]){
+    const extractedId = m[1];
+    if(status){
+      status.textContent = `✅ Extracted Sheet ID: "${extractedId}"`;
+      status.style.color = '#059669';
+    }
+  } else if(val.length > 20 && !val.includes('/')){
+    if(status){
+      status.textContent = `✅ Valid Sheet ID format`;
+      status.style.color = '#059669';
+    }
+  }
+}
+
+function updateGate1LivePreview(){
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const box = document.getElementById('gate1LivePreviewBox');
+  if(!ta || !box) return;
+
+  let raw = ta.value || '';
+  if(!raw.trim()){
+    raw = `Subject: Application for {{role}} at {{company}} — {{sender_name}}\n\nHi {{recruiter_name}},\n\nI hope you're doing well. I'm {{sender_name}}, a B.Tech student (ECE - Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, and algorithmic backtesting.\n\nI'm writing to express interest in {{role}} opportunities at {{company}}, and to introduce myself.\n\n{{experience_summary}}\n\nBest regards,\n{{sender_name}}`;
+    ta.value = raw;
+  }
+
+  const myName = D.basics?.name || 'Shivam Gupta';
+  const myEmail = D.basics?.email || 'quantxcoder@gmail.com';
+  const myPhone = D.basics?.phone || '+91-8081513780';
+  const expSummary = '• Engineered full-stack ML platforms, algorithmic backtesting engines, and sub-200ms API microservices.';
+
+  // Comprehensive placeholder replacements for all template formats
+  let merged = raw
+    .replace(/\{\{recruiter_name\}\}/gi, 'Rahul Sharma')
+    .replace(/\{\{company_name\}\}/gi, 'INDmoney')
+    .replace(/\{\{company\}\}/gi, 'INDmoney')
+    .replace(/\{\{role\}\}/gi, 'Software Engineer')
+    .replace(/\{\{my_name\}\}/gi, myName)
+    .replace(/\{\{sender_name\}\}/gi, myName)
+    .replace(/\{\{sender_email\}\}/gi, myEmail)
+    .replace(/\{\{sender_phone\}\}/gi, myPhone)
+    .replace(/\{\{experience_summary\}\}/gi, expSummary);
+
+  box.textContent = merged;
+}
+
+// Auto sync template content when Gate 1 panel opens
+const oldOpenGate1 = window.openGate1Panel;
+window.openGate1Panel = function(){
+  const section = document.getElementById('gate1Section');
+  if (!section) return;
+  section.style.display = 'block';
+  document.getElementById('outreachSubBtnGate1')?.classList.add('open');
+
+  // Load template content into live editor & preview immediately
+  setTimeout(() => {
+    syncGate1LiveTemplateEditor();
+    updateGate1LivePreview();
+  }, 100);
+
+  requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+};
+

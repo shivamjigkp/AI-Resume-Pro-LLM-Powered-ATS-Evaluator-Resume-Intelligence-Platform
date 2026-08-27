@@ -1131,31 +1131,29 @@ body.allow-page-split #paper .rb li {
               <button type="button" class="btn btn-outline btn-xs" onclick="refreshGate1Sheets()" style="font-size:10px;">🔄 Refresh</button>
             </div>
           </h4>
-          <div class="row2" style="margin-bottom:8px;">
-            <div class="fg" style="margin-bottom:0;flex:2;">
-              <label style="font-size:11px;font-weight:700;color:#334155;">Active Google Sheet Tracker:</label>
-              <div style="display:flex;gap:6px;">
-                <select id="gate1ActiveSheet" class="form-sel" style="flex:1;" onchange="onGate1SheetChange()"></select>
-                <button type="button" class="btn btn-primary btn-xs" onclick="setGate1DefaultSheet()" id="btnSetDefaultSheet" style="display:none;">Set Default</button>
-              </div>
+          
+          <div style="margin-bottom:10px;">
+            <label style="font-size:11px;font-weight:700;color:#334155;display:block;margin-bottom:4px;">📋 Paste Google Sheet Link or Sheet ID:</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="gate1NewSheetId" placeholder="Paste full Google Sheet link (e.g. https://docs.google.com/spreadsheets/d/1lYkZAjqQQ.../edit)" class="form-sel" style="flex:1;font-size:11px;padding:7px 10px;font-weight:600;" oninput="autoExtractGate1SheetId(this.value)">
+              <button type="button" class="btn btn-purple btn-sm" onclick="connectExistingGate1Sheet()" style="font-weight:800;padding:6px 14px;">🔌 Connect Sheet</button>
             </div>
+            <div id="gate1SheetUrlStatus" style="font-size:10px;color:#059669;font-weight:700;margin-top:4px;"></div>
           </div>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="gate1NewSheetId" placeholder="Paste Existing Sheet ID to connect..." class="form-sel" style="flex:1;font-size:11px;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="connectExistingGate1Sheet()" style="font-weight:700;">Connect Sheet</button>
-            <button type="button" class="btn btn-purple btn-sm" onclick="createBlankGate1Sheet()" style="font-weight:700;">+ Create Blank Sheet</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="disconnectCurrentGate1Sheet()" style="color:#dc2626;border-color:#fca5a5;" id="btnDisconnectSheet">Disconnect</button>
+
+          <div style="display:flex;gap:6px;align-items:center;background:#f8fafc;padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;">
+            <span style="font-size:10.5px;font-weight:700;color:#475569;">Active Sheet:</span>
+            <select id="gate1ActiveSheet" class="form-sel" style="flex:1;font-size:11px;padding:3px 6px;" onchange="onGate1SheetChange()"></select>
+            <button type="button" class="btn btn-outline btn-xs" onclick="createBlankGate1Sheet()" style="font-size:10px;font-weight:700;">+ New Blank Sheet</button>
           </div>
 
           <!-- EXPANDABLE GOOGLE SHEET LEADS TABLE -->
           <div id="gate1LeadsTableContainer" style="display:none;margin-top:12px;padding-top:10px;border-top:1px dashed #bfdbfe;">
             <div style="font-weight:800;font-size:11px;color:#1e40af;margin-bottom:6px;display:flex;justify-content:space-between;">
               <span>📋 Active Google Sheet Rows:</span>
-              <span id="gate1LeadsCountBadge" style="font-size:10px;color:#64748b;">Loading rows...</span>
+              <span id="gate1LeadsCountBadge" style="font-size:10px;color:#64748b;">Showing active rows...</span>
             </div>
-            <div id="gate1LeadsTableBox" style="max-height:180px;overflow-y:auto;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;font-size:10.5px;">
-              <div style="padding:10px;color:#64748b;text-align:center;">Click 'View Sheet Leads' to fetch active rows</div>
-            </div>
+            <div id="gate1LeadsTableBox" style="max-height:180px;overflow-y:auto;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;font-size:10.5px;"></div>
           </div>
         </div>
 
@@ -7389,6 +7387,80 @@ async function fetchAndRenderGate1Leads(){
     box.innerHTML = '<div style="padding:10px;color:#dc2626;text-align:center;">Failed to connect to Google Sheet backend.</div>';
   }
 }
+
+
+
+// ════════════════════════════════════════════════════════════════
+// GOOGLE SHEET LINK AUTO-PARSER & LIVE PREVIEW REPLACEMENT
+// ════════════════════════════════════════════════════════════════
+function autoExtractGate1SheetId(val){
+  if(!val) return;
+  val = val.trim();
+  const status = document.getElementById('gate1SheetUrlStatus');
+  
+  // Extract ID if full Google Sheet URL was pasted
+  const m = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if(m && m[1]){
+    const extractedId = m[1];
+    if(status){
+      status.textContent = `✅ Extracted Sheet ID: "${extractedId}"`;
+      status.style.color = '#059669';
+    }
+  } else if(val.length > 20 && !val.includes('/')){
+    if(status){
+      status.textContent = `✅ Valid Sheet ID format`;
+      status.style.color = '#059669';
+    }
+  }
+}
+
+function updateGate1LivePreview(){
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const box = document.getElementById('gate1LivePreviewBox');
+  if(!ta || !box) return;
+
+  let raw = ta.value || '';
+  if(!raw.trim()){
+    raw = `Subject: Application for {{role}} at {{company}} — {{sender_name}}\n\nHi {{recruiter_name}},\n\nI hope you're doing well. I'm {{sender_name}}, a B.Tech student (ECE - Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, and algorithmic backtesting.\n\nI'm writing to express interest in {{role}} opportunities at {{company}}, and to introduce myself.\n\n{{experience_summary}}\n\nBest regards,\n{{sender_name}}`;
+    ta.value = raw;
+  }
+
+  const myName = D.basics?.name || 'Shivam Gupta';
+  const myEmail = D.basics?.email || 'quantxcoder@gmail.com';
+  const myPhone = D.basics?.phone || '+91-8081513780';
+  const expSummary = '• Engineered full-stack ML platforms, algorithmic backtesting engines, and sub-200ms API microservices.';
+
+  // Comprehensive placeholder replacements for all template formats
+  let merged = raw
+    .replace(/\{\{recruiter_name\}\}/gi, 'Rahul Sharma')
+    .replace(/\{\{company_name\}\}/gi, 'INDmoney')
+    .replace(/\{\{company\}\}/gi, 'INDmoney')
+    .replace(/\{\{role\}\}/gi, 'Software Engineer')
+    .replace(/\{\{my_name\}\}/gi, myName)
+    .replace(/\{\{sender_name\}\}/gi, myName)
+    .replace(/\{\{sender_email\}\}/gi, myEmail)
+    .replace(/\{\{sender_phone\}\}/gi, myPhone)
+    .replace(/\{\{experience_summary\}\}/gi, expSummary);
+
+  box.textContent = merged;
+}
+
+// Auto sync template content when Gate 1 panel opens
+const oldOpenGate1 = window.openGate1Panel;
+window.openGate1Panel = function(){
+  const section = document.getElementById('gate1Section');
+  if (!section) return;
+  section.style.display = 'block';
+  document.getElementById('outreachSubBtnGate1')?.classList.add('open');
+
+  // Load template content into live editor & preview immediately
+  setTimeout(() => {
+    syncGate1LiveTemplateEditor();
+    updateGate1LivePreview();
+  }, 100);
+
+  requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+};
 
 </script>
 
