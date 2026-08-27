@@ -1119,6 +1119,39 @@ function iconForLink(label,url){
   return getResumeSvgIcon('link');
 }
 // Renders the "+ Add Link" row editor for one project (Text shown | Actual URL | ❌)
+
+// Renders the "+ Add Link" row editor for Experience (Text shown | Actual URL | ❌)
+function expLinksRowsHtml(i){
+  const rows=parseLinksField(D.exp[i].links);
+  if(!rows.length) rows.push({label:'',url:''});
+  return rows.map((r,idx)=>`
+    <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;">
+      <input type="text" placeholder="Text/label to show (e.g. Live Demo / GitHub)" value="${(r.label||'').replace(/"/g,'&quot;')}" style="flex:1;padding:4px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateExpLinkRow(${i},${idx},'label',this.value)">
+      <input type="text" placeholder="Actual link (https://...)" value="${(r.url||'').replace(/"/g,'&quot;')}" style="flex:1.4;padding:4px;font-size:10.5px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:4px;" oninput="updateExpLinkRow(${i},${idx},'url',this.value)">
+      <button type="button" onclick="removeExpLinkRow(${i},${idx})" title="Remove this link" style="background:#fee2e2;border:none;color:#ef4444;padding:4px 7px;font-size:11px;border-radius:4px;cursor:pointer;font-weight:700;">❌</button>
+    </div>`).join('')
+    + `<button type="button" onclick="addExpLinkRow(${i})" style="margin-top:2px;padding:4px 8px;font-size:10px;font-weight:700;background:#eff6ff;border:1px dashed #2563eb;color:#2563eb;border-radius:4px;cursor:pointer;width:100%;text-align:center;">+ Add Link</button>`;
+}
+function addExpLinkRow(i){
+  const rows=parseLinksField(D.exp[i].links);
+  rows.push({label:'',url:''});
+  D.exp[i].links=serializeLinksField(rows);
+  renderExpEditor();render();
+}
+function removeExpLinkRow(i,idx){
+  const rows=parseLinksField(D.exp[i].links);
+  rows.splice(idx,1);
+  D.exp[i].links=serializeLinksField(rows);
+  renderExpEditor();render();
+}
+function updateExpLinkRow(i,idx,field,value){
+  const rows=parseLinksField(D.exp[i].links);
+  while(rows.length<=idx) rows.push({label:'',url:''});
+  rows[idx][field]=value;
+  D.exp[i].links=serializeLinksField(rows);
+  render();
+}
+
 function projLinksRowsHtml(i){
   const rows=parseLinksField(D.proj[i].links);
   if(!rows.length) rows.push({label:'',url:''});
@@ -2826,35 +2859,37 @@ function render(){
   const showCourseInSkills = !!D.showCertsTop && certList.length;
   const courseInlineText = showCourseInSkills ? certList.map(c=>parseCertEntry(c).label).filter(Boolean).join(', ') : '';
 
-  const hasSk = vis.skills!==false && (s.lang || s.tools || s.domain || s.cloud || s.course || showCourseInSkills);
-  const skills = hasSk ? `<div class="rs">Technical Skills</div><div class="rsg">
-    ${s.lang?`<div class="rsk">Languages:</div><div class="rsv">${s.lang}</div>`:''}
-    ${s.tools?`<div class="rsk">Tools & Frameworks:</div><div class="rsv">${s.tools}</div>`:''}
-    ${s.domain?`<div class="rsk">Domain / Stack:</div><div class="rsv">${s.domain}</div>`:''}
-    ${s.cloud?`<div class="rsk">Cloud / Databases:</div><div class="rsv">${s.cloud}</div>`:''}
-    ${s.course?`<div class="rsk">Coursework:</div><div class="rsv">${s.course}</div>`:''}
-    ${showCourseInSkills?`<div class="rsk">Certifications:</div><div class="rsv">${courseInlineText}</div>`:''}
-  </div>`:'';
+  const skillsListActive = (Array.isArray(D.skillsList) && D.skillsList.length) ? D.skillsList.filter(it=>it.val && it.val.trim()) : null;
+  const hasSk = vis.skills!==false && ((skillsListActive && skillsListActive.length) || s.lang || s.tools || s.domain || s.cloud || s.course || showCourseInSkills);
+  let renderedSkillsGrid = '';
+  if(skillsListActive && skillsListActive.length){
+    renderedSkillsGrid = skillsListActive.map(it=>`<div class="rsk">${it.label || 'Skills'}:</div><div class="rsv">${it.val}</div>`).join('');
+  } else {
+    renderedSkillsGrid = `
+      ${s.lang?`<div class="rsk">Languages:</div><div class="rsv">${s.lang}</div>`:''}
+      ${s.tools?`<div class="rsk">Tools & Frameworks:</div><div class="rsv">${s.tools}</div>`:''}
+      ${s.domain?`<div class="rsk">Domain / Stack:</div><div class="rsv">${s.domain}</div>`:''}
+      ${s.cloud?`<div class="rsk">Cloud / Databases:</div><div class="rsv">${s.cloud}</div>`:''}
+      ${s.course?`<div class="rsk">Coursework:</div><div class="rsv">${s.course}</div>`:''}
+    `;
+  }
+  if(showCourseInSkills && courseInlineText){
+    renderedSkillsGrid += `<div class="rsk">Certifications:</div><div class="rsv">${courseInlineText}</div>`;
+  }
+  const skills = hasSk ? `<div class="rs">Technical Skills</div><div class="rsg">${renderedSkillsGrid}</div>`:'';
 
   const exp=(vis.exp!==false && (D.exp||[]).length)?`<div class="rs">Professional Experience</div>`+
     D.exp.map(x=>{
-      const rawLinks=(x.links||'').trim();
-      let linkHtml='';
-      if(rawLinks){
-        const linkParts=rawLinks.split(/[|,]/).map(l=>l.trim()).filter(Boolean);
-        linkHtml=linkParts.map(lk=>{
-          if(/https?:\/\//i.test(lk)||/github\.com|youtube\.com|youtu\.be|linkedin|vercel|netlify|demo|live/i.test(lk)){
-            const isGH=/github\.com/i.test(lk);
-            const isYT=/youtube\.com|youtu\.be/i.test(lk);
-            const isDemo=/demo|live|vercel|netlify|preview/i.test(lk);
-            const url=lk.startsWith('http')?lk:'https://'+lk;
-            const icon=isGH?'💻':isYT?'▶️':isDemo?'🌐':'🔗';
-            const label=isGH?'GitHub':isYT?'YouTube':isDemo?'Demo':'Link';
-            return `<a href="${url}" target="_blank" style="font-size:9px;color:var(--tpl-theme);text-decoration:none;font-weight:700;margin-left:5px;border:1px solid var(--tpl-theme);border-radius:4px;padding:1px 5px;white-space:nowrap">${icon} ${label}</a>`;
-          }
-          return `<span style="font-size:9px;color:#6b7280;margin-left:4px">${lk}</span>`;
-        }).join('');
-      }
+      const linkRows=parseLinksField(x.links);
+      let linkHtml=linkRows.map(r=>{
+        if(r.url){
+          const url=r.url.startsWith('http')?r.url:'https://'+r.url;
+          const icon=iconForLink(r.label,r.url);
+          const label=r.label||'Link';
+          return `<a href="${url}" target="_blank" style="font-size:9px;color:var(--tpl-theme);text-decoration:none;font-weight:700;margin-left:5px;border:1px solid var(--tpl-theme);border-radius:4px;padding:1px 5px;white-space:nowrap">${icon} ${label}</a>`;
+        }
+        return r.label?`<span style="font-size:9px;color:#6b7280;margin-left:4px">[${r.label}]</span>`:'';
+      }).join('');
       const dateLoc=`${x.date||''}${x.loc?(x.date?' • ':'')+x.loc:''}`;
       return `<div class="ri">
         <div class="ri-row"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px"><span class="ri-title">${x.co||'Company'}</span> — <span class="ri-sub">${x.role||'Role'}</span>${linkHtml}</div><span class="ri-date">${dateLoc}</span></div>
@@ -3637,7 +3672,7 @@ function renderExpEditor(){
         <div class="fg"><label>Date</label><input value="${e.date||''}" oninput="D.exp[${i}].date=this.value;render()"></div>
         <div class="fg"><label>Location</label><input value="${e.loc||''}" placeholder="Remote / City, Country" oninput="D.exp[${i}].loc=this.value;render()"></div>
       </div>
-      <div class="fg"><label>Links (Live / YouTube / Repo)</label><input value="${e.links||''}" oninput="D.exp[${i}].links=this.value;render()"></div>
+      <div class="fg"><label>Links — text/icon shown on resume, actual link opens on click</label>${expLinksRowsHtml(i)}</div>
       <div class="fg"><label>Bullets (one per line — **bold** for metrics)</label>
         <textarea rows="4" oninput="D.exp[${i}].bullets=this.value.split('\\n').filter(x=>x.trim());render();liveATS()">${(e.bullets||[]).join('\n')}</textarea>
       </div>
@@ -6620,5 +6655,99 @@ async function saveGate1LiveTemplate(){
   } catch(e){
     toast('Saved template locally', 'info');
   }
+}
+
+
+
+// ════════════════════════════════════════════════════════════════
+// 🛠 DYNAMIC SKILLS CATEGORIES MANAGER (ADD, EDIT, DELETE, REMOVE)
+// ════════════════════════════════════════════════════════════════
+function getActiveSkillsList(){
+  if(Array.isArray(D.skillsList) && D.skillsList.length > 0){
+    return D.skillsList;
+  }
+  const s = D.skills || {};
+  const list = [];
+  if(s.lang !== undefined) list.push({ key: 'lang', label: 'Languages', val: s.lang || '' });
+  if(s.tools !== undefined) list.push({ key: 'tools', label: 'Tools & Frameworks', val: s.tools || '' });
+  if(s.domain !== undefined) list.push({ key: 'domain', label: 'Domain / Stack', val: s.domain || '' });
+  if(s.cloud !== undefined) list.push({ key: 'cloud', label: 'Cloud / Databases', val: s.cloud || '' });
+  if(s.course !== undefined) list.push({ key: 'course', label: 'Coursework', val: s.course || '' });
+  if(!list.length){
+    list.push(
+      { key: 'lang', label: 'Languages', val: 'C++, Python, TypeScript, JavaScript' },
+      { key: 'tools', label: 'Tools & Frameworks', val: 'React, Next.js, FastAPI, Docker, Git' },
+      { key: 'domain', label: 'Domain / Stack', val: 'Machine Learning, Full-Stack, Quantitative Trading' },
+      { key: 'cloud', label: 'Cloud / Databases', val: 'PostgreSQL, Supabase, AWS, Cloudflare' }
+    );
+  }
+  D.skillsList = list;
+  return list;
+}
+
+function renderSkillsEditor(){
+  const container = document.getElementById('skillsCategoriesList');
+  if(!container) return;
+  const list = getActiveSkillsList();
+  
+  container.innerHTML = list.map((item, idx) => `
+    <div style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:9px;margin-bottom:8px;box-shadow:0 2px 5px rgba(0,0,0,0.03);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <input type="text" value="${(item.label||'Category').replace(/"/g,'&quot;')}" placeholder="Category Name (e.g. Languages / Tools)" style="flex:1;font-size:11px;font-weight:800;color:#334155;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;max-width:200px;" oninput="updateSkillCategoryName(${idx}, this.value)">
+        <button type="button" onclick="removeSkillCategory(${idx})" title="Delete this skill category" style="background:#fee2e2;border:none;color:#dc2626;padding:3px 7px;font-size:10.5px;border-radius:4px;cursor:pointer;font-weight:700;">🗑️ Remove</button>
+      </div>
+      <input type="text" value="${(item.val||'').replace(/"/g,'&quot;')}" placeholder="Enter skills comma-separated (e.g. Python, React, Docker...)" style="width:100%;font-size:11px;border:1px solid #cbd5e1;border-radius:4px;padding:5px 8px;box-sizing:border-box;" oninput="updateSkillCategoryValue(${idx}, this.value)">
+    </div>
+  `).join('');
+}
+
+function updateSkillCategoryName(idx, newLabel){
+  const list = getActiveSkillsList();
+  if(list[idx]){
+    list[idx].label = newLabel;
+    syncSkillsToD();
+    render();
+  }
+}
+
+function updateSkillCategoryValue(idx, newVal){
+  const list = getActiveSkillsList();
+  if(list[idx]){
+    list[idx].val = newVal;
+    syncSkillsToD();
+    render();
+    liveATS();
+  }
+}
+
+function addSkillCategory(){
+  const list = getActiveSkillsList();
+  list.push({ key: 'custom_' + Date.now(), label: 'New Skill Category', val: '' });
+  D.skillsList = list;
+  syncSkillsToD();
+  renderSkillsEditor();
+  render();
+}
+
+function removeSkillCategory(idx){
+  const list = getActiveSkillsList();
+  list.splice(idx, 1);
+  D.skillsList = list;
+  syncSkillsToD();
+  renderSkillsEditor();
+  render();
+  liveATS();
+}
+
+function syncSkillsToD(){
+  const list = D.skillsList || [];
+  if(!D.skills) D.skills = {};
+  list.forEach(item => {
+    if(item.key === 'lang') D.skills.lang = item.val;
+    else if(item.key === 'tools') D.skills.tools = item.val;
+    else if(item.key === 'domain') D.skills.domain = item.val;
+    else if(item.key === 'cloud') D.skills.cloud = item.val;
+    else if(item.key === 'course') D.skills.course = item.val;
+  });
 }
 
