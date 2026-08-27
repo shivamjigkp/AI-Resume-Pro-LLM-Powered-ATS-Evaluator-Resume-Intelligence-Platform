@@ -2708,6 +2708,93 @@ function clearAll(){
   toast('Resume cleared', 'info');
 }
 
+// ════════════════════════════════════════════════════════════════
+// 📝 EXPORT RESUME AS FORMATTED WORD DOCUMENT (.DOC / .DOCX)
+// ════════════════════════════════════════════════════════════════
+function exportWord(){
+  syncFormToD();
+  const resumeEl = document.getElementById('resumeOut');
+  if(!resumeEl){
+    toast('Nothing to export!', 'warning');
+    return;
+  }
+
+  const name = (D.basics?.name || 'Resume').trim().replace(/\s+/g, '_');
+  const filename = `${name}_Resume.doc`;
+
+  // Create clean Word HTML with standard Office styles & preserved hyperlinks
+  const contentHtml = resumeEl.innerHTML;
+  
+  const wordDocument = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <title>${D.basics?.name || 'Resume'}</title>
+      <style>
+        @page {
+          size: 21.0cm 29.7cm;
+          margin: 1.2cm 1.4cm 1.2cm 1.4cm;
+          mso-page-orientation: portrait;
+        }
+        body {
+          font-family: 'Calibri', 'Arial', sans-serif;
+          font-size: 10.5pt;
+          line-height: 1.35;
+          color: #111827;
+        }
+        h1, h2, h3, .rn {
+          font-family: 'Calibri', 'Arial', sans-serif;
+          font-weight: bold;
+          color: #0f172a;
+          margin: 0 0 4pt 0;
+        }
+        .rn { font-size: 18pt; text-align: center; }
+        .rc { font-size: 9pt; text-align: center; color: #475569; margin-bottom: 8pt; }
+        .rs {
+          font-size: 11pt;
+          font-weight: bold;
+          text-transform: uppercase;
+          border-bottom: 1.5pt solid #0f172a;
+          padding-bottom: 2pt;
+          margin-top: 10pt;
+          margin-bottom: 5pt;
+          color: #0f172a;
+        }
+        .rsg { margin-bottom: 6pt; }
+        .rsk { font-weight: bold; }
+        .rsv { margin-bottom: 3pt; }
+        .ri-row { display: flex; justify-content: space-between; font-weight: bold; }
+        .ri-title { font-weight: bold; }
+        .ri-date { font-style: italic; color: #475569; }
+        .ri-sub { font-style: italic; margin-bottom: 3pt; }
+        ul.rb { margin: 2pt 0 6pt 15pt; padding: 0; }
+        ul.rb li { margin-bottom: 2.5pt; }
+        a {
+          color: #1e40af !important;
+          text-decoration: underline !important;
+        }
+        a:hover { color: #1d4ed8 !important; }
+      </style>
+    </head>
+    <body>
+      ${contentHtml}
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(['\ufeff' + wordDocument], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  toast(`📝 Exported "${filename}" successfully! Open in MS Word or Google Docs.`, 'success', 4000);
+}
+
 function exportJSON(){
   const a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(D,null,2));

@@ -378,6 +378,15 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
     max-height: none !important;
     overflow: visible !important;
   }
+  
+  /* Preserve clickable hyperlinks & colors in Print PDF */
+  a, a:visited {
+    color: var(--tpl-theme, #1e3a8a) !important;
+    text-decoration: underline !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   @page {
     size: A4 portrait;
     margin: 0;
@@ -507,15 +516,34 @@ body.allow-page-split #paper .rb li {
     <span style="display:flex;align-items:center;gap:6px;color:#fff;font-family:'Space Grotesk','Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px">⚡ Resume AI <span class="brand-badge">PRO</span></span>
   </a>
   <div class="nav-sep"></div>
-  <div class="nav-acts">
-    <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;border:none;box-shadow:0 2px 10px rgba(124,58,237,0.35);display:flex;align-items:center;gap:6px;" onclick="openAiLazyBox()"><span>✨</span> AI Quick Drop Box</button>
-    <button class="btn btn-orange" onclick="openFastModal()">⚡ Fast 1-Click Tailor</button>
-    <button class="btn btn-outline" onclick="document.getElementById('fInput').click()">📁 Upload Resume</button>
+  <div class="nav-acts" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;border:none;box-shadow:0 2px 10px rgba(124,58,237,0.35);display:flex;align-items:center;gap:4px;padding:5px 9px;font-size:11px;" onclick="openAiLazyBox()"><span>✨</span> AI Quick Drop</button>
+    <button class="btn btn-orange btn-sm" onclick="openFastModal()" style="font-weight:800;font-size:11px;">⚡ 1-Click Tailor</button>
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('fInput').click()" style="font-size:11px;">📁 Upload</button>
     <input type="file" id="fInput" style="display:none" accept=".pdf,.docx,.doc,.txt,.json" onchange="handleUpload(event)">
-    <button class="btn btn-tpl" onclick="openTplModal()">🎨 <span id="tplLabel">Modern Tech</span></button>
+    <button class="btn btn-tpl btn-sm" onclick="openTplModal()" style="font-size:11px;">🎨 <span id="tplLabel">Modern Tech</span></button>
+
+    <!-- Promoted Top Settings: Font, Theme & Page Fit -->
+    <select id="topFontSelect" class="form-sel" style="font-size:10.5px;font-weight:700;padding:4px 6px;width:auto;border-color:#cbd5e1;background:#fff;" onchange="changeFont(this.value)" title="Choose Typography Font">
+      <option value="'Plus Jakarta Sans', sans-serif" selected>🔤 Plus Jakarta</option>
+      <option value="'Inter', sans-serif">🔤 Inter</option>
+      <option value="'Space Grotesk', sans-serif">🔤 Space Grotesk</option>
+      <option value="'Times New Roman', serif">🔤 Times New Roman</option>
+      <option value="'Calibri', sans-serif">🔤 Calibri</option>
+    </select>
+
+    <select id="topThemeSelect" class="form-sel" style="font-size:10.5px;font-weight:700;padding:4px 6px;width:auto;border-color:#cbd5e1;background:#fff;" onchange="changeTheme(this.value)" title="Accent Color Theme">
+      <option value="#1e3a8a" selected>🎨 Navy Blue</option>
+      <option value="#0d9488">🎨 Teal</option>
+      <option value="#059669">🎨 Emerald</option>
+      <option value="#7c3aed">🎨 Purple</option>
+      <option value="#dc2626">🎨 Crimson</option>
+      <option value="#111827">🎨 Slate Black</option>
+    </select>
+
     <div class="sel-pill" style="position:relative;">
-      <button type="button" class="btn btn-outline btn-sm" style="font-weight:700;gap:4px;border-color:#a78bfa;color:#6d28d9;background:#f5f3ff;" onclick="togglePageLayoutPopover(event)">
-        📐 Page Layout & PDF Settings ▾
+      <button type="button" class="btn btn-outline btn-sm" style="font-weight:700;gap:4px;border-color:#a78bfa;color:#6d28d9;background:#f5f3ff;font-size:10.5px;padding:4px 8px;" onclick="togglePageLayoutPopover(event)">
+        📐 Page & PDF ▾
       </button>
 
       <!-- PAGE LAYOUT POPOVER PANEL -->
@@ -559,14 +587,17 @@ body.allow-page-split #paper .rb li {
         </div>
       </div>
     </div>
-  <div class="nav-r">
-    <div id="activeAIBadge" style="font-size:10px;font-weight:800;padding:4px 9px;border-radius:12px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openApiModal()" title="Current Active AI Engine (Click to manage keys)">
+  </div>
+
+  <div class="nav-r" style="display:flex;align-items:center;gap:5px;">
+    <div id="activeAIBadge" style="font-size:9.5px;font-weight:800;padding:3px 7px;border-radius:12px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openApiModal()" title="Current Active AI Engine">
       🤖 <span id="activeAIName">Auto AI</span>
     </div>
-    <button class="btn btn-purple" onclick="openApiModal()">🔑 API Key</button>
-    <button class="btn btn-outline" onclick="exportJSON()">💾 Export</button>
-    <button class="btn btn-preview-toggle" id="previewToggleBtn" onclick="togglePreview()" title="Show or hide the live resume preview">👁️ Hide Preview</button>
-    <button class="btn btn-primary" onclick="triggerMainPrint()">🖨️ Print PDF</button>
+    <button class="btn btn-purple btn-sm" onclick="openApiModal()" style="font-size:10.5px;padding:4px 7px;">🔑 API</button>
+    <button class="btn btn-outline btn-sm" onclick="exportJSON()" style="font-size:10.5px;padding:4px 7px;" title="Export JSON Data">💾 JSON</button>
+    <button class="btn btn-sm" onclick="exportWord()" style="background:#2563eb;color:#fff;font-weight:800;font-size:10.5px;padding:4px 8px;border:none;box-shadow:0 2px 6px rgba(37,99,235,0.3);" title="Export editable Word (.doc / .docx) file with live links">📝 Word (.doc)</button>
+    <button class="btn btn-preview-toggle btn-sm" id="previewToggleBtn" onclick="togglePreview()" style="font-size:10.5px;padding:4px 7px;" title="Show or hide live preview">👁️</button>
+    <button class="btn btn-primary btn-sm" onclick="triggerMainPrint()" style="font-size:11px;font-weight:800;padding:5px 11px;">🖨️ Print PDF</button>
   </div>
 </nav>
 
@@ -4385,6 +4416,93 @@ function clearAll(){
   localStorage.removeItem('rsai_v10');
   populateForm(); render(); liveATS();
   toast('Resume cleared', 'info');
+}
+
+// ════════════════════════════════════════════════════════════════
+// 📝 EXPORT RESUME AS FORMATTED WORD DOCUMENT (.DOC / .DOCX)
+// ════════════════════════════════════════════════════════════════
+function exportWord(){
+  syncFormToD();
+  const resumeEl = document.getElementById('resumeOut');
+  if(!resumeEl){
+    toast('Nothing to export!', 'warning');
+    return;
+  }
+
+  const name = (D.basics?.name || 'Resume').trim().replace(/\s+/g, '_');
+  const filename = `${name}_Resume.doc`;
+
+  // Create clean Word HTML with standard Office styles & preserved hyperlinks
+  const contentHtml = resumeEl.innerHTML;
+  
+  const wordDocument = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <title>${D.basics?.name || 'Resume'}</title>
+      <style>
+        @page {
+          size: 21.0cm 29.7cm;
+          margin: 1.2cm 1.4cm 1.2cm 1.4cm;
+          mso-page-orientation: portrait;
+        }
+        body {
+          font-family: 'Calibri', 'Arial', sans-serif;
+          font-size: 10.5pt;
+          line-height: 1.35;
+          color: #111827;
+        }
+        h1, h2, h3, .rn {
+          font-family: 'Calibri', 'Arial', sans-serif;
+          font-weight: bold;
+          color: #0f172a;
+          margin: 0 0 4pt 0;
+        }
+        .rn { font-size: 18pt; text-align: center; }
+        .rc { font-size: 9pt; text-align: center; color: #475569; margin-bottom: 8pt; }
+        .rs {
+          font-size: 11pt;
+          font-weight: bold;
+          text-transform: uppercase;
+          border-bottom: 1.5pt solid #0f172a;
+          padding-bottom: 2pt;
+          margin-top: 10pt;
+          margin-bottom: 5pt;
+          color: #0f172a;
+        }
+        .rsg { margin-bottom: 6pt; }
+        .rsk { font-weight: bold; }
+        .rsv { margin-bottom: 3pt; }
+        .ri-row { display: flex; justify-content: space-between; font-weight: bold; }
+        .ri-title { font-weight: bold; }
+        .ri-date { font-style: italic; color: #475569; }
+        .ri-sub { font-style: italic; margin-bottom: 3pt; }
+        ul.rb { margin: 2pt 0 6pt 15pt; padding: 0; }
+        ul.rb li { margin-bottom: 2.5pt; }
+        a {
+          color: #1e40af !important;
+          text-decoration: underline !important;
+        }
+        a:hover { color: #1d4ed8 !important; }
+      </style>
+    </head>
+    <body>
+      ${contentHtml}
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(['\ufeff' + wordDocument], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  toast(`📝 Exported "${filename}" successfully! Open in MS Word or Google Docs.`, 'success', 4000);
 }
 
 function exportJSON(){
