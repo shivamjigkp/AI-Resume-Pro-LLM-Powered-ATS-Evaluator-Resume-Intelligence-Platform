@@ -1090,219 +1090,219 @@ body.allow-page-split #paper .rb li {
 
 </div><!-- /workspace -->
 
-<!-- ══════════════════════════════════════════════════════════════
-     GATE 1 — SMART EMAIL OUTREACH — dedicated full-width workspace
-     Lives OUTSIDE the fixed-height .workspace, exactly like the
-     SGResume section below: its own full-width, naturally-tall
-     block further down the page. Clicking the "⚡ Gate 1" button in
-     the small Outreach panel NEVER opens fields inside that small
-     panel — it only opens/scrolls to this section. Never touches
-     the main resume/editor or the SGResume clone.
-     ══════════════════════════════════════════════════════════════ -->
-<div class="sg-section no-print-section" id="gate1Section" style="display:none">
-  <div class="sg-section-hdr no-print">
-    <div>
-      <div class="sg-section-title" style="color:#1e3a8a">⚡ Gate 1 — Smart Email Outreach</div>
-      <div class="sg-section-sub">Cold-email campaign workspace — original resume/editor upar untouched hai. Google Sheets se leads fetch karo, template + resume pick karo, aur drafts banao ya seedha bhejo.</div>
-    </div>
-    <div class="sg-section-acts">
-      <div style="display:flex;gap:0;border-bottom:1px solid #bfdbfe;background:#f8fafc;">
-        <button type="button" id="gate1TabFast" class="gate1-mode-tab active" onclick="switchGate1Mode('fast')" style="flex:1;padding:8px 12px;font-size:11.5px;font-weight:800;border:none;background:transparent;cursor:pointer;color:#1e40af;border-bottom:2px solid #2563eb;">⚡ Fast Apply</button>
-        <button type="button" id="gate1TabAdvanced" class="gate1-mode-tab" onclick="switchGate1Mode('advanced')" style="flex:1;padding:8px 12px;font-size:11.5px;font-weight:800;border:none;background:transparent;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;">🛠️ Advanced Mode</button>
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- ⚡ GATE 1: SMART OUTREACH EMAIL COMPOSER (PERFECT 50% - 50% SPLIT) -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="sg-section no-print-section" id="gate1Section" style="display:none;background:#f8fafc;padding:16px 20px 30px;border-bottom:2px solid #e2e8f0;">
+  <div style="max-width:1440px;margin:0 auto;">
+    
+    <!-- Top Header Bar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid #cbd5e1;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">⚡</span>
+        <div>
+          <h2 style="margin:0;font-size:17px;font-weight:900;color:#1e293b;letter-spacing:-0.3px;">Gate 1 — Smart Email Outreach & Campaign Engine</h2>
+          <div style="font-size:11px;color:#64748b;font-weight:600;">Google Sheet Leads ➔ Custom ChatGPT Email Template ➔ ATS Resume PDF ➔ 1-Click Gmail Drafts / Direct Send</div>
+        </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="closeGate1Panel()">✕ Close</button>
+      <button type="button" class="btn btn-outline btn-xs" onclick="closeGate1Panel()" style="font-weight:800;font-size:11px;">✕ Close</button>
     </div>
-  </div>
 
-  <div class="ats-hero" style="background:linear-gradient(135deg,#eff6ff,#faf5ff);border-color:#bfdbfe;max-width:100%;padding:16px;">
-    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
-      
+    <!-- 50% - 50% Side-by-Side Flex Container -->
+    <div style="display:flex;gap:18px;align-items:flex-start;flex-direction:row;width:100%;box-sizing:border-box;">
+
       <!-- ════════════════════════════════════════════════════════════ -->
-      <!-- LEFT COLUMN (60% WIDTH): GOOGLE SHEET & CAMPAIGN CONTROLS -->
+      <!-- LEFT COLUMN (50% WIDTH): LEAD SOURCE & CAMPAIGN CONTROLS -->
       <!-- ════════════════════════════════════════════════════════════ -->
-      <div style="flex:1.3;min-width:320px;">
-        
-        <!-- CARD 1: GOOGLE SHEET LEAD SOURCE -->
-        <div style="background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 4px 12px rgba(30,58,138,0.05);">
-          <h4 style="margin:0 0 8px 0;font-size:12.5px;color:#1e3a8a;display:flex;justify-content:space-between;align-items:center;font-weight:800;">
-            <span>📊 Lead Source / Google Sheet Tracker</span>
-            <div style="display:flex;gap:6px;">
-              <button type="button" class="btn btn-outline btn-xs" onclick="toggleGate1LeadsTable()" style="font-size:10px;font-weight:700;">📊 View Sheet Leads ▾</button>
-              <button type="button" class="btn btn-outline btn-xs" onclick="refreshGate1Sheets()" style="font-size:10px;">🔄 Refresh</button>
+      <div style="flex:1;width:50%;max-width:50%;box-sizing:border-box;">
+
+        <!-- CARD 1: GOOGLE SHEET LEAD TRACKER -->
+        <div style="background:#fff;border:1.5px solid #cbd5e1;border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.04);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-weight:900;font-size:12.5px;color:#1e293b;display:flex;align-items:center;gap:6px;">
+              <span>📊</span> Google Sheets Lead Source
             </div>
-          </h4>
-          
-          <!-- Paste Link Input -->
-          <div style="margin-bottom:10px;">
-            <label style="font-size:11px;font-weight:700;color:#334155;display:block;margin-bottom:4px;">📋 Paste Google Sheet Link or Sheet ID:</label>
-            <div style="display:flex;gap:6px;">
-              <input type="text" id="gate1NewSheetId" placeholder="Paste full link (https://docs.google.com/spreadsheets/d/1lYkZAjq.../edit)" class="form-sel" style="flex:1;font-size:11px;padding:7px 10px;font-weight:600;" oninput="autoExtractGate1SheetId(this.value)">
-              <button type="button" class="btn btn-purple btn-sm" onclick="connectExistingGate1Sheet()" style="font-weight:800;padding:6px 14px;">🔌 Connect Sheet</button>
+            <div style="display:flex;gap:5px;">
+              <button type="button" class="btn btn-outline btn-xs" onclick="toggleGate1LeadsTable()" style="font-size:10px;font-weight:700;">📊 Toggle Table ▾</button>
+              <button type="button" class="btn btn-outline btn-xs" onclick="fetchAndRenderGate1Leads()" style="font-size:10px;font-weight:700;">🔄 Refresh</button>
             </div>
-            <div id="gate1SheetUrlStatus" style="font-size:10px;color:#059669;font-weight:700;margin-top:4px;"></div>
           </div>
 
-          <!-- Active Sheet Selector & Management -->
-          <div style="background:#f8fafc;padding:8px 10px;border-radius:6px;border:1px solid #e2e8f0;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <label style="font-size:10.5px;font-weight:700;color:#475569;">Active Sheet Selection:</label>
+          <!-- Sheet URL Input -->
+          <div class="fg" style="margin-bottom:8px;">
+            <label style="font-size:10.5px;font-weight:700;color:#475569;">PASTE GOOGLE SHEET LINK OR ID:</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="gate1SheetUrlInput" class="form-sel" style="flex:1;font-size:11px;" placeholder="Paste Google Sheet URL..." value="https://docs.google.com/spreadsheets/d/1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI/edit" oninput="autoExtractGate1SheetId(this.value)">
+              <button type="button" class="btn btn-primary btn-xs" onclick="connectExistingGate1Sheet()" style="font-weight:800;font-size:11px;padding:4px 10px;">🔌 Connect</button>
+            </div>
+            <div id="gate1ExtractedIdNotice" style="font-size:9.5px;color:#059669;font-weight:700;margin-top:2px;">✅ Extracted Sheet ID: "1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI"</div>
+          </div>
+
+          <!-- Active Sheet Selector with Add/Delete -->
+          <div class="fg" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <label style="font-size:10.5px;font-weight:700;color:#475569;">ACTIVE SHEET SELECTION:</label>
               <div style="display:flex;gap:4px;">
-                <button type="button" class="btn btn-outline btn-xs" onclick="addNewGate1SheetPrompt()" style="font-size:10px;font-weight:700;color:#16a34a;border-color:#bbf7d0;">+ Add New Sheet</button>
-                <button type="button" class="btn btn-outline btn-xs" onclick="deleteActiveGate1Sheet()" style="font-size:10px;font-weight:700;color:#dc2626;border-color:#fca5a5;">🗑️ Delete Sheet</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="addNewGate1SheetPrompt()" style="font-size:9.5px;font-weight:700;color:#059669;border-color:#a7f3d0;">+ Add New Sheet</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="deleteActiveGate1Sheet()" style="font-size:9.5px;font-weight:700;color:#dc2626;border-color:#fecaca;">🗑️ Delete Sheet</button>
               </div>
             </div>
-            <select id="gate1ActiveSheet" class="form-sel" style="width:100%;font-size:11px;padding:5px 8px;font-weight:700;" onchange="onGate1SheetChange()"></select>
+            <select id="gate1ActiveSheet" class="form-sel" style="width:100%;font-size:11px;font-weight:700;" onchange="onGate1SheetChange()"></select>
           </div>
 
-          <!-- EXPANDABLE GOOGLE SHEET LEADS TABLE -->
-          <div id="gate1LeadsTableContainer" style="display:none;margin-top:12px;padding-top:10px;border-top:1px dashed #bfdbfe;">
-            <div style="font-weight:800;font-size:11px;color:#1e40af;margin-bottom:6px;display:flex;justify-content:space-between;">
-              <span>📋 Active Google Sheet Rows:</span>
-              <span id="gate1LeadsCountBadge" style="font-size:10px;color:#64748b;">Showing active rows...</span>
+          <!-- Expandable Live Sheet Rows Table -->
+          <div id="gate1LeadsTableContainer" style="margin-top:8px;border-top:1px solid #e2e8f0;padding-top:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="font-size:10.5px;font-weight:800;color:#334155;">📑 ACTIVE GOOGLE SHEET LEADS:</div>
+              <div id="gate1LeadsCountBadge" style="font-size:9.5px;color:#6366f1;font-weight:700;">Loading rows...</div>
             </div>
-            <div id="gate1LeadsTableBox" style="max-height:180px;overflow-y:auto;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;font-size:10.5px;"></div>
-          </div>
-        </div>
-
-        <div class="row2" style="margin-bottom:8px;">
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">Branch / Specialization ({{branch}}):</label>
-                <input type="text" id="g1_branch" value="ECE – Data Science & Machine Learning" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">Phone Number ({{sender_phone}}):</label>
-                <input type="text" id="g1_phone" value="+91-8081513780" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-            </div>
-
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">Email Address ({{sender_email}}):</label>
-                <input type="text" id="g1_email" value="quantxcoder@gmail.com" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">GitHub URL ({{sender_github}}):</label>
-                <input type="text" id="g1_github" value="https://github.com/shivamjigkp" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-            </div>
-
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">LinkedIn URL ({{sender_linkedin}}):</label>
-                <input type="text" id="g1_linkedin" value="https://linkedin.com/in/shivam-gupta-05209a279" class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-              <div class="fg" style="margin-bottom:0;">
-                <label style="font-size:10.5px;font-weight:700;">Other Links (Portfolio / LeetCode):</label>
-                <input type="text" id="g1_other_links" placeholder="Portfolio: https://... | LeetCode: https://..." class="form-sel" style="font-size:11px;padding:5px 8px;" oninput="saveGate1ProfileFields()">
-              </div>
-            </div>
-
-            <div class="fg" style="margin-bottom:6px;">
-              <label style="font-size:10.5px;font-weight:700;">Key Work & Highlights ({{experience_summary}}):</label>
-              <textarea id="g1_exp_summary" rows="3" class="form-sel" style="width:100%;font-size:10.5px;padding:6px;line-height:1.35;box-sizing:border-box;" oninput="saveGate1ProfileFields()">Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)&#10;Certifications: Machine Learning – Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification</textarea>
-            </div>
-            <div style="font-size:9.5px;color:#6366f1;font-weight:600;">✨ Changes are auto-saved and live-merged into all templates!</div>
+            <div id="gate1LeadsTableBox" style="max-height:160px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;"></div>
           </div>
         </div>
 
-        <!-- CARD 2: FAST APPLY / ADVANCED CONTROLS -->
-        <div style="background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;box-shadow:0 4px 12px rgba(30,58,138,0.05);">
-          <div style="font-size:11px;color:#475569;margin-bottom:10px;font-weight:600;">
-            Fetch active rows from your Google Sheets Lead tracker and send customized templates directly.
+        <!-- CARD 2: CAMPAIGN ROW RANGE & ACTION BUTTONS -->
+        <div style="background:#fff;border:1.5px solid #cbd5e1;border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.04);">
+          <div style="font-weight:900;font-size:12.5px;color:#1e293b;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+            <span>🚀</span> Campaign Execution Controls
           </div>
-          
-          <div class="row2" style="margin-bottom:12px;">
+
+          <!-- Row Range Inputs -->
+          <div class="row2" style="margin-bottom:10px;">
             <div class="fg" style="margin-bottom:0;">
-              <label style="font-weight:700;font-size:11px;">START ROW</label>
-              <input type="number" id="gate1StartRow" value="2" min="2" class="form-sel" style="font-weight:800;">
+              <label style="font-weight:700;font-size:10.5px;">START ROW (MIN: 2):</label>
+              <input type="number" id="gate1StartRow" value="2" min="2" class="form-sel" style="font-size:11px;font-weight:700;" oninput="updateGate1PreviewForActiveRow()">
             </div>
             <div class="fg" style="margin-bottom:0;">
-              <label style="font-weight:700;font-size:11px;">END ROW</label>
-              <input type="number" id="gate1EndRow" value="10" min="2" class="form-sel" style="font-weight:800;">
+              <label style="font-weight:700;font-size:10.5px;">END ROW:</label>
+              <input type="number" id="gate1EndRow" value="10" min="2" class="form-sel" style="font-size:11px;font-weight:700;">
             </div>
           </div>
 
-          <div id="gate1FastForm">
-            <div class="fg" style="margin-bottom:10px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                <label style="font-weight:700;font-size:11px;">DEFAULT TEMPLATE</label>
-                <div style="display:flex;gap:4px;">
-                  <button type="button" class="btn btn-outline btn-xs" onclick="addNewGate1TemplatePrompt()" style="font-size:10px;font-weight:700;color:#16a34a;border-color:#bbf7d0;">+ New Template</button>
-                  <button type="button" class="btn btn-outline btn-xs" onclick="deleteActiveGate1Template()" style="font-size:10px;font-weight:700;color:#dc2626;border-color:#fca5a5;">🗑️ Delete</button>
-                </div>
-              </div>
-              <select id="gate1DefaultTemplate" class="form-sel" style="width:100%;font-size:11px;font-weight:700;" onchange="syncGate1LiveTemplateEditor()"></select>
-            </div>
-            <div class="fg" style="margin-bottom:12px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                <label style="font-weight:700;font-size:11px;">ATTACH RESUME PDF</label>
-                <div style="display:flex;gap:4px;">
-                  <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('gate1PdfUploadInput').click()" style="font-size:10px;font-weight:700;color:#2563eb;border-color:#bfdbfe;">📁 Upload PDF from PC</button>
-                  <button type="button" class="btn btn-outline btn-xs" onclick="refreshGate1Resumes()" style="font-size:10px;">🔄</button>
-                </div>
-              </div>
-              <input type="file" id="gate1PdfUploadInput" style="display:none;" accept=".pdf" onchange="uploadGate1PdfFile(event)">
-              <select id="gate1DefaultResume" class="form-sel" style="width:100%;font-size:11px;font-weight:700;"></select>
-              <div id="gate1ResumeStatus" style="font-size:9.5px;color:#059669;font-weight:600;margin-top:3px;"></div>
-            </div>
+          <!-- Force Overwrite Checkbox (Re-draft already drafted rows) -->
+          <div style="margin-bottom:12px;display:flex;align-items:center;gap:7px;background:#f0fdf4;padding:7px 10px;border-radius:6px;border:1px solid #bbf7d0;">
+            <input type="checkbox" id="gate1ForceDraftCheckbox" style="accent-color:#16a34a;transform:scale(1.15);" checked>
+            <label for="gate1ForceDraftCheckbox" style="font-size:10.5px;font-weight:700;color:#166534;cursor:pointer;">
+              ⚡ Force Re-Draft / Send (Bypasses duplicate check so drafted rows are processed)
+            </label>
+          </div>
 
-            <div style="display:flex;gap:10px;margin-top:14px;">
-              <button type="button" class="btn btn-orange" onclick="runGate1Action('draft')" id="btnGate1Draft" style="flex:1;justify-content:center;padding:12px;font-weight:800;font-size:13px;box-shadow:0 3px 10px rgba(249,115,22,0.35);">
-                ⚡ Create Drafts (Test in Gmail)
-              </button>
-              <button type="button" class="btn" onclick="runGate1Action('send')" id="btnGate1Send" style="flex:1;justify-content:center;padding:12px;font-weight:800;font-size:13px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;box-shadow:0 3px 10px rgba(5,150,105,0.35);">
-                🚀 Send Directly (Send Now)
-              </button>
+          <!-- Resume PDF Attachment Picker -->
+          <div class="fg" style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <label style="font-weight:700;font-size:10.5px;">ATTACH RESUME PDF:</label>
+              <div style="display:flex;gap:4px;">
+                <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('gate1PdfUploadInput').click()" style="font-size:10px;font-weight:700;color:#2563eb;border-color:#bfdbfe;">📁 Upload PDF from PC</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="refreshGate1Resumes()" style="font-size:10px;">🔄</button>
+              </div>
             </div>
+            <input type="file" id="gate1PdfUploadInput" style="display:none;" accept=".pdf" onchange="uploadGate1PdfFile(event)">
+            <select id="gate1DefaultResume" class="form-sel" style="width:100%;font-size:11px;font-weight:700;" onchange="updateGate1LivePreview()"></select>
+            <div id="gate1ResumeStatus" style="font-size:9.5px;color:#059669;font-weight:600;margin-top:2px;"></div>
+          </div>
+
+          <!-- Action Buttons (Drafts vs Send) -->
+          <div style="display:flex;gap:10px;">
+            <button type="button" class="btn btn-orange" onclick="runGate1Action('draft')" id="btnGate1Draft" style="flex:1;justify-content:center;padding:12px;font-weight:800;font-size:12.5px;box-shadow:0 3px 10px rgba(249,115,22,0.35);">
+              ⚡ Create Drafts (Test in Gmail)
+            </button>
+            <button type="button" class="btn" onclick="runGate1Action('send')" id="btnGate1Send" style="flex:1;justify-content:center;padding:12px;font-weight:800;font-size:12.5px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;box-shadow:0 3px 10px rgba(5,150,105,0.35);">
+              🚀 Send Directly (Send Now)
+            </button>
           </div>
         </div>
 
-        <!-- CARD 3: REALTIME CAMPAIGN PROGRESS & ROW NUMBERING LOG -->
-        <div id="gate1ProgressCard" style="display:none;background:#fff;border:1.5px solid #6366f1;border-radius:10px;padding:12px;margin-top:12px;box-shadow:0 4px 12px rgba(99,102,241,0.15);">
-          <div style="font-weight:800;font-size:12px;color:#4338ca;display:flex;justify-content:space-between;margin-bottom:6px;">
-            <span>✉️ Campaign Progress: <span id="gate1ProgressText">0 / 0</span></span>
-            <span id="gate1ProgressPct">0%</span>
+        <!-- PROGRESS & REALTIME LOG CARD -->
+        <div id="gate1ProgressCard" style="display:none;background:#fff;border:1.5px solid #c7d2fe;border-radius:10px;padding:12px;box-shadow:0 4px 12px rgba(99,102,241,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-weight:800;font-size:11.5px;color:#3730a3;" id="gate1ProgressTitle">✉️ Campaign Progress: 0/0</div>
+            <div style="font-weight:800;font-size:11px;color:#4f46e5;" id="gate1ProgressPercent">0%</div>
           </div>
-          <div style="width:100%;background:#e0e7ff;height:8px;border-radius:4px;overflow:hidden;margin-bottom:8px;">
-            <div id="gate1ProgressBar" style="width:0%;background:linear-gradient(90deg,#6366f1,#4f46e5);height:100%;transition:width 0.3s;"></div>
+          <div style="width:100%;height:6px;background:#e0e7ff;border-radius:3px;overflow:hidden;margin-bottom:8px;">
+            <div id="gate1ProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#4f46e5,#06b6d4);transition:width 0.3s;"></div>
           </div>
-          <div id="gate1ProgressLog" style="max-height:160px;overflow-y:auto;font-size:10.5px;font-family:monospace;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #cbd5e1;line-height:1.5;"></div>
+          <div id="gate1ProgressLog" style="font-family:Consolas,monospace;font-size:10px;background:#0f172a;color:#e2e8f0;padding:8px;border-radius:5px;max-height:110px;overflow-y:auto;white-space:pre-wrap;line-height:1.4;"></div>
         </div>
 
       </div>
 
       <!-- ════════════════════════════════════════════════════════════ -->
-      <!-- RIGHT COLUMN (40% WIDTH): CHATGPT TEMPLATE EDITOR & LIVE PREVIEW -->
+      <!-- RIGHT COLUMN (50% WIDTH): 4-STEP EMAIL COMPOSER & LIVE GMAIL MOCKUP -->
       <!-- ════════════════════════════════════════════════════════════ -->
-      <div style="flex:1.2;min-width:340px;">
+      <div style="flex:1;width:50%;max-width:50%;box-sizing:border-box;">
         <div style="background:#fff;border:1.5px solid #6366f1;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(99,102,241,0.12);">
           
-          <!-- Header Actions -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #ede9fe;">
-            <div>
+          <!-- Template Selector Header -->
+          <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid #ede9fe;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
               <div style="font-weight:900;font-size:13px;color:#3730a3;display:flex;align-items:center;gap:6px;">
-                <span>📧</span> Email Template (Paste from ChatGPT)
+                <span>📧</span> Cold Email Template (Pick or Paste from ChatGPT)
               </div>
-              <div style="font-size:9.5px;color:#6b7280;font-weight:600;">Only 3 placeholders needed: <code>{{recruiter_name}}</code>, <code>{{company}}</code>, <code>{{role}}</code></div>
+              <div style="display:flex;gap:5px;">
+                <button type="button" class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;font-size:9.5px;padding:3px 8px;border:none;" onclick="openAiEmailWriterModal()">🤖 AI Writer</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="addNewGate1TemplatePrompt()" style="font-size:9.5px;font-weight:700;color:#059669;border-color:#a7f3d0;">+ New</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="deleteActiveGate1Template()" style="font-size:9.5px;font-weight:700;color:#dc2626;border-color:#fecaca;">🗑️</button>
+                <button type="button" class="btn btn-purple btn-xs" onclick="saveGate1LiveTemplate()" style="font-size:9.5px;font-weight:800;padding:3px 9px;">💾 Save</button>
+              </div>
             </div>
-            <div style="display:flex;gap:6px;">
-              <button type="button" class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:800;font-size:10px;padding:4px 9px;border:none;" onclick="openAiEmailWriterModal()">🤖 AI Writer</button>
-              <button type="button" class="btn btn-purple btn-xs" onclick="saveGate1LiveTemplate()" style="font-size:10px;font-weight:800;padding:4px 10px;">💾 Save Template</button>
-            </div>
+            <!-- Template Preset Dropdown (11 Master Templates) -->
+            <select id="gate1DefaultTemplate" class="form-sel" style="width:100%;font-size:11px;font-weight:700;" onchange="syncGate1LiveTemplateEditor()"></select>
           </div>
 
-          <!-- Full Raw Template Textarea -->
-          <div style="margin-bottom:10px;">
-            <textarea id="gate1LiveTemplateContent" rows="13" placeholder="Paste your complete email template here..." style="width:100%;padding:9px 11px;font-size:11px;border:1.5px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-family:inherit;line-height:1.45;color:#1e293b;resize:vertical;" oninput="updateGate1LivePreview()"></textarea>
+          <!-- STEP 1: TO FIELD -->
+          <div class="fg" style="margin-bottom:8px;">
+            <label style="font-size:10px;font-weight:800;color:#475569;">1. TO (RECRUITER EMAIL):</label>
+            <input type="text" id="gate1EmailToField" class="form-sel" style="font-size:11px;background:#f8fafc;color:#1e40af;font-weight:700;" value="Auto-fetched per row from Google Sheet (e.g. careers@zerodha.com)" readonly>
           </div>
 
-          <!-- Live Rendered Email Message Preview Box -->
+          <!-- STEP 2: DEDICATED EDITABLE SUBJECT FIELD -->
+          <div class="fg" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <label style="font-size:10px;font-weight:800;color:#475569;">2. SUBJECT LINE (EDITABLE):</label>
+              <span style="font-size:9px;color:#6366f1;font-weight:600;">Tags: <code>{{role}}</code>, <code>{{company}}</code>, <code>{{sender_name}}</code></span>
+            </div>
+            <input type="text" id="gate1EmailSubject" class="form-sel" style="font-size:11px;font-weight:800;color:#1e293b;border-color:#818cf8;" value="Application for Opportunities at {{company}} — Shivam Gupta" oninput="updateGate1LivePreview()">
+          </div>
+
+          <!-- STEP 3: EMAIL BODY TEXTAREA (ChatGPT Paste Box) -->
+          <div class="fg" style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <label style="font-size:10px;font-weight:800;color:#475569;">3. EMAIL BODY (EDIT OR PASTE CHATGPT TEMPLATE):</label>
+              <span style="font-size:9px;color:#6366f1;font-weight:600;">Tags: <code>{{recruiter_name}}</code>, <code>{{company}}</code>, <code>{{role}}</code></span>
+            </div>
+            <textarea id="gate1LiveTemplateContent" rows="14" placeholder="Paste your email template body here..." style="width:100%;padding:9px 11px;font-size:10.5px;border:1.5px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-family:inherit;line-height:1.45;color:#1e293b;resize:vertical;" oninput="updateGate1LivePreview()"></textarea>
+          </div>
+
+          <!-- STEP 4 & 5: LIVE GMAIL MOCKUP PREVIEW -->
           <div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:8px;padding:10px;">
             <div style="font-weight:800;font-size:10.5px;color:#5b21b6;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="display:flex;align-items:center;gap:4px;"><span>👁️</span> LIVE RENDERED PREVIEW (What Recruiter Sees):</span>
-              <span style="font-size:9.5px;color:#7c3aed;font-weight:700;">Company: BRIDGEi2i Analytics</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span>👁️</span> LIVE GMAIL PREVIEW (What Recruiter Sees):</span>
+              <span id="gate1PreviewTargetCompany" style="font-size:9.5px;color:#7c3aed;font-weight:800;">Target: Zerodha (Row 2)</span>
             </div>
-            <div id="gate1LivePreviewBox" style="font-size:10.5px;color:#1e1b4b;line-height:1.5;white-space:pre-wrap;background:#fff;padding:10px;border-radius:6px;border:1px solid #c7d2fe;max-height:220px;overflow-y:auto;font-family:sans-serif;">Loading merged email preview...</div>
+
+            <!-- Preview Card -->
+            <div style="background:#fff;border:1px solid #c7d2fe;border-radius:6px;padding:10px;font-family:sans-serif;">
+              <div style="font-size:10.5px;color:#64748b;margin-bottom:4px;border-bottom:1px solid #f1f5f9;padding-bottom:4px;">
+                <span style="font-weight:700;color:#334155;">To:</span> <span id="prevTo" style="color:#2563eb;font-weight:600;">careers@zerodha.com</span>
+              </div>
+              <div style="font-size:11px;font-weight:800;color:#0f172a;margin-bottom:8px;border-bottom:1px solid #f1f5f9;padding-bottom:4px;">
+                <span style="color:#64748b;font-weight:700;">Subject:</span> <span id="prevSubject">Application for Opportunities at Zerodha — Shivam Gupta</span>
+              </div>
+              <div id="gate1LivePreviewBox" style="font-size:10px;color:#1e293b;line-height:1.48;white-space:pre-wrap;max-height:200px;overflow-y:auto;margin-bottom:8px;"></div>
+              <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;padding:5px 8px;border-radius:4px;border:1px dashed #cbd5e1;">
+                <span style="font-size:12px;">📎</span>
+                <span id="prevAttachment" style="font-size:9.5px;font-weight:700;color:#2563eb;">Attachment: resume.pdf</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="sg-section no-print-section" <div id="gate1LivePreviewBox" style="font-size:10.5px;color:#1e1b4b;line-height:1.5;white-space:pre-wrap;background:#fff;padding:10px;border-radius:6px;border:1px solid #c7d2fe;max-height:220px;overflow-y:auto;font-family:sans-serif;">Loading merged email preview...</div>
           </div>
 
         </div>
@@ -6308,8 +6308,11 @@ function openGate1Panel() {
   section.style.display = 'block';
   document.getElementById('outreachSubBtnGate1')?.classList.add('open');
   requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  if (typeof refreshGate1Sheets === 'function') refreshGate1Sheets();
-  if (typeof refreshGate2Sheets === 'function') refreshGate2Sheets();
+
+  populateTemplateDropdown();
+  syncGate1LiveTemplateEditor();
+  fetchAndRenderGate1Leads();
+  refreshGate1Resumes();
 }
 
 function closeGate1Panel() {
@@ -7179,25 +7182,74 @@ function clearSlotById(slotId){
 // ════════════════════════════════════════════════════════════════
 // GATE 1 LIVE TEMPLATE EDITOR & CAMPAIGN PROGRESS COUNTER
 // ════════════════════════════════════════════════════════════════
+
+const MASTER_TEMPLATE_1_FALLBACK = `Dear {{recruiter_name}},
+
+I hope you are doing well.
+
+I am Shivam Gupta, a B.Tech student in Electronics & Communication Engineering (ECE), specializing in Data Science and Machine Learning at MMMUT, Gorakhpur. I am writing to express my strong interest in internship and entry-level opportunities at {{company}} across Software Development, Full-Stack Engineering, AI/ML, Data, Fintech, and Quantitative/Algorithmic Trading.
+
+I bring a hands-on, builder-oriented background in developing real-world software products, machine learning applications, and financial analytics solutions. I am also the Founder of Mastermind Research Technologies, an MSME/Udyam-registered technology venture focused on AI/ML, software, and web-development solutions, and I run Mastermind Algo Trader, a YouTube-based trading education platform sharing practical insights on algorithmic trading, price action, risk management, and market analysis.
+
+A brief overview of my work:
+• Full-Stack & Web Engineering: Built and deployed production-oriented full-stack applications using Next.js, React, FastAPI, TypeScript, JavaScript, Supabase/PostgreSQL, REST APIs, Cloudflare, Vercel, and Render. Shipped multiple healthcare & institutional platforms including a production hospital platform for Rajendra Hospital, Gorakhpur (appointment workflows, symptom-triage matcher, PM-JAY cashless calculator, appointment passes) and the MMMUT Hockey portal.
+• Enterprise & Outreach Platforms: Developed platforms for Mastermind Research Technologies and Mastermind Algo Trader with secure authentication, cloud deployment, payment webhooks, and live trading-signal workflows. Built this LLM-powered ATS resume intelligence and outreach platform with automated lead sync, Google Sheets integration, and Gmail API outreach.
+• Machine Learning & Data Engineering: Engineered end-to-end ML pipelines for forecasting, prediction, and analytics using Python, Pandas, NumPy, Scikit-learn, TensorFlow, XGBoost, Flask/FastAPI, Docker, AWS, and MLflow across electricity-demand forecasting, weather intelligence, and stock-price prediction.
+• Algorithmic Trading & Quantitative Systems: Designed, tested, and backtested rule-based algorithmic strategies (Pine Script v5, Python, FastAPI, TradingView, Chartink) with liquidity-sweep detection, EMA crossover logic, live signals, and risk analytics.
+• Competitions & Industry Simulations: Achieved Rank 3 and won the XM Global Daily Trading Competition in algorithmic trading, and cleared both phases of the FundingPips prop-firm challenge. Completed virtual job simulations in Risk Management (Goldman Sachs), Quantitative Research (J.P. Morgan), and Global Markets Sales & Trading (Bank of America).
+
+I am especially interested in opportunities where I can combine engineering, data, and analytical thinking—whether through building scalable software products, AI-powered applications, data platforms, or fintech and quantitative solutions.
+
+My resume is attached for your consideration. You can also review my work here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I would be grateful for the opportunity to be considered for any suitable current or future role at {{company}}. Thank you for your time and consideration.
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com`;
+
 async function syncGate1LiveTemplateEditor(){
   const sel = document.getElementById('gate1DefaultTemplate');
-  const tplName = sel?.value || 'default';
+  const tplId = sel?.value || '1_mastermind_comprehensive';
   const ta = document.getElementById('gate1LiveTemplateContent');
+  const subInp = document.getElementById('gate1EmailSubject');
   if(!ta) return;
 
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName));
-    const data = await res.json();
-    if(data.status === 'success' && data.template){
-      ta.value = data.template.content || '';
-    } else {
-      ta.value = `Subject: Application for {{role}} at {{company_name}} - {{my_name}}\n\nHi {{recruiter_name}},\n\nI noticed {{company_name}} is hiring for the {{role}} position...`;
-    }
-    updateGate1LivePreview();
-  } catch(e) {
-    updateGate1LivePreview();
+  localStorage.setItem('rsai_active_template', tplId);
+
+  // Set instant default while fetching
+  if(!ta.value.trim()){
+    ta.value = MASTER_TEMPLATE_1_FALLBACK;
+    if(subInp) subInp.value = 'Application for Opportunities at {company} — Shivam Gupta';
   }
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
+    const data = await res.json();
+    if(data.status === 'success' && data.template && data.template.content){
+      const raw = data.template.content;
+      const lines = raw.split('\n');
+      if(lines[0].toLowerCase().startsWith('subject:')){
+        if(subInp) subInp.value = lines[0].substring(8).trim();
+        ta.value = lines.slice(1).join('\n').trim();
+      } else {
+        ta.value = raw.trim();
+      }
+    } else if(tplId === '1_mastermind_comprehensive' || tplId === 'default') {
+      ta.value = MASTER_TEMPLATE_1_FALLBACK;
+      if(subInp) subInp.value = 'Application for Opportunities at {company} — Shivam Gupta';
+    }
+  } catch(e){
+    if(tplId === '1_mastermind_comprehensive' || tplId === 'default'){
+      ta.value = MASTER_TEMPLATE_1_FALLBACK;
+    }
+  }
+
+  updateGate1LivePreview();
 }
+
 
 function updateGate1LivePreview(){
   const ta = document.getElementById('gate1LiveTemplateContent');

@@ -4628,8 +4628,11 @@ function openGate1Panel() {
   section.style.display = 'block';
   document.getElementById('outreachSubBtnGate1')?.classList.add('open');
   requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  if (typeof refreshGate1Sheets === 'function') refreshGate1Sheets();
-  if (typeof refreshGate2Sheets === 'function') refreshGate2Sheets();
+
+  populateTemplateDropdown();
+  syncGate1LiveTemplateEditor();
+  fetchAndRenderGate1Leads();
+  refreshGate1Resumes();
 }
 
 function closeGate1Panel() {
@@ -5499,25 +5502,74 @@ function clearSlotById(slotId){
 // ════════════════════════════════════════════════════════════════
 // GATE 1 LIVE TEMPLATE EDITOR & CAMPAIGN PROGRESS COUNTER
 // ════════════════════════════════════════════════════════════════
+
+const MASTER_TEMPLATE_1_FALLBACK = `Dear {{recruiter_name}},
+
+I hope you are doing well.
+
+I am Shivam Gupta, a B.Tech student in Electronics & Communication Engineering (ECE), specializing in Data Science and Machine Learning at MMMUT, Gorakhpur. I am writing to express my strong interest in internship and entry-level opportunities at {{company}} across Software Development, Full-Stack Engineering, AI/ML, Data, Fintech, and Quantitative/Algorithmic Trading.
+
+I bring a hands-on, builder-oriented background in developing real-world software products, machine learning applications, and financial analytics solutions. I am also the Founder of Mastermind Research Technologies, an MSME/Udyam-registered technology venture focused on AI/ML, software, and web-development solutions, and I run Mastermind Algo Trader, a YouTube-based trading education platform sharing practical insights on algorithmic trading, price action, risk management, and market analysis.
+
+A brief overview of my work:
+• Full-Stack & Web Engineering: Built and deployed production-oriented full-stack applications using Next.js, React, FastAPI, TypeScript, JavaScript, Supabase/PostgreSQL, REST APIs, Cloudflare, Vercel, and Render. Shipped multiple healthcare & institutional platforms including a production hospital platform for Rajendra Hospital, Gorakhpur (appointment workflows, symptom-triage matcher, PM-JAY cashless calculator, appointment passes) and the MMMUT Hockey portal.
+• Enterprise & Outreach Platforms: Developed platforms for Mastermind Research Technologies and Mastermind Algo Trader with secure authentication, cloud deployment, payment webhooks, and live trading-signal workflows. Built this LLM-powered ATS resume intelligence and outreach platform with automated lead sync, Google Sheets integration, and Gmail API outreach.
+• Machine Learning & Data Engineering: Engineered end-to-end ML pipelines for forecasting, prediction, and analytics using Python, Pandas, NumPy, Scikit-learn, TensorFlow, XGBoost, Flask/FastAPI, Docker, AWS, and MLflow across electricity-demand forecasting, weather intelligence, and stock-price prediction.
+• Algorithmic Trading & Quantitative Systems: Designed, tested, and backtested rule-based algorithmic strategies (Pine Script v5, Python, FastAPI, TradingView, Chartink) with liquidity-sweep detection, EMA crossover logic, live signals, and risk analytics.
+• Competitions & Industry Simulations: Achieved Rank 3 and won the XM Global Daily Trading Competition in algorithmic trading, and cleared both phases of the FundingPips prop-firm challenge. Completed virtual job simulations in Risk Management (Goldman Sachs), Quantitative Research (J.P. Morgan), and Global Markets Sales & Trading (Bank of America).
+
+I am especially interested in opportunities where I can combine engineering, data, and analytical thinking—whether through building scalable software products, AI-powered applications, data platforms, or fintech and quantitative solutions.
+
+My resume is attached for your consideration. You can also review my work here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I would be grateful for the opportunity to be considered for any suitable current or future role at {{company}}. Thank you for your time and consideration.
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com`;
+
 async function syncGate1LiveTemplateEditor(){
   const sel = document.getElementById('gate1DefaultTemplate');
-  const tplName = sel?.value || 'default';
+  const tplId = sel?.value || '1_mastermind_comprehensive';
   const ta = document.getElementById('gate1LiveTemplateContent');
+  const subInp = document.getElementById('gate1EmailSubject');
   if(!ta) return;
 
-  try {
-    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplName));
-    const data = await res.json();
-    if(data.status === 'success' && data.template){
-      ta.value = data.template.content || '';
-    } else {
-      ta.value = `Subject: Application for {{role}} at {{company_name}} - {{my_name}}\n\nHi {{recruiter_name}},\n\nI noticed {{company_name}} is hiring for the {{role}} position...`;
-    }
-    updateGate1LivePreview();
-  } catch(e) {
-    updateGate1LivePreview();
+  localStorage.setItem('rsai_active_template', tplId);
+
+  // Set instant default while fetching
+  if(!ta.value.trim()){
+    ta.value = MASTER_TEMPLATE_1_FALLBACK;
+    if(subInp) subInp.value = 'Application for Opportunities at {company} — Shivam Gupta';
   }
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
+    const data = await res.json();
+    if(data.status === 'success' && data.template && data.template.content){
+      const raw = data.template.content;
+      const lines = raw.split('\n');
+      if(lines[0].toLowerCase().startsWith('subject:')){
+        if(subInp) subInp.value = lines[0].substring(8).trim();
+        ta.value = lines.slice(1).join('\n').trim();
+      } else {
+        ta.value = raw.trim();
+      }
+    } else if(tplId === '1_mastermind_comprehensive' || tplId === 'default') {
+      ta.value = MASTER_TEMPLATE_1_FALLBACK;
+      if(subInp) subInp.value = 'Application for Opportunities at {company} — Shivam Gupta';
+    }
+  } catch(e){
+    if(tplId === '1_mastermind_comprehensive' || tplId === 'default'){
+      ta.value = MASTER_TEMPLATE_1_FALLBACK;
+    }
+  }
+
+  updateGate1LivePreview();
 }
+
 
 function updateGate1LivePreview(){
   const ta = document.getElementById('gate1LiveTemplateContent');
