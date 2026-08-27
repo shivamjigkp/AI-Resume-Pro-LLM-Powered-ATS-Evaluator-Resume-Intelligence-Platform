@@ -449,6 +449,20 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
 .card.dragging{opacity:.5;border:2px dashed var(--purple)}
 .card.drag-over{border-color:var(--primary);background:var(--primary-l)}
 
+
+/* PAGE BREAK SPLIT RULE OVERRIDE */
+body.allow-page-split .ri,
+body.allow-page-split .rs,
+body.allow-page-split .rh,
+body.allow-page-split .rb li,
+body.allow-page-split #paper .ri,
+body.allow-page-split #paper .rs,
+body.allow-page-split #paper .rh,
+body.allow-page-split #paper .rb li {
+  page-break-inside: auto !important;
+  break-inside: auto !important;
+}
+
 </style>
 </head>
 <body>
@@ -466,6 +480,12 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
     <button class="btn btn-outline" onclick="document.getElementById('fInput').click()">📁 Upload Resume</button>
     <input type="file" id="fInput" style="display:none" accept=".pdf,.docx,.doc,.txt,.json" onchange="handleUpload(event)">
     <button class="btn btn-tpl" onclick="openTplModal()">🎨 <span id="tplLabel">Modern Tech</span></button>
+    <div class="sel-pill" title="Control whether project/experience items split across pages to fill empty gaps">
+      ✂️ <select id="pageBreakSel" onchange="changePageBreakRule(this.value)">
+        <option value="avoid" selected>Break: Avoid Split (Clean)</option>
+        <option value="allow">Break: Allow Split (Fill Gap)</option>
+      </select>
+    </div>
     <div class="sel-pill">📄 <select onchange="changeMode(this.value)" id="modeSelect">
       <option value="auto" selected>Full (Auto)</option>
       <option value="1">1 Page</option>
@@ -2761,6 +2781,16 @@ async function handleUpload(ev){
       D=JSON.parse(await file.text());
       if(!D.basics.summary)D.basics.summary='';
       populateForm();render();liveATS();
+
+  try{
+    const savedRule = localStorage.getItem('rsai_page_break_rule');
+    if(savedRule){
+      const sel = document.getElementById('pageBreakSel');
+      if(sel) sel.value = savedRule;
+      changePageBreakRule(savedRule);
+    }
+  }catch(e){}
+
       swTab('basics');toast('✅ Resume loaded from JSON!','success');
       hideParseOverlay();
     }else if(nm.endsWith('.pdf')){
@@ -6832,6 +6862,19 @@ function triggerMainPrint(){
   setTimeout(() => {
     if(typeof scalePaper === 'function') scalePaper();
   }, 300);
+}
+
+
+
+function changePageBreakRule(val){
+  if(val === 'allow'){
+    document.body.classList.add('allow-page-split');
+    toast('✂️ Page Break: Allowed item splitting (fills Page 1 bottom gap)', 'info', 3000);
+  } else {
+    document.body.classList.remove('allow-page-split');
+    toast('🚫 Page Break: Avoid item splitting (keeps items intact)', 'info', 3000);
+  }
+  try{ localStorage.setItem('rsai_page_break_rule', val); }catch(e){}
 }
 
 </script>

@@ -1185,6 +1185,16 @@ async function handleUpload(ev){
       D=JSON.parse(await file.text());
       if(!D.basics.summary)D.basics.summary='';
       populateForm();render();liveATS();
+
+  try{
+    const savedRule = localStorage.getItem('rsai_page_break_rule');
+    if(savedRule){
+      const sel = document.getElementById('pageBreakSel');
+      if(sel) sel.value = savedRule;
+      changePageBreakRule(savedRule);
+    }
+  }catch(e){}
+
       swTab('basics');toast('✅ Resume loaded from JSON!','success');
       hideParseOverlay();
     }else if(nm.endsWith('.pdf')){
@@ -5256,5 +5266,18 @@ function triggerMainPrint(){
   setTimeout(() => {
     if(typeof scalePaper === 'function') scalePaper();
   }, 300);
+}
+
+
+
+function changePageBreakRule(val){
+  if(val === 'allow'){
+    document.body.classList.add('allow-page-split');
+    toast('✂️ Page Break: Allowed item splitting (fills Page 1 bottom gap)', 'info', 3000);
+  } else {
+    document.body.classList.remove('allow-page-split');
+    toast('🚫 Page Break: Avoid item splitting (keeps items intact)', 'info', 3000);
+  }
+  try{ localStorage.setItem('rsai_page_break_rule', val); }catch(e){}
 }
 
