@@ -1125,26 +1125,33 @@ body.allow-page-split #paper .rb li {
         <!-- CARD 1: GOOGLE SHEET LEAD SOURCE -->
         <div style="background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 4px 12px rgba(30,58,138,0.05);">
           <h4 style="margin:0 0 8px 0;font-size:12.5px;color:#1e3a8a;display:flex;justify-content:space-between;align-items:center;font-weight:800;">
-            <span>📊 Lead Source / Google Sheet</span>
+            <span>📊 Lead Source / Google Sheet Tracker</span>
             <div style="display:flex;gap:6px;">
               <button type="button" class="btn btn-outline btn-xs" onclick="toggleGate1LeadsTable()" style="font-size:10px;font-weight:700;">📊 View Sheet Leads ▾</button>
               <button type="button" class="btn btn-outline btn-xs" onclick="refreshGate1Sheets()" style="font-size:10px;">🔄 Refresh</button>
             </div>
           </h4>
           
+          <!-- Paste Link Input -->
           <div style="margin-bottom:10px;">
             <label style="font-size:11px;font-weight:700;color:#334155;display:block;margin-bottom:4px;">📋 Paste Google Sheet Link or Sheet ID:</label>
             <div style="display:flex;gap:6px;">
-              <input type="text" id="gate1NewSheetId" placeholder="Paste full Google Sheet link (e.g. https://docs.google.com/spreadsheets/d/1lYkZAjqQQ.../edit)" class="form-sel" style="flex:1;font-size:11px;padding:7px 10px;font-weight:600;" oninput="autoExtractGate1SheetId(this.value)">
+              <input type="text" id="gate1NewSheetId" placeholder="Paste full link (https://docs.google.com/spreadsheets/d/1lYkZAjq.../edit)" class="form-sel" style="flex:1;font-size:11px;padding:7px 10px;font-weight:600;" oninput="autoExtractGate1SheetId(this.value)">
               <button type="button" class="btn btn-purple btn-sm" onclick="connectExistingGate1Sheet()" style="font-weight:800;padding:6px 14px;">🔌 Connect Sheet</button>
             </div>
             <div id="gate1SheetUrlStatus" style="font-size:10px;color:#059669;font-weight:700;margin-top:4px;"></div>
           </div>
 
-          <div style="display:flex;gap:6px;align-items:center;background:#f8fafc;padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;">
-            <span style="font-size:10.5px;font-weight:700;color:#475569;">Active Sheet:</span>
-            <select id="gate1ActiveSheet" class="form-sel" style="flex:1;font-size:11px;padding:3px 6px;" onchange="onGate1SheetChange()"></select>
-            <button type="button" class="btn btn-outline btn-xs" onclick="createBlankGate1Sheet()" style="font-size:10px;font-weight:700;">+ New Blank Sheet</button>
+          <!-- Active Sheet Selector & Management -->
+          <div style="background:#f8fafc;padding:8px 10px;border-radius:6px;border:1px solid #e2e8f0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label style="font-size:10.5px;font-weight:700;color:#475569;">Active Sheet Selection:</label>
+              <div style="display:flex;gap:4px;">
+                <button type="button" class="btn btn-outline btn-xs" onclick="addNewGate1SheetPrompt()" style="font-size:10px;font-weight:700;color:#16a34a;border-color:#bbf7d0;">+ Add New Sheet</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="deleteActiveGate1Sheet()" style="font-size:10px;font-weight:700;color:#dc2626;border-color:#fca5a5;">🗑️ Delete Sheet</button>
+              </div>
+            </div>
+            <select id="gate1ActiveSheet" class="form-sel" style="width:100%;font-size:11px;padding:5px 8px;font-weight:700;" onchange="onGate1SheetChange()"></select>
           </div>
 
           <!-- EXPANDABLE GOOGLE SHEET LEADS TABLE -->
@@ -1176,13 +1183,14 @@ body.allow-page-split #paper .rb li {
 
           <div id="gate1FastForm">
             <div class="fg" style="margin-bottom:10px;">
-              <label style="font-weight:700;font-size:11px;display:flex;justify-content:space-between;">
-                <span>DEFAULT TEMPLATE</span>
-                <span style="font-size:10px;color:#2563eb;cursor:pointer;" onclick="syncGate1LiveTemplateEditor()">🔄 Load into Editor</span>
-              </label>
-              <div style="display:flex;gap:6px;">
-                <select id="gate1DefaultTemplate" class="form-sel" style="flex:1;" onchange="syncGate1LiveTemplateEditor()"></select>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <label style="font-weight:700;font-size:11px;">DEFAULT TEMPLATE</label>
+                <div style="display:flex;gap:4px;">
+                  <button type="button" class="btn btn-outline btn-xs" onclick="addNewGate1TemplatePrompt()" style="font-size:10px;font-weight:700;color:#16a34a;border-color:#bbf7d0;">+ New Template</button>
+                  <button type="button" class="btn btn-outline btn-xs" onclick="deleteActiveGate1Template()" style="font-size:10px;font-weight:700;color:#dc2626;border-color:#fca5a5;">🗑️ Delete</button>
+                </div>
               </div>
+              <select id="gate1DefaultTemplate" class="form-sel" style="width:100%;font-size:11px;font-weight:700;" onchange="syncGate1LiveTemplateEditor()"></select>
             </div>
             <div class="fg" style="margin-bottom:12px;">
               <label style="font-weight:700;font-size:11px;">DEFAULT RESUME (PDF FROM OUTPUT_RESUMES/)</label>
@@ -7461,6 +7469,203 @@ window.openGate1Panel = function(){
 
   requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 };
+
+
+
+// ════════════════════════════════════════════════════════════════
+// 📊 ROBUST GATE 1 SHEET & TEMPLATE REGISTRY (NEVER EMPTY DROPDOWNS)
+// ════════════════════════════════════════════════════════════════
+const DEFAULT_SHEETS_FALLBACK = [
+  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'SHIVAM (Default)', key: 'shivam_default' },
+  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'Software Lead Tracker', key: 'software_leads' }
+];
+
+const DEFAULT_TEMPLATES_FALLBACK = [
+  { name: 'default', label: '1 — Default Cold Email Template' },
+  { name: 'software_engineer', label: '2 — Software Engineer / AI-ML Outreach' },
+  { name: 'data_science', label: '3 — Data Science & Analytics' },
+  { name: 'quant_developer', label: '4 — Quant Developer & Algo Trader' }
+];
+
+function getStoredSheets(){
+  try{
+    const raw = localStorage.getItem('rsai_gate1_sheets');
+    let sheets = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(sheets) || !sheets.length){
+      sheets = DEFAULT_SHEETS_FALLBACK;
+      localStorage.setItem('rsai_gate1_sheets', JSON.stringify(sheets));
+    }
+    return sheets;
+  }catch(e){
+    return DEFAULT_SHEETS_FALLBACK;
+  }
+}
+
+function saveStoredSheets(sheets){
+  try{ localStorage.setItem('rsai_gate1_sheets', JSON.stringify(sheets)); }catch(e){}
+}
+
+function getStoredTemplates(){
+  try{
+    const raw = localStorage.getItem('rsai_gate1_templates');
+    let templates = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(templates) || !templates.length){
+      templates = DEFAULT_TEMPLATES_FALLBACK;
+      localStorage.setItem('rsai_gate1_templates', JSON.stringify(templates));
+    }
+    return templates;
+  }catch(e){
+    return DEFAULT_TEMPLATES_FALLBACK;
+  }
+}
+
+function saveStoredTemplates(tpls){
+  try{ localStorage.setItem('rsai_gate1_templates', JSON.stringify(tpls)); }catch(e){}
+}
+
+function populateSheetDropdown(){
+  const sel = document.getElementById('gate1ActiveSheet');
+  if(!sel) return;
+  const sheets = getStoredSheets();
+  const activeId = localStorage.getItem('rsai_active_sheet_id') || sheets[0]?.id || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI';
+
+  sel.innerHTML = sheets.map(s => {
+    const isSel = (s.id === activeId || s.key === activeId) ? 'selected' : '';
+    return `<option value="${s.id}" ${isSel}>${s.name} (${s.id.substring(0,12)}...)</option>`;
+  }).join('');
+}
+
+function populateTemplateDropdown(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  if(!sel) return;
+  const templates = getStoredTemplates();
+  const activeTpl = localStorage.getItem('rsai_active_template') || templates[0]?.name || 'default';
+
+  sel.innerHTML = templates.map(t => {
+    const isSel = (t.name === activeTpl) ? 'selected' : '';
+    return `<option value="${t.name}" ${isSel}>${t.label || t.name}</option>`;
+  }).join('');
+}
+
+function connectExistingGate1Sheet(){
+  const input = document.getElementById('gate1NewSheetId');
+  let rawVal = input?.value?.trim() || '';
+  if(!rawVal){
+    toast('Please paste Google Sheet Link or Sheet ID!', 'warning');
+    return;
+  }
+
+  // Auto extract ID if full link was pasted
+  const m = rawVal.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = m && m[1] ? m[1] : rawVal;
+
+  const sheets = getStoredSheets();
+  let existing = sheets.find(s => s.id === sheetId);
+  if(!existing){
+    existing = { id: sheetId, name: `Sheet (${sheetId.substring(0,8)}...)`, key: `sheet_${Date.now()}` };
+    sheets.push(existing);
+    saveStoredSheets(sheets);
+  }
+
+  localStorage.setItem('rsai_active_sheet_id', sheetId);
+  populateSheetDropdown();
+  toast(`🔌 Connected Google Sheet (${sheetId.substring(0,12)}...)!`, 'success', 3500);
+
+  // Sync leads table
+  const tableContainer = document.getElementById('gate1LeadsTableContainer');
+  if(tableContainer && tableContainer.style.display !== 'none'){
+    fetchAndRenderGate1Leads();
+  }
+}
+
+function addNewGate1SheetPrompt(){
+  const raw = prompt("Paste full Google Sheet Link or Sheet ID:");
+  if(!raw || !raw.trim()) return;
+
+  const m = raw.trim().match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = m && m[1] ? m[1] : raw.trim();
+  const customName = prompt("Enter a friendly name for this Google Sheet:", "My Lead Tracker") || `Sheet (${sheetId.substring(0,8)}...)`;
+
+  const sheets = getStoredSheets();
+  sheets.push({ id: sheetId, name: customName, key: `sheet_${Date.now()}` });
+  saveStoredSheets(sheets);
+  localStorage.setItem('rsai_active_sheet_id', sheetId);
+  populateSheetDropdown();
+  toast(`➕ Added "${customName}" to Google Sheet registry!`, 'success', 3500);
+}
+
+function deleteActiveGate1Sheet(){
+  const sel = document.getElementById('gate1ActiveSheet');
+  const activeId = sel?.value;
+  if(!activeId){ toast('No active sheet selected', 'warning'); return; }
+
+  const sheets = getStoredSheets();
+  if(sheets.length <= 1){
+    toast('Cannot delete the last remaining Google Sheet!', 'warning');
+    return;
+  }
+
+  if(!confirm(`Are you sure you want to delete this sheet from your registry?`)) return;
+
+  const filtered = sheets.filter(s => s.id !== activeId);
+  saveStoredSheets(filtered);
+  localStorage.setItem('rsai_active_sheet_id', filtered[0].id);
+  populateSheetDropdown();
+  toast('🗑️ Deleted sheet from registry', 'info', 2500);
+}
+
+function addNewGate1TemplatePrompt(){
+  const name = prompt("Enter template filename identifier (e.g. frontend_developer):");
+  if(!name || !name.trim()) return;
+
+  const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  const label = prompt("Enter template display title:", name) || name;
+
+  const templates = getStoredTemplates();
+  if(!templates.find(t => t.name === cleanName)){
+    templates.push({ name: cleanName, label: label });
+    saveStoredTemplates(templates);
+  }
+
+  localStorage.setItem('rsai_active_template', cleanName);
+  populateTemplateDropdown();
+
+  // Set default initial content in live editor
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  if(ta){
+    const myName = D.basics?.name || 'Shivam Gupta';
+    ta.value = `Subject: Application for {{role}} at {{company}} — ${myName}\n\nHi {{recruiter_name}},\n\nI'm writing to express interest in the {{role}} position at {{company}}...\n\nBest regards,\n${myName}`;
+    updateGate1LivePreview();
+  }
+  toast(`➕ Created new template "${label}"!`, 'success', 3500);
+}
+
+function deleteActiveGate1Template(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const activeName = sel?.value;
+  if(!activeName){ toast('No active template selected', 'warning'); return; }
+
+  const templates = getStoredTemplates();
+  if(templates.length <= 1){
+    toast('Cannot delete the last remaining template!', 'warning');
+    return;
+  }
+
+  if(!confirm(`Delete template "${activeName}"?`)) return;
+
+  const filtered = templates.filter(t => t.name !== activeName);
+  saveStoredTemplates(filtered);
+  localStorage.setItem('rsai_active_template', filtered[0].name);
+  populateTemplateDropdown();
+  syncGate1LiveTemplateEditor();
+  toast('🗑️ Deleted template', 'info', 2500);
+}
+
+// Auto populate dropdowns on script init
+setTimeout(() => {
+  populateSheetDropdown();
+  populateTemplateDropdown();
+}, 200);
 
 </script>
 

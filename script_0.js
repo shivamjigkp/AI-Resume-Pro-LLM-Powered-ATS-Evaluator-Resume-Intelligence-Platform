@@ -5844,3 +5844,200 @@ window.openGate1Panel = function(){
   requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 };
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 📊 ROBUST GATE 1 SHEET & TEMPLATE REGISTRY (NEVER EMPTY DROPDOWNS)
+// ════════════════════════════════════════════════════════════════
+const DEFAULT_SHEETS_FALLBACK = [
+  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'SHIVAM (Default)', key: 'shivam_default' },
+  { id: '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI', name: 'Software Lead Tracker', key: 'software_leads' }
+];
+
+const DEFAULT_TEMPLATES_FALLBACK = [
+  { name: 'default', label: '1 — Default Cold Email Template' },
+  { name: 'software_engineer', label: '2 — Software Engineer / AI-ML Outreach' },
+  { name: 'data_science', label: '3 — Data Science & Analytics' },
+  { name: 'quant_developer', label: '4 — Quant Developer & Algo Trader' }
+];
+
+function getStoredSheets(){
+  try{
+    const raw = localStorage.getItem('rsai_gate1_sheets');
+    let sheets = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(sheets) || !sheets.length){
+      sheets = DEFAULT_SHEETS_FALLBACK;
+      localStorage.setItem('rsai_gate1_sheets', JSON.stringify(sheets));
+    }
+    return sheets;
+  }catch(e){
+    return DEFAULT_SHEETS_FALLBACK;
+  }
+}
+
+function saveStoredSheets(sheets){
+  try{ localStorage.setItem('rsai_gate1_sheets', JSON.stringify(sheets)); }catch(e){}
+}
+
+function getStoredTemplates(){
+  try{
+    const raw = localStorage.getItem('rsai_gate1_templates');
+    let templates = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(templates) || !templates.length){
+      templates = DEFAULT_TEMPLATES_FALLBACK;
+      localStorage.setItem('rsai_gate1_templates', JSON.stringify(templates));
+    }
+    return templates;
+  }catch(e){
+    return DEFAULT_TEMPLATES_FALLBACK;
+  }
+}
+
+function saveStoredTemplates(tpls){
+  try{ localStorage.setItem('rsai_gate1_templates', JSON.stringify(tpls)); }catch(e){}
+}
+
+function populateSheetDropdown(){
+  const sel = document.getElementById('gate1ActiveSheet');
+  if(!sel) return;
+  const sheets = getStoredSheets();
+  const activeId = localStorage.getItem('rsai_active_sheet_id') || sheets[0]?.id || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI';
+
+  sel.innerHTML = sheets.map(s => {
+    const isSel = (s.id === activeId || s.key === activeId) ? 'selected' : '';
+    return `<option value="${s.id}" ${isSel}>${s.name} (${s.id.substring(0,12)}...)</option>`;
+  }).join('');
+}
+
+function populateTemplateDropdown(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  if(!sel) return;
+  const templates = getStoredTemplates();
+  const activeTpl = localStorage.getItem('rsai_active_template') || templates[0]?.name || 'default';
+
+  sel.innerHTML = templates.map(t => {
+    const isSel = (t.name === activeTpl) ? 'selected' : '';
+    return `<option value="${t.name}" ${isSel}>${t.label || t.name}</option>`;
+  }).join('');
+}
+
+function connectExistingGate1Sheet(){
+  const input = document.getElementById('gate1NewSheetId');
+  let rawVal = input?.value?.trim() || '';
+  if(!rawVal){
+    toast('Please paste Google Sheet Link or Sheet ID!', 'warning');
+    return;
+  }
+
+  // Auto extract ID if full link was pasted
+  const m = rawVal.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = m && m[1] ? m[1] : rawVal;
+
+  const sheets = getStoredSheets();
+  let existing = sheets.find(s => s.id === sheetId);
+  if(!existing){
+    existing = { id: sheetId, name: `Sheet (${sheetId.substring(0,8)}...)`, key: `sheet_${Date.now()}` };
+    sheets.push(existing);
+    saveStoredSheets(sheets);
+  }
+
+  localStorage.setItem('rsai_active_sheet_id', sheetId);
+  populateSheetDropdown();
+  toast(`🔌 Connected Google Sheet (${sheetId.substring(0,12)}...)!`, 'success', 3500);
+
+  // Sync leads table
+  const tableContainer = document.getElementById('gate1LeadsTableContainer');
+  if(tableContainer && tableContainer.style.display !== 'none'){
+    fetchAndRenderGate1Leads();
+  }
+}
+
+function addNewGate1SheetPrompt(){
+  const raw = prompt("Paste full Google Sheet Link or Sheet ID:");
+  if(!raw || !raw.trim()) return;
+
+  const m = raw.trim().match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = m && m[1] ? m[1] : raw.trim();
+  const customName = prompt("Enter a friendly name for this Google Sheet:", "My Lead Tracker") || `Sheet (${sheetId.substring(0,8)}...)`;
+
+  const sheets = getStoredSheets();
+  sheets.push({ id: sheetId, name: customName, key: `sheet_${Date.now()}` });
+  saveStoredSheets(sheets);
+  localStorage.setItem('rsai_active_sheet_id', sheetId);
+  populateSheetDropdown();
+  toast(`➕ Added "${customName}" to Google Sheet registry!`, 'success', 3500);
+}
+
+function deleteActiveGate1Sheet(){
+  const sel = document.getElementById('gate1ActiveSheet');
+  const activeId = sel?.value;
+  if(!activeId){ toast('No active sheet selected', 'warning'); return; }
+
+  const sheets = getStoredSheets();
+  if(sheets.length <= 1){
+    toast('Cannot delete the last remaining Google Sheet!', 'warning');
+    return;
+  }
+
+  if(!confirm(`Are you sure you want to delete this sheet from your registry?`)) return;
+
+  const filtered = sheets.filter(s => s.id !== activeId);
+  saveStoredSheets(filtered);
+  localStorage.setItem('rsai_active_sheet_id', filtered[0].id);
+  populateSheetDropdown();
+  toast('🗑️ Deleted sheet from registry', 'info', 2500);
+}
+
+function addNewGate1TemplatePrompt(){
+  const name = prompt("Enter template filename identifier (e.g. frontend_developer):");
+  if(!name || !name.trim()) return;
+
+  const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  const label = prompt("Enter template display title:", name) || name;
+
+  const templates = getStoredTemplates();
+  if(!templates.find(t => t.name === cleanName)){
+    templates.push({ name: cleanName, label: label });
+    saveStoredTemplates(templates);
+  }
+
+  localStorage.setItem('rsai_active_template', cleanName);
+  populateTemplateDropdown();
+
+  // Set default initial content in live editor
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  if(ta){
+    const myName = D.basics?.name || 'Shivam Gupta';
+    ta.value = `Subject: Application for {{role}} at {{company}} — ${myName}\n\nHi {{recruiter_name}},\n\nI'm writing to express interest in the {{role}} position at {{company}}...\n\nBest regards,\n${myName}`;
+    updateGate1LivePreview();
+  }
+  toast(`➕ Created new template "${label}"!`, 'success', 3500);
+}
+
+function deleteActiveGate1Template(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const activeName = sel?.value;
+  if(!activeName){ toast('No active template selected', 'warning'); return; }
+
+  const templates = getStoredTemplates();
+  if(templates.length <= 1){
+    toast('Cannot delete the last remaining template!', 'warning');
+    return;
+  }
+
+  if(!confirm(`Delete template "${activeName}"?`)) return;
+
+  const filtered = templates.filter(t => t.name !== activeName);
+  saveStoredTemplates(filtered);
+  localStorage.setItem('rsai_active_template', filtered[0].name);
+  populateTemplateDropdown();
+  syncGate1LiveTemplateEditor();
+  toast('🗑️ Deleted template', 'info', 2500);
+}
+
+// Auto populate dropdowns on script init
+setTimeout(() => {
+  populateSheetDropdown();
+  populateTemplateDropdown();
+}, 200);
+
