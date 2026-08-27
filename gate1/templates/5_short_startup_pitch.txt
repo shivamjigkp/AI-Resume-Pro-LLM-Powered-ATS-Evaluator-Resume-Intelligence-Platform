@@ -1,0 +1,18 @@
+Subject: Quick intro / {{role}} at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I'm Shivam Gupta, a builder & founder (Mastermind Research Tech) specializing in full-stack platforms (Next.js 15, FastAPI) and ML/quantitative systems.
+
+I'm eager to contribute to {{company}} as a {{role}}.
+
+Proof of Work:
+• Full-stack platforms in production with sub-200ms response times (Hospital portals, Trading dashboards).
+• Quantitative trading backtesting engines with Monte Carlo risk simulation (Rank 3 XM Global Trading).
+• GitHub: https://github.com/shivamjigkp | LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+My resume is attached. I'm ready to build a 24-hour trial project or jump on a 10-minute intro call.
+
+Best,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

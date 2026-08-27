@@ -1,0 +1,23 @@
+Subject: Application for {{role}} at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I'm writing to express strong interest in {{role}} opportunities at {{company}}.
+
+I'm a B.Tech (ECE – Data Science & Machine Learning) student at MMMUT Gorakhpur with hands-on experience building and deploying end-to-end Machine Learning pipelines and AI-driven applications.
+
+Snapshot of ML & Data Engineering Work:
+• End-to-End ML Pipelines: Developed and deployed predictive ML models (XGBoost, TensorFlow, Scikit-learn) with automated feature engineering, Docker containerization, and AWS hosting.
+• Production Apps: Built an electricity demand forecasting engine and a real-time weather intelligence platform with sub-200ms API inference using FastAPI.
+• LLM & NLP Platform: Architected an LLM-powered ATS resume intelligence system with automatic embedding comparison, scoring, and automated recruiter outreach.
+• Rigorous Background: Certified in Machine Learning by Stanford Online and Algorithmic Toolbox / DSA by UC San Diego.
+
+My resume is attached. Live code & project architectures can be found here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I am available for immediate onboarding (internship or entry-level) and would love to discuss how I can contribute to {{company}}'s AI initiatives.
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

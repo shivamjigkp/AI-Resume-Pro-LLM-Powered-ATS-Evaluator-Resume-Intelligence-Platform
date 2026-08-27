@@ -1,20 +1,8 @@
 """
 gate1/outreach_engine.py
 ─────────────────────────
-Orchestrates a full Gate 1 cold-email campaign run:
-
-  1. Read lead rows [start_row, end_row] from the configured Google Sheet.
-  2. Skip rows already marked Sent/Drafted (dedupe across re-runs).
-  3. Validate each lead's email (syntax + MX).
-  4. Load a role-matched template, personalize it with lead + sender data.
-  5. Attach the most recently generated resume PDF, if one exists.
-  6. Create a Gmail draft (default, safe) or send directly ('send' mode).
-  7. Write Status/Notes back to the sheet.
-  8. Rate-limit between sends via EMAIL_DELAY_SECONDS to avoid spam flags.
-
-Any single lead failing (bad email, missing sheet columns, API hiccup) does
-NOT abort the whole campaign — it's recorded as a per-row failure and the
-run continues, so one bad row doesn't block the rest of the batch.
+Orchestrates a full Gate 1 cold-email campaign run with support for custom Subject,
+Body template (from ChatGPT), Resume attachment, and Force Re-Draft.
 """
 import os
 import time
@@ -23,156 +11,125 @@ from typing import Dict
 
 from .email_validator import validate_email_full
 from .sheets_helper import read_lead_rows, update_row_status
+from .sheets_registry import resolve_sheet_id
+from .template_loader import load_template, load_template_by_name, render_template, split_subject_and_body
 from .gmail_helper import get_gmail_service, build_message, create_draft, send_message
-from .template_loader import (
-    load_template, load_template_by_name, render_template,
-    split_subject_and_body, TemplateNotFoundError,
-)
-from .google_auth import MissingCredentialsError
-from . import sheets_registry
+from config import BASE_DIR, OUTPUT_RESUMES_DIR, EMAIL_DELAY_SECONDS
 
-from config import GOOGLE_SHEET_ID, OUTPUT_RESUMES_DIR, BASE_RESUME_PATH, EMAIL_DELAY_SECONDS
-
-logger = logging.getLogger("Gate1.Engine")
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-ALREADY_PROCESSED_STATUSES = {"sent", "drafted"}
+logger = logging.getLogger("Gate1.Outreach")
 
 
 class CampaignConfigError(Exception):
     pass
 
 
-def resolve_resume_attachment(resume_filename: str = None) -> str:
+def resolve_resume_attachment(explicit_filename: str = None) -> str:
     """
-    Picks the resume file to attach.
-    If `resume_filename` is given (a Gate 1 "Default Resume" selection — a
-    specific PDF's basename inside output_resumes/), that exact file is used
-    when it exists inside output_resumes/ (path-traversal guarded).
-    Otherwise falls back to the most recently modified PDF in output_resumes/,
-    then to BASE_RESUME_PATH if that itself is a PDF.
-    Returns None if nothing suitable is found (email is still sent, just without
-    an attachment, and this is surfaced in the result summary).
+    Finds a PDF resume to attach. If explicit_filename is provided, it resolves
+    to that file in output_resumes/, resume/, or BASE_DIR. Otherwise, auto-picks
+    the most recently modified PDF.
     """
-    output_dir = os.path.abspath(os.path.join(BASE_DIR, OUTPUT_RESUMES_DIR))
+    search_dirs = [
+        os.path.join(BASE_DIR, OUTPUT_RESUMES_DIR),
+        os.path.join(BASE_DIR, "resume"),
+        BASE_DIR
+    ]
 
-    if resume_filename:
-        candidate = os.path.abspath(os.path.join(output_dir, os.path.basename(resume_filename)))
-        if os.path.commonpath([candidate, output_dir]) == output_dir and os.path.exists(candidate):
-            return candidate
-        # Explicit selection missing on disk — fall through to auto-detection
-        # rather than silently sending with no attachment.
+    if explicit_filename and explicit_filename != "auto":
+        for d in search_dirs:
+            candidate = os.path.join(d, explicit_filename)
+            if os.path.isfile(candidate):
+                logger.info(f"Using explicitly chosen resume: {candidate}")
+                return candidate
+        logger.warning(f"Explicit resume '{explicit_filename}' not found, falling back to auto-pick.")
 
-    if os.path.isdir(output_dir):
-        pdfs = [
-            os.path.join(output_dir, f)
-            for f in os.listdir(output_dir)
-            if f.lower().endswith(".pdf")
-        ]
-        if pdfs:
-            return max(pdfs, key=os.path.getmtime)
+    # Auto-pick the newest PDF
+    all_pdfs = []
+    for d in search_dirs:
+        if os.path.isdir(d):
+            for f in os.listdir(d):
+                if f.lower().endswith(".pdf"):
+                    full = os.path.join(d, f)
+                    try:
+                        all_pdfs.append((os.path.getmtime(full), full))
+                    except Exception:
+                        pass
 
-    base_path = os.path.join(BASE_DIR, BASE_RESUME_PATH)
-    if base_path.lower().endswith(".pdf") and os.path.exists(base_path):
-        return base_path
+    if all_pdfs:
+        all_pdfs.sort(key=lambda x: x[0], reverse=True)
+        newest = all_pdfs[0][1]
+        logger.info(f"Auto-selected newest resume PDF: {newest}")
+        return newest
 
+    logger.warning("No PDF resumes found. Proceeding without an attachment.")
     return None
 
 
 def run_campaign(start_row: int, end_row: int, mode: str, sender_profile: Dict,
                   template_name: str = None, resume_filename: str = None,
-                  sheet_key: str = None, sheet_id: str = None) -> Dict:
+                  sheet_key: str = None, sheet_id: str = None,
+                  custom_subject: str = None, custom_body: str = None,
+                  force_draft: bool = True) -> Dict:
     """
-    Runs the outreach campaign. `mode` is 'draft' or 'send'.
-    `sender_profile` is the Outreach Profile Details from the frontend
-    (name, email, phone, location, linkedin, github, experience_summary, total_experience...).
-    `template_name`, if given, forces every lead to use that saved Gate 1
-    template instead of the per-role auto-match (used by Fast Apply / the
-    Advanced Mode manual template picker).
-    `resume_filename`, if given, forces attachment of that specific PDF from
-    output_resumes/ instead of auto-picking the most recent one.
-    `sheet_key` / `sheet_id`: which saved lead sheet to use for this run — see
-    gate1/sheets_registry.py::resolve_sheet_id for the full resolution order.
-    When neither is given, falls back to the registry's default sheet, then
-    to the legacy single-sheet GOOGLE_SHEET_ID setting.
-    Returns a summary dict: {sent, drafted, skipped, failed, resume_attached, details:[...]}
+    Runs the outreach campaign with support for custom Subject, Body, and Force Re-draft.
     """
-    legacy_sheet_id = os.getenv("GOOGLE_SHEET_ID", "") or GOOGLE_SHEET_ID
-    resolved_sheet_id, resolved_sheet_name = sheets_registry.resolve_sheet_id(
-        sheet_key=sheet_key, explicit_sheet_id=sheet_id, legacy_env_sheet_id=legacy_sheet_id
-    )
-    sheet_id = resolved_sheet_id
-    if not sheet_id:
-        raise CampaignConfigError(
-            "No lead sheet is configured. Add/select a Google Sheet under Gate 1's "
-            "'Lead Source / Google Sheet' section before running a campaign."
-        )
+    legacy_sheet = os.getenv("GOOGLE_SHEET_ID")
+    active_sheet_id, sheet_name = resolve_sheet_id(sheet_key=sheet_key, explicit_sheet_id=sheet_id, legacy_env_sheet_id=legacy_sheet)
+    if not active_sheet_id:
+        raise CampaignConfigError("No Google Sheet configured.")
+    if not sheet_name:
+        sheet_name = "Lead Tracker"
 
-    if not sender_profile.get("email"):
-        raise CampaignConfigError(
-            "Your sender email is empty. Fill in 'Email Address' under Outreach Profile "
-            "Details and save it before running a campaign."
-        )
+    gmail_service = get_gmail_service()
 
-    leads, header_lower = read_lead_rows(sheet_id, start_row, end_row)
+    leads, header_lower = read_lead_rows(active_sheet_id, start_row, end_row)
+    if not leads:
+        return {"sent": 0, "drafted": 0, "skipped": 0, "failed": 0,
+                "message": f"No lead rows found in range [{start_row}, {end_row}] on sheet '{sheet_name}'.",
+                "details": []}
 
     resume_path = resolve_resume_attachment(resume_filename)
+    sent_count = 0
+    drafted_count = 0
+    skipped_count = 0
+    failed_count = 0
+    details = []
 
-    result = {
-        "sent": 0, "drafted": 0, "skipped": 0, "failed": 0,
-        "resume_attached": bool(resume_path),
-        "resume_path": resume_path,
-        "sheet_name": resolved_sheet_name,
-        "sheet_id": sheet_id,
-        "details": [],
-    }
+    for lead in leads:
+        row_num = lead.get("row", 0)
+        email = lead.get("email", "")
+        name = lead.get("name", "")
+        company = lead.get("company", "")
+        role = lead.get("role", "")
+        current_status = str(lead.get("status", "")).lower()
 
-    if not leads:
-        result["message"] = f"No lead rows with data found between rows {start_row} and {end_row}."
-        return result
-
-    service = get_gmail_service()
-
-    total = len(leads)
-    for idx, lead in enumerate(leads):
-        row_num = lead["_row_num"]
-        email = (lead.get("email") or "").strip()
-        name = (lead.get("name") or "").strip()
-        company = (lead.get("company") or "").strip()
-        role = (lead.get("role") or "").strip()
-        existing_status = (lead.get("status") or "").strip().lower()
-
-        if existing_status in ALREADY_PROCESSED_STATUSES:
-            result["skipped"] += 1
-            result["details"].append({"row": row_num, "email": email, "status": "skipped", "reason": f"already {existing_status}"})
+        # Duplicate check (Skip unless force_draft is True)
+        if not force_draft and current_status in ("sent", "drafted"):
+            skipped_count += 1
+            details.append({"row": row_num, "email": email, "company": company, "status": "skipped", "reason": f"already {current_status}"})
             continue
 
         if not email:
-            result["skipped"] += 1
-            result["details"].append({"row": row_num, "status": "skipped", "reason": "missing email"})
-            continue
-
-        valid, reason = validate_email_full(email)
-        if not valid:
-            result["failed"] += 1
-            update_row_status(sheet_id, row_num, header_lower, "Failed", reason)
-            result["details"].append({"row": row_num, "email": email, "status": "failed", "reason": reason})
+            failed_count += 1
+            details.append({"row": row_num, "email": "", "company": company, "status": "failed", "error": "Missing email address"})
             continue
 
         try:
-            if template_name:
-                try:
-                    tmpl = load_template_by_name(template_name)
-                except TemplateNotFoundError:
-                    tmpl = load_template(role)
+            # Build template
+            if custom_body and custom_body.strip():
+                tmpl_text = custom_body.strip()
+                if custom_subject and not tmpl_text.lower().startswith("subject:"):
+                    tmpl_text = f"Subject: {custom_subject}\n\n" + tmpl_text
+            elif template_name:
+                tmpl_text = load_template_by_name(template_name)
             else:
-                tmpl = load_template(role)
+                tmpl_text = load_template(role)
+
             context = {
                 "recruiter_name": name or "Hiring Team",
                 "company": company or "your company",
                 "company_name": company or "your company",
-                "role": role or "the open position",
+                "role": role or "Software Development / Quantitative Analyst",
                 "sender_name": sender_profile.get("name", "Shivam Gupta"),
                 "my_name": sender_profile.get("name", "Shivam Gupta"),
                 "sender_email": sender_profile.get("email", "quantxcoder@gmail.com"),
@@ -182,40 +139,56 @@ def run_campaign(start_row: int, end_row: int, mode: str, sender_profile: Dict,
                 "college": sender_profile.get("college", "MMMUT, Gorakhpur"),
                 "branch": sender_profile.get("branch", "ECE – Data Science & Machine Learning"),
                 "other_links": sender_profile.get("other_links", ""),
-                "experience_summary": sender_profile.get("experience_summary") or "• Completed job simulations with Goldman Sachs, J.P. Morgan, and Bank of America.
-• Certifications: Stanford Machine Learning, UC San Diego Algorithmic Toolbox / DSA, NISM.",
+                "experience_summary": sender_profile.get("experience_summary", "")
             }
-            rendered = render_template(tmpl, context)
-            custom_subject, body = split_subject_and_body(rendered)
-            subject = custom_subject or f"Application for {role or 'a role'} at {company or 'your company'}"
-            html_body = body.replace("\n", "<br>")
 
-            message_body = build_message(email, subject, html_body, resume_path)
+            rendered = render_template(tmpl_text, context)
+            extracted_sub, body = split_subject_and_body(rendered)
+            final_subject = extracted_sub or custom_subject or f"Application for {role or 'Opportunities'} at {company or 'your company'} — Shivam Gupta"
+            
+            # Replace tags in final_subject as well
+            for k, v in context.items():
+                final_subject = final_subject.replace("{{" + k + "}}", str(v) if v else "")
+
+            html_body = body.replace("\n", "<br>")
+            msg = build_message(to=email, subject=final_subject, html_body=html_body, attachment_path=resume_path)
+
+            # Create Draft or Send via Gmail
+            if mode == "send":
+                msg_id = send_message(gmail_service, msg)
+                status_to_write = "Sent"
+                sent_count += 1
+            else:
+                msg_id = create_draft(gmail_service, msg)
+                status_to_write = "Drafted"
+                drafted_count += 1
+
+            # Update Sheet Row Status
+            try:
+                update_row_status(active_sheet_id, row_num, header_lower, status_to_write, note=f"Processed via Gate 1 ({time.strftime('%Y-%m-%d %H:%M')})")
+            except Exception as e_sheet:
+                logger.warning(f"Could not update sheet row {row_num}: {e_sheet}")
+
+            details.append({"row": row_num, "email": email, "company": company, "status": status_to_write.lower(), "msg_id": msg_id})
 
             if mode == "send":
-                send_message(service, message_body)
-                update_row_status(sheet_id, row_num, header_lower, "Sent")
-                result["sent"] += 1
-                result["details"].append({"row": row_num, "email": email, "status": "sent"})
-            else:
-                create_draft(service, message_body)
-                update_row_status(sheet_id, row_num, header_lower, "Drafted")
-                result["drafted"] += 1
-                result["details"].append({"row": row_num, "email": email, "status": "drafted"})
+                time.sleep(2.0)
 
-        except Exception as e:
-            logger.error(f"Row {row_num} ({email}) failed: {e}")
-            result["failed"] += 1
-            update_row_status(sheet_id, row_num, header_lower, "Failed", str(e))
-            result["details"].append({"row": row_num, "email": email, "status": "failed", "reason": str(e)})
+        except Exception as e_lead:
+            failed_count += 1
+            logger.error(f"Row {row_num} failed: {e_lead}")
+            details.append({"row": row_num, "email": email, "company": company, "status": "failed", "error": str(e_lead)})
 
-        # Rate-limit between attempts (skip the wait after the very last lead)
-        if idx < total - 1:
-            time.sleep(EMAIL_DELAY_SECONDS)
-
-    sheet_label = f" [{resolved_sheet_name}]" if resolved_sheet_name else ""
-    result["message"] = (
-        f"Campaign complete{sheet_label}: {result['sent']} sent, {result['drafted']} drafted, "
-        f"{result['skipped']} skipped, {result['failed']} failed."
-    )
-    return result
+    msg_summary = f"Campaign complete [{sheet_name}]: {sent_count} sent, {drafted_count} drafted, {skipped_count} skipped, {failed_count} failed."
+    return {
+        "sent": sent_count,
+        "drafted": drafted_count,
+        "skipped": skipped_count,
+        "failed": failed_count,
+        "resume_attached": bool(resume_path),
+        "resume_path": resume_path,
+        "sheet_name": sheet_name,
+        "sheet_id": active_sheet_id,
+        "details": details,
+        "message": msg_summary,
+    }

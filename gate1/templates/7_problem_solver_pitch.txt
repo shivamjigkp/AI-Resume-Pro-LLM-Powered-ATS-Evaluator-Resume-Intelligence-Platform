@@ -1,0 +1,24 @@
+Subject: Ideas for {{company}}'s engineering & {{role}} application — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I've been exploring {{company}}'s product and engineering architecture, and I'm deeply impressed by how your team is solving key challenges in your industry.
+
+As a full-stack & ML developer (B.Tech at MMMUT), I focus on building high-performance, production-ready systems with sub-200ms latency, clean architecture, and data-driven algorithms.
+
+I'm writing to express interest in the {{role}} opening at {{company}}.
+
+What I bring to your engineering team:
+1. End-to-end execution: From schema design (PostgreSQL/Supabase) to high-speed backend APIs (FastAPI) and clean UI (Next.js 15).
+2. Data & ML expertise: Practical experience training, optimizing, and deploying ML models in production (AWS, Docker, MLflow).
+3. Fast turnaround: Strong product sense and ability to ship production-ready features independently.
+
+My resume is attached. You can view my source code here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I would love to share a few ideas on how I can add immediate value to {{company}}.
+
+Best regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

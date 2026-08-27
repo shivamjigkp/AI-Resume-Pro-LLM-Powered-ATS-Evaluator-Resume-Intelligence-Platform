@@ -1,0 +1,19 @@
+Subject: MMMUT Student reaching out / Guidance on {{role}} at {{company}}
+
+Dear {{recruiter_name}},
+
+I hope this email finds you well.
+
+I'm Shivam Gupta, currently pursuing my B.Tech in ECE (Data Science & ML) at MMMUT, Gorakhpur. I noticed your inspiring journey at {{company}} and wanted to reach out.
+
+I have been actively building production software across Machine Learning, algorithmic trading systems, and modern full-stack development (Next.js, FastAPI, Supabase). I am deeply interested in {{role}} openings at {{company}} and would appreciate any guidance on how to best position myself for the team.
+
+My resume and GitHub are attached below for your reference:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+If you have 5 minutes for a quick word or could refer my profile to the hiring team, it would mean a lot. Thank you for your time!
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

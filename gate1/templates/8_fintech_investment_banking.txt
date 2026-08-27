@@ -1,0 +1,22 @@
+Subject: Fintech & Quantitative Tech Application at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I am writing to express my interest in {{role}} opportunities at {{company}}.
+
+I am a B.Tech student (ECE – Data Science & ML) at MMMUT with a dedicated focus on financial engineering, high-throughput microservices, and quantitative risk systems.
+
+Relevant Background & Credentials:
+• Virtual Job Simulations: Completed hands-on simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading).
+• Financial Market Expertise: NISM Securities Markets Certified with deep understanding of market microstructure, order execution, and derivatives risk metrics.
+• Technical Stack: Python, Pine Script, Next.js, FastAPI, PostgreSQL, and Docker.
+
+My resume is attached for your review. Feel free to inspect my projects:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I am available for an immediate start and would welcome the opportunity to interview with your team.
+
+Sincerely,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

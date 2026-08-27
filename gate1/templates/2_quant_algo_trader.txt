@@ -1,0 +1,23 @@
+Subject: Quant / Algorithmic Trading Application at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I've been closely following {{company}}'s quantitative trading and market-making strategies, and I'm writing to explore {{role}} opportunities on your quantitative team.
+
+I am a B.Tech student (ECE – Data Science & ML) at MMMUT and Founder of Mastermind Research Technologies & Mastermind Algo Trader, specializing in quantitative modeling, statistical backtesting, and low-latency execution engines.
+
+Key Technical Highlights:
+• Algorithmic Strategy Development: Built and backtested automated price-action strategies (Pine Script v5 + Python) with live backtesting engines, Monte Carlo risk simulation, and drawdown optimization. Cleared both phases of FundingPips prop-firm evaluation and won Rank 3 in XM Global Daily Trading Competition.
+• Mathematical & ML Models: Developed predictive price forecasting pipelines using XGBoost, Scikit-learn, and statistical time-series analysis.
+• Industry Simulations: Completed quantitative research simulations with Goldman Sachs (Risk Management) and J.P. Morgan (Quantitative Research).
+• Core Certifications: NISM Securities Markets Certification, Stanford Machine Learning, and UC San Diego Algorithmic Toolbox / DSA.
+
+My resume is attached. You can explore my live repositories here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I would appreciate a brief conversation to discuss how my quantitative modeling and analytical skill set can add value to {{company}}.
+
+Best regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

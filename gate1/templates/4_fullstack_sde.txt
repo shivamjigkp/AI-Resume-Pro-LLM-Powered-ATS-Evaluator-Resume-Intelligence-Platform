@@ -1,0 +1,22 @@
+Subject: Full-Stack SDE Application for {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I hope you're having a productive week.
+
+I'm Shivam Gupta, a Full-Stack developer and founder of Mastermind Research Technologies. I noticed {{company}} is scaling rapidly and wanted to reach out regarding {{role}} opportunities.
+
+My Core Stack & Proof of Work:
+• Modern Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS, Framer Motion (optimized for 60fps animations and sub-second load times). Shipped platforms for Rajendra Hospital Gorakhpur, MMMUT Hockey, and Mastermind platform.
+• Scalable Backend: FastAPI, Flask, Supabase, PostgreSQL, REST/WebSocket APIs with robust error handling and microservice architecture.
+• Problem Solving: Solved 140+ DSA problems across LeetCode & GeeksforGeeks with strong fundamentals in algorithms and system design.
+
+My resume is attached for your review. Please feel free to check out my work:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I'm open to completing a 24-hour trial assignment to demonstrate my code quality and delivery speed. Looking forward to hearing from you!
+
+Best regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

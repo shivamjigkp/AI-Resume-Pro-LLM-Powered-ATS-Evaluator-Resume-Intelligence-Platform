@@ -1,0 +1,22 @@
+Subject: Application for Data Analyst / BI Role at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I am writing to express my interest in Data Analyst and Business Intelligence opportunities at {{company}}.
+
+As a B.Tech student in ECE (Data Science & ML) at MMMUT, I have extensive experience translating raw data into actionable dashboards, statistical insights, and automated reports.
+
+Core Competencies:
+• Advanced Data Analysis: Python (Pandas, NumPy, Scikit-learn), SQL (PostgreSQL), and automated ETL pipelines.
+• Predictive Modeling: Built forecasting models for electricity demand, weather intelligence, and asset price forecasting.
+• Visualization & Dashboards: Developed interactive analytics dashboards with live risk metrics and Monte Carlo simulations.
+
+My resume is attached for your review. You can explore my data science projects here:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+I would welcome the opportunity to discuss how my analytical skills can support {{company}}'s data-driven growth.
+
+Best regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

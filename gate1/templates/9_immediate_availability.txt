@@ -1,0 +1,22 @@
+Subject: Immediate Availability for {{role}} at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I'm reaching out regarding {{role}} opportunities at {{company}}.
+
+I am an engineering student at MMMUT (ECE – Data Science & ML) and can start working immediately on a full-time or internship basis with zero onboarding friction.
+
+Why I can contribute from Day 1:
+• Production Experience: Shipped production full-stack apps (Next.js, FastAPI, Supabase) and ML pipelines (AWS, Docker).
+• Self-Driven Builder: Built and backtested algorithmic trading systems and risk management dashboards.
+• Work Sample Ready: Happy to complete any technical assessment or build a working proof-of-concept for your team within 24 hours.
+
+My resume is attached. Check out my live repos:
+GitHub: https://github.com/shivamjigkp
+LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+
+Looking forward to connecting!
+
+Best regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

@@ -667,9 +667,15 @@ def send_emails_endpoint():
         }), 500
 
     try:
+        custom_subject = (body.get("subject") or "").strip() or None
+        custom_body = (body.get("template_body") or "").strip() or None
+        force_draft = bool(body.get("force_draft", True))
+
         result = run_campaign(start_row, end_row, mode, sender_profile,
                                template_name=template_name, resume_filename=resume_filename,
-                               sheet_key=sheet_key, sheet_id=sheet_id)
+                               sheet_key=sheet_key, sheet_id=sheet_id,
+                               custom_subject=custom_subject, custom_body=custom_body,
+                               force_draft=force_draft)
         return jsonify({"status": "success", "message": result.get("message", ""), **result})
     except MissingCredentialsError as e:
         return jsonify({"status": "error", "detail": str(e)}), 428  # Precondition Required

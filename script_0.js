@@ -6515,3 +6515,228 @@ function populateTemplateDropdown(){
   }).join('');
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 🌟 11 MASTER TEMPLATES REGISTRY & 4-STEP COMPOSER JS
+// ════════════════════════════════════════════════════════════════
+const MASTER_TEMPLATES_COLLECTION = [
+  { id: '1_mastermind_comprehensive', name: '⭐ 1 — Mastermind Comprehensive (Shivam Gupta Exact)' },
+  { id: '2_quant_algo_trader', name: '📈 2 — Quant & Algorithmic Trading Specialist' },
+  { id: '3_ai_ml_engineer', name: '🤖 3 — AI / ML Systems & LLM Pipelines' },
+  { id: '4_fullstack_sde', name: '💻 4 — Full-Stack SDE (Next.js 15 & FastAPI)' },
+  { id: '5_short_startup_pitch', name: '🔥 5 — Ultra-Short Founder Pitch (Under 85 words)' },
+  { id: '6_alumni_referral', name: '🎓 6 — Alumni & Warm Referral Request' },
+  { id: '7_problem_solver_pitch', name: '🛠️ 7 — Problem-Solver / Value-First Pitch' },
+  { id: '8_fintech_investment_banking', name: '💼 8 — Fintech & Investment Banking Tech' },
+  { id: '9_immediate_availability', name: '⏳ 9 — Immediate Availability & 24hr Trial' },
+  { id: '10_follow_up_gentle', name: '🔄 10 — Gentle Follow-Up (2nd Touchpoint)' },
+  { id: '11_data_analyst_bi', name: '📊 11 — Data Analyst & Business Intelligence' }
+];
+
+function populateTemplateDropdown(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  if(!sel) return;
+
+  const activeTpl = localStorage.getItem('rsai_active_template') || '1_mastermind_comprehensive';
+
+  sel.innerHTML = MASTER_TEMPLATES_COLLECTION.map(t => {
+    const isSel = (t.id === activeTpl || t.id === activeTpl.replace('.txt','')) ? 'selected' : '';
+    return `<option value="${t.id}" ${isSel}>${t.name}</option>`;
+  }).join('');
+}
+
+async function syncGate1LiveTemplateEditor(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplId = sel?.value || '1_mastermind_comprehensive';
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const subInp = document.getElementById('gate1EmailSubject');
+  if(!ta) return;
+
+  localStorage.setItem('rsai_active_template', tplId);
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
+    const data = await res.json();
+    if(data.status === 'success' && data.template && data.template.content){
+      const raw = data.template.content;
+      // Extract Subject if present
+      const lines = raw.split('\n');
+      if(lines[0].toLowerCase().startsWith('subject:')){
+        if(subInp) subInp.value = lines[0].substring(8).trim();
+        ta.value = lines.slice(1).join('\n').trim();
+      } else {
+        ta.value = raw.trim();
+      }
+    }
+  } catch(e){}
+
+  updateGate1LivePreview();
+}
+
+function updateGate1LivePreview(){
+  const subInp = document.getElementById('gate1EmailSubject');
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const prevTo = document.getElementById('prevTo');
+  const prevSub = document.getElementById('prevSubject');
+  const prevBox = document.getElementById('gate1LivePreviewBox');
+  const prevAtt = document.getElementById('prevAttachment');
+  const resumeSel = document.getElementById('gate1DefaultResume');
+  const companyBadge = document.getElementById('gate1PreviewTargetCompany');
+
+  if(!ta || !prevBox) return;
+
+  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+
+  // Sample lead data for preview
+  const sampleLead = {
+    name: 'Hiring Team',
+    email: 'careers@zerodha.com',
+    company: 'Zerodha',
+    role: 'Software Development / Quantitative Analyst'
+  };
+
+  if(companyBadge) companyBadge.textContent = `Target: ${sampleLead.company} (Row ${startRow})`;
+  if(prevTo) prevTo.textContent = sampleLead.email;
+
+  // Render Subject
+  let rawSub = subInp?.value || 'Application for Opportunities at {{company}} — Shivam Gupta';
+  let renderedSub = rawSub
+    .replace(/\{\{company\}\}/gi, sampleLead.company)
+    .replace(/\{\{company_name\}\}/gi, sampleLead.company)
+    .replace(/\{\{role\}\}/gi, sampleLead.role)
+    .replace(/\{\{sender_name\}\}/gi, 'Shivam Gupta')
+    .replace(/\{\{recruiter_name\}\}/gi, sampleLead.name);
+  if(prevSub) prevSub.textContent = renderedSub;
+
+  // Render Body
+  let rawBody = ta.value || '';
+  let renderedBody = rawBody
+    .replace(/\{\{recruiter_name\}\}/gi, sampleLead.name)
+    .replace(/\{\{company\}\}/gi, sampleLead.company)
+    .replace(/\{\{company_name\}\}/gi, sampleLead.company)
+    .replace(/\{\{role\}\}/gi, sampleLead.role)
+    .replace(/\{\{sender_name\}\}/gi, 'Shivam Gupta')
+    .replace(/\{\{sender_email\}\}/gi, 'quantxcoder@gmail.com')
+    .replace(/\{\{sender_phone\}\}/gi, '+91-8081513780')
+    .replace(/\{\{sender_github\}\}/gi, 'https://github.com/shivamjigkp')
+    .replace(/\{\{sender_linkedin\}\}/gi, 'https://linkedin.com/in/shivam-gupta-05209a279');
+
+  prevBox.textContent = renderedBody;
+
+  // Render Attachment
+  const resumeFile = resumeSel?.value || 'resume.pdf';
+  if(prevAtt) prevAtt.textContent = `Attachment: ${resumeFile}`;
+}
+
+function updateGate1PreviewForActiveRow(){
+  updateGate1LivePreview();
+}
+
+async function saveGate1LiveTemplate(){
+  const sel = document.getElementById('gate1DefaultTemplate');
+  const tplId = sel?.value || '1_mastermind_comprehensive';
+  const sub = document.getElementById('gate1EmailSubject')?.value || 'Application for Opportunities at {{company}} — Shivam Gupta';
+  const body = document.getElementById('gate1LiveTemplateContent')?.value || '';
+
+  const fullContent = `Subject: ${sub}\n\n${body}`;
+
+  try {
+    const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: fullContent })
+    });
+    const data = await res.json();
+    if(data.status === 'success'){
+      toast(`💾 Saved template "${tplId}" successfully!`, 'success', 3500);
+    } else {
+      toast('Failed to save template', 'error');
+    }
+  } catch(e){
+    toast('Saved template locally', 'info');
+  }
+}
+
+async function runGate1Action(mode){
+  if(mode === 'send'){
+    if(!confirm('⚠️ ARE YOU SURE? This will SEND emails directly to the recipients via Gmail API without drafting.')) return;
+  }
+
+  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+  const endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  const sheetSel = document.getElementById('gate1ActiveSheet');
+  const sheetId = extractCleanSheetId(sheetSel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const tplSel = document.getElementById('gate1DefaultTemplate');
+  const templateName = tplSel?.value || '1_mastermind_comprehensive';
+  const resumeSel = document.getElementById('gate1DefaultResume');
+  const resumeFilename = resumeSel?.value || 'auto';
+
+  const subject = document.getElementById('gate1EmailSubject')?.value || '';
+  const templateBody = document.getElementById('gate1LiveTemplateContent')?.value || '';
+  const forceDraft = document.getElementById('gate1ForceDraftCheckbox')?.checked ?? true;
+
+  const senderProfile = {
+    name: 'Shivam Gupta',
+    email: 'quantxcoder@gmail.com',
+    phone: '+91-8081513780',
+    linkedin: 'https://linkedin.com/in/shivam-gupta-05209a279',
+    github: 'https://github.com/shivamjigkp'
+  };
+
+  const totalRows = Math.max(1, endRow - startRow + 1);
+  const card = document.getElementById('gate1ProgressCard');
+  if(card) card.style.display = 'block';
+
+  updateGate1Progress(0, totalRows, `🚀 Starting Gate 1 campaign: Rows ${startRow} to ${endRow}... Mode: ${mode.toUpperCase()}`);
+
+  const draftBtn = document.getElementById('btnGate1Draft');
+  const sendBtn = document.getElementById('btnGate1Send');
+  if(draftBtn) draftBtn.disabled = true;
+  if(sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/gate1/send-emails', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        mode: mode,
+        start_row: startRow,
+        end_row: endRow,
+        sheet_id: sheetId,
+        template_name: templateName,
+        subject: subject,
+        template_body: templateBody,
+        force_draft: forceDraft,
+        resume_filename: resumeFilename,
+        sender_profile: senderProfile
+      })
+    });
+
+    const data = await res.json();
+    if(res.ok && data.status === 'success'){
+      updateGate1Progress(totalRows, totalRows, `✅ Campaign Complete! ${data.message || data.detail || 'Processed successfully.'}`, true, 0);
+      toast(`🎉 Gate 1: ${mode === 'draft' ? 'Drafts created in Gmail!' : 'Emails sent successfully!'}`, 'success', 6000);
+      setTimeout(fetchAndRenderGate1Leads, 1500);
+    } else {
+      const errMsg = data.detail || data.error || 'Campaign failed to execute.';
+      updateGate1Progress(0, totalRows, `❌ Error: ${errMsg}`, false, 1);
+      toast(`Gate 1: ${errMsg}`, 'error', 6000);
+    }
+  } catch(err) {
+    updateGate1Progress(0, totalRows, `❌ Network Error: ${err.message}`, false, 1);
+    toast(`Network error connecting to backend: ${err.message}`, 'error');
+  } finally {
+    if(draftBtn) draftBtn.disabled = false;
+    if(sendBtn) sendBtn.disabled = false;
+  }
+}
+
+// Auto init on load
+setTimeout(() => {
+  populateTemplateDropdown();
+  syncGate1LiveTemplateEditor();
+  fetchAndRenderGate1Leads();
+  refreshGate1Resumes();
+}, 200);
+

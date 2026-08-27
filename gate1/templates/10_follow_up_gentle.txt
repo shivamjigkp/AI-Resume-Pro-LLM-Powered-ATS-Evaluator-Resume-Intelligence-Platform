@@ -1,0 +1,19 @@
+Subject: Re: Application for {{role}} at {{company}} — Shivam Gupta
+
+Dear {{recruiter_name}},
+
+I wanted to quickly follow up on my previous email regarding {{role}} opportunities at {{company}}.
+
+I understand you have a busy schedule, so I wanted to re-share my resume and GitHub repository in case my previous message got buried:
+
+• GitHub: https://github.com/shivamjigkp
+• LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
+• Highlights: Full-Stack (Next.js/FastAPI), ML Pipelines, Algorithmic Trading Systems, Stanford & UC San Diego Certifications.
+
+I remain very excited about the work {{company}} is doing and would love a 5-minute chat if you have an opening.
+
+Thank you again for your time and consideration!
+
+Warm regards,
+Shivam Gupta
++91-8081513780 | quantxcoder@gmail.com

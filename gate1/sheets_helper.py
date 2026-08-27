@@ -1,89 +1,100 @@
 """
 gate1/sheets_helper.py
 ────────────────────────
-Reads leads and writes campaign status back to the user's Google Sheet
-("Lead Tracker"), used as the source of truth for who to email.
-
-EXPECTED SHEET SCHEMA (row 1 = header, case-insensitive):
-  Name | Email | Company | Role | Status | Notes
-
-  - Name, Email are required per lead row.
-  - Company, Role are used for template personalization (and role-based
-    template selection — see gate1/template_loader.py).
-  - Status / Notes are written back by the campaign engine after each attempt
-    (e.g. "Sent", "Drafted", "Failed"). Rows already marked Sent/Drafted are
-    skipped on subsequent runs so leads never get emailed twice by accident.
-    If your sheet doesn't have Status/Notes columns yet, add them — the
-    engine will simply skip writing back if they're missing, but re-runs
-    won't be able to dedupe without them.
+Reads leads and writes campaign status back using official Google Sheets API v4.
+100% Python 3.14 compatible and robust.
 """
 import logging
 from typing import List, Dict, Tuple
-import gspread
+from googleapiclient.discovery import build
 from .google_auth import get_credentials
 
-logger = logging.getLogger("Gate1.Sheets")
-
-_ws_cache = {}
+logger = logging.getLogger("Gate1.SheetsHelper")
 
 
-def _get_worksheet(sheet_id: str, worksheet_index: int = 0):
-    cache_key = (sheet_id, worksheet_index)
-    if cache_key in _ws_cache:
-        return _ws_cache[cache_key]
+def _get_sheets_service():
     creds = get_credentials()
-    gc = gspread.authorize(creds)
-    sh = gc.open_by_key(sheet_id)
-    ws = sh.get_worksheet(worksheet_index)
-    _ws_cache[cache_key] = ws
-    return ws
+    return build('sheets', 'v4', credentials=creds)
 
 
-def read_lead_rows(sheet_id: str, start_row: int, end_row: int) -> Tuple[List[Dict], List[str]]:
+def read_lead_rows(sheet_id: str, start_row: int, end_row: int, sheet_tab: str = "Leads") -> Tuple[List[Dict], List[str]]:
     """
-    Reads rows [start_row, end_row] (1-indexed, matching the sheet's own row numbers).
-    Returns (leads, header_lower) where each lead dict has lowercase header keys
-    plus a '_row_num' key for writing status back later.
+    Reads rows [start_row, end_row] inclusive from the Google Sheet.
+    Returns (leads_list, headers_lower).
     """
-    if start_row < 2:
-        start_row = 2  # never touch the header row
+    service = _get_sheets_service()
+    
+    # Try tab specific first, fallback to generic
+    ranges_to_try = [f"{sheet_tab}!A1:Z{end_row}", f"A1:Z{end_row}"]
+    values = []
+    
+    for r in ranges_to_try:
+        try:
+            resp = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=r).execute()
+            values = resp.get("values", [])
+            if values:
+                break
+        except Exception as e:
+            logger.debug(f"Failed to fetch range {r}: {e}")
 
-    ws = _get_worksheet(sheet_id)
-    header = ws.row_values(1)
-    header_lower = [h.strip().lower() for h in header]
+    if not values:
+        logger.warning("No values found in sheet %s", sheet_id)
+        return [], []
 
-    raw_rows = ws.get(f"A{start_row}:Z{end_row}")
+    header = values[0]
+    header_lower = [str(h).strip().lower() for h in header]
+
+    def col_val(row_cells, col_name, default=""):
+        if col_name in header_lower:
+            idx = header_lower.index(col_name)
+            if idx < len(row_cells):
+                return str(row_cells[idx]).strip()
+        return default
 
     leads = []
-    for i, row in enumerate(raw_rows):
-        row_num = start_row + i
-        if not row or not any(str(c).strip() for c in row):
-            continue
-        data = {}
-        for idx, col_name in enumerate(header_lower):
-            data[col_name] = row[idx] if idx < len(row) else ""
-        data["_row_num"] = row_num
-        leads.append(data)
+    # 1-based row indexing matching sheet row numbers
+    for i in range(start_row, min(end_row + 1, len(values) + 1)):
+        row_idx = i - 1
+        if row_idx >= len(values):
+            break
+        row_cells = values[row_idx]
+        
+        email = col_val(row_cells, "email")
+        name = col_val(row_cells, "name", "Hiring Team")
+        company = col_val(row_cells, "company", "")
+        role = col_val(row_cells, "role", "")
+        status = col_val(row_cells, "status", "Pending")
+
+        leads.append({
+            "row": i,
+            "name": name,
+            "email": email,
+            "company": company,
+            "role": role,
+            "status": status,
+        })
 
     return leads, header_lower
 
 
-def update_row_status(sheet_id: str, row_num: int, header_lower: List[str], status: str, note: str = ""):
-    """Writes back Status (and Notes, if present) for a given row. No-op if columns are missing."""
-    ws = _get_worksheet(sheet_id)
-
-    if "status" not in header_lower:
-        logger.warning("Sheet has no 'Status' column — skipping status write-back for row %s", row_num)
-        return
-    status_col = header_lower.index("status") + 1
+def update_row_status(sheet_id: str, row_num: int, header_lower: List[str], status: str, note: str = "", sheet_tab: str = "Leads"):
+    """Writes back Status to the Google Sheet row."""
     try:
-        ws.update_cell(row_num, status_col, status)
+        service = _get_sheets_service()
+        # Status is typically Column E (index 4)
+        col_letter = "E"
+        if "status" in header_lower:
+            idx = header_lower.index("status")
+            col_letter = chr(65 + idx)
+            
+        range_name = f"{sheet_tab}!{col_letter}{row_num}"
+        body = {"values": [[status]]}
+        service.spreadsheets().values().update(
+            spreadsheetId=sheet_id,
+            range=range_name,
+            valueInputOption="RAW",
+            body=body
+        ).execute()
+        logger.info(f"Updated Sheet Row {row_num} Status to '{status}'")
     except Exception as e:
-        logger.error(f"Failed to write Status for row {row_num}: {e}")
-
-    if note and "notes" in header_lower:
-        notes_col = header_lower.index("notes") + 1
-        try:
-            ws.update_cell(row_num, notes_col, note[:300])
-        except Exception as e:
-            logger.error(f"Failed to write Notes for row {row_num}: {e}")
+        logger.warning(f"Could not update status for row {row_num}: {e}")
