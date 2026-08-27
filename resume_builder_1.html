@@ -7348,57 +7348,129 @@ async function toggleGate1LeadsTable(){
 }
 
 
+
 async function fetchAndRenderGate1Leads(){
   const box = document.getElementById('gate1LeadsTableBox');
   const badge = document.getElementById('gate1LeadsCountBadge');
   if(!box) return;
 
   const sel = document.getElementById('gate1ActiveSheet');
-  const sheetId = extractCleanSheetId(sel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const rawId = sel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI';
+  const sheetId = extractCleanSheetId(rawId);
 
-  box.innerHTML = '<div style="padding:10px;color:#6366f1;text-align:center;font-weight:600;">🔄 Fetching real Google Sheet rows...</div>';
+  box.innerHTML = '<div style="padding:10px;color:#6366f1;text-align:center;font-weight:600;">🔄 Fetching real Google Sheet rows via CSV...</div>';
+
+  // Method 1: Direct CSV fetch (works when sheet is public "Anyone with link can view")
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=Leads`;
 
   try {
-    const res = await fetch('/api/gate1/sheet-rows?sheet_id=' + encodeURIComponent(sheetId));
-    const data = await res.json();
-    
-    if(data.status === 'success' && Array.isArray(data.rows) && data.rows.length > 0){
-      const rows = data.rows;
-      if(badge) badge.textContent = `Showing ${rows.length} real active rows`;
+    const res = await fetch(csvUrl);
+    if(!res.ok) throw new Error('CSV fetch failed: ' + res.status);
+    const text = await res.text();
 
-      box.innerHTML = `
-        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:10.5px;">
-          <thead>
-            <tr style="background:#e0e7ff;color:#3730a3;font-weight:800;">
-              <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Row</th>
-              <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Name</th>
-              <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Email</th>
-              <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Company</th>
-              <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Role</th>
-              <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(l => `
-              <tr style="border-bottom:1px solid #e2e8f0;background:#fff;">
-                <td style="padding:5px 8px;font-weight:800;color:#6366f1;">#${l.row}</td>
-                <td style="padding:5px 8px;font-weight:600;">${l.name || 'Hiring Team'}</td>
-                <td style="padding:5px 8px;color:#1e40af;">${l.email}</td>
-                <td style="padding:5px 8px;font-weight:700;">${l.company}</td>
-                <td style="padding:5px 8px;color:#059669;">${l.role}</td>
-                <td style="padding:5px 8px;"><span style="font-size:9.5px;padding:2px 5px;border-radius:4px;background:#e0f2fe;color:#0369a1;font-weight:700;">${l.status}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    } else {
-      box.innerHTML = `<div style="padding:10px;color:#dc2626;text-align:center;">No active rows found in sheet "${sheetId.substring(0,12)}..."</div>`;
+    // Parse CSV properly (handle commas inside quotes)
+    function parseCSVLine(line){
+      const result = []; let cell = ''; let inQuote = false;
+      for(let i=0; i<line.length; i++){
+        const c = line[i];
+        if(c === '"' && line[i+1] === '"'){ cell += '"'; i++; }
+        else if(c === '"'){ inQuote = !inQuote; }
+        else if(c === ',' && !inQuote){ result.push(cell); cell = ''; }
+        else { cell += c; }
+      }
+      result.push(cell);
+      return result;
     }
-  } catch(e) {
-    box.innerHTML = '<div style="padding:10px;color:#dc2626;text-align:center;">Error connecting to backend Google Sheet service.</div>';
+
+    const lines = text.split('\n').filter(l => l.trim());
+    const headers = parseCSVLine(lines[0]);
+    const dataRows = lines.slice(1);
+
+    const nameIdx   = headers.findIndex(h => /name/i.test(h));
+    const emailIdx  = headers.findIndex(h => /email/i.test(h));
+    const compIdx   = headers.findIndex(h => /company/i.test(h));
+    const roleIdx   = headers.findIndex(h => /role/i.test(h));
+    const statusIdx = headers.findIndex(h => /status/i.test(h));
+
+    const rows = dataRows.map((line, i) => {
+      const cols = parseCSVLine(line);
+      return {
+        row: i + 2,
+        name:    cols[nameIdx  >= 0 ? nameIdx   : 0] || 'Hiring Team',
+        email:   cols[emailIdx >= 0 ? emailIdx  : 1] || '',
+        company: cols[compIdx  >= 0 ? compIdx   : 2] || '',
+        role:    cols[roleIdx  >= 0 ? roleIdx   : 3] || '',
+        status:  cols[statusIdx>= 0 ? statusIdx : 4] || 'Pending',
+      };
+    }).filter(r => r.email);
+
+    if(badge) badge.textContent = `Showing ${rows.length} real active rows`;
+
+    if(!rows.length){
+      box.innerHTML = '<div style="padding:10px;color:#d97706;text-align:center;font-weight:600;">No rows with email found. Check sheet has data and is shared as "Anyone with link can view".</div>';
+      return;
+    }
+
+    box.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;text-align:left;font-size:10.5px;">
+        <thead>
+          <tr style="background:#e0e7ff;color:#3730a3;font-weight:800;">
+            <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">#</th>
+            <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Email</th>
+            <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Company</th>
+            <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Role</th>
+            <th style="padding:5px 8px;border-bottom:1px solid #cbd5e1;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.slice(0,50).map(l => `
+            <tr style="border-bottom:1px solid #e2e8f0;background:#fff;">
+              <td style="padding:4px 8px;font-weight:800;color:#6366f1;">${l.row}</td>
+              <td style="padding:4px 8px;color:#1e40af;font-weight:600;">${l.email}</td>
+              <td style="padding:4px 8px;font-weight:700;">${l.company}</td>
+              <td style="padding:4px 8px;color:#059669;font-size:10px;">${l.role}</td>
+              <td style="padding:4px 8px;">
+                <span style="font-size:9px;padding:2px 5px;border-radius:4px;
+                  background:${l.status==='Drafted'?'#dcfce7':'#f1f5f9'};
+                  color:${l.status==='Drafted'?'#16a34a':'#475569'};
+                  font-weight:700;">${l.status}</span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${rows.length > 50 ? `<div style="padding:6px;text-align:center;font-size:10px;color:#6366f1;font-weight:700;">Showing first 50 of ${rows.length} rows</div>` : ''}
+    `;
+
+  } catch(csvErr) {
+    // Fallback: try backend API
+    try {
+      const backendRes = await fetch('/api/gate1/sheet-rows?sheet_id=' + encodeURIComponent(sheetId));
+      const data = await backendRes.json();
+      if(data.status === 'success' && data.rows?.length){
+        if(badge) badge.textContent = `Showing ${data.rows.length} rows via backend API`;
+        box.innerHTML = `<div style="padding:8px;color:#059669;font-weight:700;">✅ Loaded ${data.rows.length} rows via backend API</div>`;
+      } else {
+        box.innerHTML = `
+          <div style="padding:10px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;font-size:10.5px;line-height:1.5;">
+            <strong>⚠️ Cannot load sheet rows. Please:</strong><br>
+            1. Open your Google Sheet → Click <strong>Share</strong> button<br>
+            2. Change to <strong>"Anyone with the link → Viewer"</strong><br>
+            3. Then click <strong>📊 View Sheet Leads ▾</strong> again
+          </div>`;
+      }
+    } catch(e2) {
+      box.innerHTML = `
+        <div style="padding:10px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;font-size:10.5px;line-height:1.5;">
+          <strong>⚠️ Sheet not accessible. Please:</strong><br>
+          1. Open your Google Sheet → Click <strong>Share</strong><br>
+          2. Set to <strong>"Anyone with the link → Viewer"</strong><br>
+          3. Click <strong>📊 View Sheet Leads ▾</strong> again
+        </div>`;
+    }
   }
 }
+
 
 
 
@@ -7470,7 +7542,11 @@ window.openGate1Panel = function(){
   setTimeout(() => {
     syncGate1LiveTemplateEditor();
     updateGate1LivePreview();
-  }, 100);
+    // Auto-show leads table and fetch rows
+    const leadsContainer = document.getElementById('gate1LeadsTableContainer');
+    if(leadsContainer) leadsContainer.style.display = 'block';
+    fetchAndRenderGate1Leads();
+  }, 200);
 
   requestAnimationFrame(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 };
