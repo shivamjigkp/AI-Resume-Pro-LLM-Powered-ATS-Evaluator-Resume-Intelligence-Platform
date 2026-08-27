@@ -1192,6 +1192,14 @@ async function handleUpload(ev){
       const sel = document.getElementById('pageBreakSel');
       if(sel) sel.value = savedRule;
       changePageBreakRule(savedRule);
+
+  try{
+    const savedCompact = localStorage.getItem('rsai_compact_spacing') || 'compact';
+    const sel = document.getElementById('compactSpacingSel');
+    if(sel) sel.value = savedCompact;
+    changeCompactSpacing(savedCompact);
+  }catch(e){}
+
     }
   }catch(e){}
 
@@ -5279,5 +5287,18 @@ function changePageBreakRule(val){
     toast('🚫 Page Break: Avoid item splitting (keeps items intact)', 'info', 3000);
   }
   try{ localStorage.setItem('rsai_page_break_rule', val); }catch(e){}
+}
+
+
+
+function changeCompactSpacing(val){
+  if(val === 'compact'){
+    document.body.classList.add('compact-print');
+    toast('⚡ Spacing: Compact (Fit 1 Page) activated!', 'success', 2500);
+  } else {
+    document.body.classList.remove('compact-print');
+    toast('📄 Spacing: Normal restored', 'info', 2500);
+  }
+  try{ localStorage.setItem('rsai_compact_spacing', val); }catch(e){}
 }
 

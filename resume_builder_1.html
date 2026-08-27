@@ -392,6 +392,39 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
   /* SGResume print overrides */
   body.print-sg #paperWrap { display: none !important; }
   body.print-sg #sgSection, body.print-sg #sgPaperWrap { display: block !important; }
+  
+  /* COMPACT / FIT 1-PAGE PRINT ADJUSTMENTS */
+  body.compact-print .paper,
+  body.mode-1page .paper {
+    padding: 5mm 8mm 4mm !important;
+  }
+  body.compact-print .rs,
+  body.mode-1page .rs {
+    margin: 4px 0 2px 0 !important;
+    padding-bottom: 1px !important;
+    font-size: 10.5px !important;
+  }
+  body.compact-print .ri,
+  body.mode-1page .ri {
+    margin-bottom: 2.5px !important;
+  }
+  body.compact-print .rb,
+  body.mode-1page .rb {
+    margin-top: 1px !important;
+    margin-bottom: 2px !important;
+  }
+  body.compact-print .rb li,
+  body.mode-1page .rb li {
+    margin-bottom: 1px !important;
+    line-height: 1.25 !important;
+    font-size: 9.5px !important;
+  }
+  body.compact-print .rh,
+  body.mode-1page .rh {
+    margin-bottom: 4px !important;
+    padding-bottom: 2px !important;
+  }
+
   body.print-sg #sgPaper {
     display: block !important;
     position: static !important;
@@ -480,6 +513,12 @@ body.allow-page-split #paper .rb li {
     <button class="btn btn-outline" onclick="document.getElementById('fInput').click()">📁 Upload Resume</button>
     <input type="file" id="fInput" style="display:none" accept=".pdf,.docx,.doc,.txt,.json" onchange="handleUpload(event)">
     <button class="btn btn-tpl" onclick="openTplModal()">🎨 <span id="tplLabel">Modern Tech</span></button>
+    <div class="sel-pill" title="Compact spacing to fit everything on 1 page without spillover">
+      ⚡ <select id="compactSpacingSel" onchange="changeCompactSpacing(this.value)">
+        <option value="normal">Spacing: Normal</option>
+        <option value="compact" selected>Spacing: Compact (Fit 1 Page)</option>
+      </select>
+    </div>
     <div class="sel-pill" title="Control whether project/experience items split across pages to fill empty gaps">
       ✂️ <select id="pageBreakSel" onchange="changePageBreakRule(this.value)">
         <option value="avoid" selected>Break: Avoid Split (Clean)</option>
@@ -2788,6 +2827,14 @@ async function handleUpload(ev){
       const sel = document.getElementById('pageBreakSel');
       if(sel) sel.value = savedRule;
       changePageBreakRule(savedRule);
+
+  try{
+    const savedCompact = localStorage.getItem('rsai_compact_spacing') || 'compact';
+    const sel = document.getElementById('compactSpacingSel');
+    if(sel) sel.value = savedCompact;
+    changeCompactSpacing(savedCompact);
+  }catch(e){}
+
     }
   }catch(e){}
 
@@ -6875,6 +6922,19 @@ function changePageBreakRule(val){
     toast('🚫 Page Break: Avoid item splitting (keeps items intact)', 'info', 3000);
   }
   try{ localStorage.setItem('rsai_page_break_rule', val); }catch(e){}
+}
+
+
+
+function changeCompactSpacing(val){
+  if(val === 'compact'){
+    document.body.classList.add('compact-print');
+    toast('⚡ Spacing: Compact (Fit 1 Page) activated!', 'success', 2500);
+  } else {
+    document.body.classList.remove('compact-print');
+    toast('📄 Spacing: Normal restored', 'info', 2500);
+  }
+  try{ localStorage.setItem('rsai_compact_spacing', val); }catch(e){}
 }
 
 </script>
