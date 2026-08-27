@@ -2711,25 +2711,138 @@ function clearAll(){
 // ════════════════════════════════════════════════════════════════
 // 📝 EXPORT RESUME AS FORMATTED WORD DOCUMENT (.DOC / .DOCX)
 // ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// 📝 EXPORT RESUME AS FORMATTED WORD DOCUMENT (.DOC / .DOCX)
+// ════════════════════════════════════════════════════════════════
 function exportWord(){
   syncFormToD();
-  const resumeEl = document.getElementById('resumeOut');
-  if(!resumeEl){
-    toast('Nothing to export!', 'warning');
-    return;
-  }
+  const b = D.basics || {};
+  const s = D.skills || {};
+  const e = D.edu || {};
+  const exp = D.exp || [];
+  const proj = D.proj || [];
+  const ach = D.ach || [];
+  const certs = D.certs || [];
+  const eduExtra = D.eduExtra || [];
+  const customSkills = D.customSkills || [];
+  const vis = D.sectionVisibility || defaultVisibility();
 
-  const name = (D.basics?.name || 'Resume').trim().replace(/\s+/g, '_');
+  const name = (b.name || 'Resume').trim().replace(/\s+/g, '_');
   const filename = `${name}_Resume.doc`;
 
-  // Create clean Word HTML with standard Office styles & preserved hyperlinks
-  const contentHtml = resumeEl.innerHTML;
-  
+  // Contact items with clickable links
+  const contactParts = [];
+  if(b.loc) contactParts.push(b.loc);
+  if(b.phone) contactParts.push(b.phone);
+  if(b.email) contactParts.push(`<a href="mailto:${b.email}" style="color:#1e40af;text-decoration:underline;">${b.email}</a>`);
+  if(b.li) contactParts.push(`<a href="${b.li.startsWith('http')?b.li:'https://'+b.li}" target="_blank" style="color:#1e40af;text-decoration:underline;">LinkedIn</a>`);
+  if(b.gh) contactParts.push(`<a href="${b.gh.startsWith('http')?b.gh:'https://'+b.gh}" target="_blank" style="color:#1e40af;text-decoration:underline;">GitHub</a>`);
+  if(b.leetcode) contactParts.push(`<a href="${b.leetcode.startsWith('http')?b.leetcode:'https://'+b.leetcode}" target="_blank" style="color:#1e40af;text-decoration:underline;">LeetCode</a>`);
+  if(b.gfg) contactParts.push(`<a href="${b.gfg.startsWith('http')?b.gfg:'https://'+b.gfg}" target="_blank" style="color:#1e40af;text-decoration:underline;">GeeksforGeeks</a>`);
+  if(b.port) contactParts.push(`<a href="${b.port.startsWith('http')?b.port:'https://'+b.port}" target="_blank" style="color:#1e40af;text-decoration:underline;">Portfolio</a>`);
+  if(b.otherLink) contactParts.push(`<a href="${b.otherLink.startsWith('http')?b.otherLink:'https://'+b.otherLink}" target="_blank" style="color:#1e40af;text-decoration:underline;">Profile</a>`);
+
+  // Skills rows in table format for Word
+  let skillsRows = '';
+  if(s.lang) skillsRows += `<tr><td style="width:160px;font-weight:bold;vertical-align:top;padding:2px 0;">Languages:</td><td style="padding:2px 0;">${s.lang}</td></tr>`;
+  if(s.tools) skillsRows += `<tr><td style="width:160px;font-weight:bold;vertical-align:top;padding:2px 0;">Tools & Frameworks:</td><td style="padding:2px 0;">${s.tools}</td></tr>`;
+  if(s.domain) skillsRows += `<tr><td style="width:160px;font-weight:bold;vertical-align:top;padding:2px 0;">Domain / Stack:</td><td style="padding:2px 0;">${s.domain}</td></tr>`;
+  if(s.cloud) skillsRows += `<tr><td style="width:160px;font-weight:bold;vertical-align:top;padding:2px 0;">Cloud / Databases:</td><td style="padding:2px 0;">${s.cloud}</td></tr>`;
+  if(s.course) skillsRows += `<tr><td style="width:160px;font-weight:bold;vertical-align:top;padding:2px 0;">Coursework:</td><td style="padding:2px 0;">${s.course}</td></tr>`;
+  customSkills.forEach(cs => {
+    if(cs.val && cs.val.trim()){
+      skillsRows += `<tr><td style="width:160px;font-weight:bold;vertical-align:top;padding:2px 0;">${cs.label || 'Skills'}:</td><td style="padding:2px 0;">${cs.val}</td></tr>`;
+    }
+  });
+
+  // Experience entries
+  let expHtml = '';
+  if(vis.exp !== false && exp.length){
+    expHtml = `<div class="sec-title">PROFESSIONAL EXPERIENCE</div>` + exp.map(x => {
+      const linkRows = parseLinksField(x.links);
+      const linkStr = linkRows.filter(r=>r.url).map(r=>`<a href="${r.url.startsWith('http')?r.url:'https://'+r.url}" style="color:#1e40af;text-decoration:underline;margin-left:6px;">[${r.label||'Link'}]</a>`).join(' ');
+      const dateLoc = `${x.date||''}${x.loc ? (x.date?' • ':'')+x.loc : ''}`;
+      const bullets = (x.bullets||[]).map(b=>`<li style="margin-bottom:2pt;line-height:1.35;">${bold(b)}</li>`).join('');
+      return `
+        <table style="width:100%;margin-top:4pt;margin-bottom:2pt;border-collapse:collapse;">
+          <tr>
+            <td style="text-align:left;font-size:10.5pt;"><strong>${x.co||'Company'}</strong> — <em>${x.role||'Role'}</em> ${linkStr}</td>
+            <td style="text-align:right;font-size:10pt;font-style:italic;color:#334155;">${dateLoc}</td>
+          </tr>
+        </table>
+        <ul style="margin:2pt 0 6pt 16pt;padding-left:0;">${bullets}</ul>
+      `;
+    }).join('');
+  }
+
+  // Projects entries
+  let projHtml = '';
+  if(vis.proj !== false && proj.length){
+    projHtml = `<div class="sec-title">FEATURED PROJECTS</div>` + proj.map(p => {
+      const linkRows = parseLinksField(p.links);
+      const linkStr = linkRows.filter(r=>r.url).map(r=>`<a href="${r.url.startsWith('http')?r.url:'https://'+r.url}" style="color:#1e40af;text-decoration:underline;margin-left:6px;">[${r.label||'Link'}]</a>`).join(' ');
+      const techStr = p.tech ? ` [<em>${p.tech}</em>]` : '';
+      const bullets = (p.bullets||[]).map(b=>`<li style="margin-bottom:2pt;line-height:1.35;">${bold(b)}</li>`).join('');
+      return `
+        <table style="width:100%;margin-top:4pt;margin-bottom:2pt;border-collapse:collapse;">
+          <tr>
+            <td style="text-align:left;font-size:10.5pt;"><strong>${p.title||'Project'}</strong>${techStr} ${linkStr}</td>
+            <td style="text-align:right;font-size:10pt;"></td>
+          </tr>
+        </table>
+        <ul style="margin:2pt 0 6pt 16pt;padding-left:0;">${bullets}</ul>
+      `;
+    }).join('');
+  }
+
+  // Education entries
+  let eduHtml = '';
+  if(vis.edu !== false && (e.uni || e.deg || eduExtra.length)){
+    let extraRows = eduExtra.map(x=>`<li style="margin-bottom:2pt;">${bold(x)}</li>`).join('');
+    eduHtml = `
+      <div class="sec-title">EDUCATION</div>
+      <table style="width:100%;margin-top:4pt;margin-bottom:2pt;border-collapse:collapse;">
+        <tr>
+          <td style="text-align:left;font-size:10.5pt;"><strong>${e.uni||'University'}</strong></td>
+          <td style="text-align:right;font-size:10pt;font-style:italic;">${e.yrs||''}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="font-size:10pt;color:#1e293b;"><em>${e.deg||''}</em> ${e.gpa ? `— <strong>CGPA / Percentage: ${e.gpa}</strong>` : ''}</td>
+        </tr>
+      </table>
+      ${extraRows ? `<ul style="margin:2pt 0 6pt 16pt;padding-left:0;">${extraRows}</ul>` : ''}
+    `;
+  }
+
+  // Achievements
+  let achHtml = '';
+  if(vis.ach !== false && ach.length){
+    achHtml = `<div class="sec-title">ACHIEVEMENTS & LEADERSHIP</div>
+      <ul style="margin:3pt 0 6pt 16pt;padding-left:0;">
+        ${ach.map(a=>`<li style="margin-bottom:2pt;line-height:1.35;">${bold(a)}</li>`).join('')}
+      </ul>`;
+  }
+
+  // Certifications
+  let certHtml = '';
+  if(vis.certs !== false && certs.length && !D.showCertsTop){
+    certHtml = `<div class="sec-title">CERTIFICATIONS & TRAININGS</div>
+      <ul style="margin:3pt 0 6pt 16pt;padding-left:0;">
+        ${certs.map(c=>{
+          const parsed = parseCertEntry(c);
+          if(parsed.url){
+            return `<li style="margin-bottom:2pt;"><a href="${parsed.url.startsWith('http')?parsed.url:'https://'+parsed.url}" style="color:#1e40af;text-decoration:underline;"><strong>${parsed.label}</strong></a></li>`;
+          }
+          return `<li style="margin-bottom:2pt;">${bold(parsed.label)}</li>`;
+        }).join('')}
+      </ul>`;
+  }
+
   const wordDocument = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head>
       <meta charset='utf-8'>
-      <title>${D.basics?.name || 'Resume'}</title>
+      <title>${b.name || 'Resume'}</title>
       <style>
         @page {
           size: 21.0cm 29.7cm;
@@ -2738,46 +2851,55 @@ function exportWord(){
         }
         body {
           font-family: 'Calibri', 'Arial', sans-serif;
-          font-size: 10.5pt;
-          line-height: 1.35;
-          color: #111827;
-        }
-        h1, h2, h3, .rn {
-          font-family: 'Calibri', 'Arial', sans-serif;
-          font-weight: bold;
+          font-size: 10pt;
+          line-height: 1.3;
           color: #0f172a;
-          margin: 0 0 4pt 0;
         }
-        .rn { font-size: 18pt; text-align: center; }
-        .rc { font-size: 9pt; text-align: center; color: #475569; margin-bottom: 8pt; }
-        .rs {
-          font-size: 11pt;
+        .name-hdr {
+          font-size: 18pt;
+          font-weight: bold;
+          text-align: center;
+          color: #0f172a;
+          margin: 0 0 2pt 0;
+          text-transform: uppercase;
+          letter-spacing: 0.5pt;
+        }
+        .contact-hdr {
+          font-size: 9pt;
+          text-align: center;
+          color: #334155;
+          margin-bottom: 8pt;
+        }
+        .sec-title {
+          font-size: 10.5pt;
           font-weight: bold;
           text-transform: uppercase;
           border-bottom: 1.5pt solid #0f172a;
-          padding-bottom: 2pt;
-          margin-top: 10pt;
-          margin-bottom: 5pt;
+          padding-bottom: 1.5pt;
+          margin-top: 8pt;
+          margin-bottom: 4pt;
           color: #0f172a;
+          letter-spacing: 0.3pt;
         }
-        .rsg { margin-bottom: 6pt; }
-        .rsk { font-weight: bold; }
-        .rsv { margin-bottom: 3pt; }
-        .ri-row { display: flex; justify-content: space-between; font-weight: bold; }
-        .ri-title { font-weight: bold; }
-        .ri-date { font-style: italic; color: #475569; }
-        .ri-sub { font-style: italic; margin-bottom: 3pt; }
-        ul.rb { margin: 2pt 0 6pt 15pt; padding: 0; }
-        ul.rb li { margin-bottom: 2.5pt; }
         a {
           color: #1e40af !important;
           text-decoration: underline !important;
         }
-        a:hover { color: #1d4ed8 !important; }
       </style>
     </head>
     <body>
-      ${contentHtml}
+      <div class="name-hdr">${b.name || 'YOUR NAME'}</div>
+      <div class="contact-hdr">${contactParts.join(' | ')}</div>
+      
+      ${(vis.summary !== false && b.summary) ? `<div style="font-size:9.5pt;margin-bottom:6pt;line-height:1.35;font-style:italic;">${b.summary}</div>` : ''}
+
+      ${(vis.skills !== false && skillsRows) ? `<div class="sec-title">TECHNICAL SKILLS</div><table style="width:100%;border-collapse:collapse;margin-bottom:4pt;">${skillsRows}</table>` : ''}
+
+      ${expHtml}
+      ${projHtml}
+      ${eduHtml}
+      ${achHtml}
+      ${certHtml}
     </body>
     </html>
   `;
