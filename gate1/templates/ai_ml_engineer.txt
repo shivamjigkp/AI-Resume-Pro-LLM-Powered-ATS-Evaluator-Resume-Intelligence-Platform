@@ -1,0 +1,23 @@
+Subject: Application for {{role}} at {{company}} — {{sender_name}}
+
+Hi {{recruiter_name}},
+
+I'm {{sender_name}}, a B.Tech ({{branch}}) student at {{college}} with hands-on experience building and deploying end-to-end Machine Learning, LLM, and high-performance backend systems.
+
+I'm writing to express strong interest in {{role}} opportunities at {{company}}.
+
+A quick snapshot of my work:
+• ML & AI Pipelines: Built and deployed end-to-end ML forecasting pipelines (XGBoost, TensorFlow, Scikit-learn) with Docker, FastAPI, and AWS.
+• Full-Stack Production Systems: Developed Next.js 15, FastAPI, and Supabase platforms with sub-200ms latency and 99.9% uptime.
+• Certifications: Stanford Online (Machine Learning - Regression & Classification), UC San Diego (Algorithmic Toolbox / DSA).
+
+My resume is attached for your reference. You can explore my live code here:
+GitHub: {{sender_github}}
+LinkedIn: {{sender_linkedin}}
+{{other_links}}
+
+I am available to start immediately and would appreciate an opportunity to connect with your engineering team.
+
+Best regards,
+{{sender_name}}
+{{sender_phone}} | {{sender_email}}

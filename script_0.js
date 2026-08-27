@@ -6267,3 +6267,153 @@ async function runGate1Action(mode){
   }
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 👤 GATE 1 SENDER PROFILE PERSISTENCE & LIVE MERGE
+// ════════════════════════════════════════════════════════════════
+function getGate1SenderProfile(){
+  try{
+    const raw = localStorage.getItem('rsai_g1_sender_profile');
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+
+  return {
+    name: D.basics?.name || 'Shivam Gupta',
+    college: 'MMMUT, Gorakhpur',
+    branch: 'ECE – Data Science & Machine Learning',
+    phone: D.basics?.phone || '+91-8081513780',
+    email: D.basics?.email || 'quantxcoder@gmail.com',
+    github: D.basics?.github || 'https://github.com/shivamjigkp',
+    linkedin: D.basics?.linkedin || 'https://linkedin.com/in/shivam-gupta-05209a279',
+    other_links: 'Portfolio: https://mastermindresearchtech.com | LeetCode: https://leetcode.com/u/shivamalgocoder',
+    experience_summary: "Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)\nCertifications: Machine Learning – Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification"
+  };
+}
+
+function saveGate1ProfileFields(){
+  const prof = {
+    name: document.getElementById('g1_name')?.value || 'Shivam Gupta',
+    college: document.getElementById('g1_college')?.value || 'MMMUT, Gorakhpur',
+    branch: document.getElementById('g1_branch')?.value || 'ECE – Data Science & Machine Learning',
+    phone: document.getElementById('g1_phone')?.value || '+91-8081513780',
+    email: document.getElementById('g1_email')?.value || 'quantxcoder@gmail.com',
+    github: document.getElementById('g1_github')?.value || 'https://github.com/shivamjigkp',
+    linkedin: document.getElementById('g1_linkedin')?.value || 'https://linkedin.com/in/shivam-gupta-05209a279',
+    other_links: document.getElementById('g1_other_links')?.value || '',
+    experience_summary: document.getElementById('g1_exp_summary')?.value || ''
+  };
+  try{ localStorage.setItem('rsai_g1_sender_profile', JSON.stringify(prof)); }catch(e){}
+  updateGate1LivePreview();
+}
+
+function toggleGate1ProfileCard(){
+  const box = document.getElementById('gate1ProfileFieldsContainer');
+  if(!box) return;
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function loadGate1ProfileFieldsToUI(){
+  const prof = getGate1SenderProfile();
+  if(document.getElementById('g1_name')) document.getElementById('g1_name').value = prof.name || '';
+  if(document.getElementById('g1_college')) document.getElementById('g1_college').value = prof.college || 'MMMUT, Gorakhpur';
+  if(document.getElementById('g1_branch')) document.getElementById('g1_branch').value = prof.branch || 'ECE – Data Science & Machine Learning';
+  if(document.getElementById('g1_phone')) document.getElementById('g1_phone').value = prof.phone || '+91-8081513780';
+  if(document.getElementById('g1_email')) document.getElementById('g1_email').value = prof.email || 'quantxcoder@gmail.com';
+  if(document.getElementById('g1_github')) document.getElementById('g1_github').value = prof.github || 'https://github.com/shivamjigkp';
+  if(document.getElementById('g1_linkedin')) document.getElementById('g1_linkedin').value = prof.linkedin || 'https://linkedin.com/in/shivam-gupta-05209a279';
+  if(document.getElementById('g1_other_links')) document.getElementById('g1_other_links').value = prof.other_links || '';
+  if(document.getElementById('g1_exp_summary')) document.getElementById('g1_exp_summary').value = prof.experience_summary || '';
+}
+
+// Comprehensive Live Preview with all placeholders
+function updateGate1LivePreview(){
+  const ta = document.getElementById('gate1LiveTemplateContent');
+  const box = document.getElementById('gate1LivePreviewBox');
+  if(!ta || !box) return;
+
+  let raw = ta.value || '';
+  const prof = getGate1SenderProfile();
+
+  let merged = raw
+    .replace(/\{\{recruiter_name\}\}/gi, 'Radhika')
+    .replace(/\{\{company_name\}\}/gi, 'Impact Analytics')
+    .replace(/\{\{company\}\}/gi, 'Impact Analytics')
+    .replace(/\{\{role\}\}/gi, 'AI/ML & Quant Developer')
+    .replace(/\{\{sender_name\}\}/gi, prof.name || 'Shivam Gupta')
+    .replace(/\{\{my_name\}\}/gi, prof.name || 'Shivam Gupta')
+    .replace(/\{\{college\}\}/gi, prof.college || 'MMMUT, Gorakhpur')
+    .replace(/\{\{branch\}\}/gi, prof.branch || 'ECE – Data Science & Machine Learning')
+    .replace(/\{\{sender_email\}\}/gi, prof.email || 'quantxcoder@gmail.com')
+    .replace(/\{\{sender_phone\}\}/gi, prof.phone || '+91-8081513780')
+    .replace(/\{\{sender_github\}\}/gi, prof.github || 'https://github.com/shivamjigkp')
+    .replace(/\{\{sender_linkedin\}\}/gi, prof.linkedin || 'https://linkedin.com/in/shivam-gupta-05209a279')
+    .replace(/\{\{other_links\}\}/gi, prof.other_links ? `Other: ${prof.other_links}` : '')
+    .replace(/\{\{experience_summary\}\}/gi, prof.experience_summary || '');
+
+  box.textContent = merged;
+}
+
+// Update runGate1Action to use Gate 1 sender profile
+const oldRunGate1Action = runGate1Action;
+runGate1Action = async function(mode){
+  const prof = getGate1SenderProfile();
+  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+  const endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  const sheetSel = document.getElementById('gate1ActiveSheet');
+  const sheetId = extractCleanSheetId(sheetSel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const tplSel = document.getElementById('gate1DefaultTemplate');
+  const templateName = tplSel?.value || 'default';
+  const resumeSel = document.getElementById('gate1DefaultResume');
+  const resumeFilename = resumeSel?.value || 'auto';
+
+  const totalRows = Math.max(1, endRow - startRow + 1);
+  const card = document.getElementById('gate1ProgressCard');
+  if(card) card.style.display = 'block';
+
+  updateGate1Progress(0, totalRows, `🚀 Starting Gate 1 campaign: Rows ${startRow} to ${endRow}... Mode: ${mode.toUpperCase()}`);
+
+  const draftBtn = document.getElementById('btnGate1Draft');
+  const sendBtn = document.getElementById('btnGate1Send');
+  if(draftBtn) draftBtn.disabled = true;
+  if(sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/gate1/send-emails', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        mode: mode,
+        start_row: startRow,
+        end_row: endRow,
+        sheet_id: sheetId,
+        template_name: templateName,
+        resume_filename: resumeFilename,
+        sender_profile: prof
+      })
+    });
+
+    const data = await res.json();
+    if(res.ok && data.status === 'success'){
+      updateGate1Progress(totalRows, totalRows, `✅ Campaign Complete! ${data.message || data.detail || 'Processed successfully.'}`, true, 0);
+      toast(`🎉 Gate 1: ${mode === 'draft' ? 'Drafts created in Gmail!' : 'Emails sent successfully!'}`, 'success', 6000);
+      setTimeout(fetchAndRenderGate1Leads, 1500);
+    } else {
+      const errMsg = data.detail || data.error || 'Campaign failed to execute.';
+      updateGate1Progress(0, totalRows, `❌ Error: ${errMsg}`, false, 1);
+      toast(`Gate 1: ${errMsg}`, 'error', 6000);
+    }
+  } catch(err) {
+    updateGate1Progress(0, totalRows, `❌ Network Error: ${err.message}`, false, 1);
+    toast(`Network error connecting to backend: ${err.message}`, 'error');
+  } finally {
+    if(draftBtn) draftBtn.disabled = false;
+    if(sendBtn) sendBtn.disabled = false;
+  }
+};
+
+setTimeout(() => {
+  loadGate1ProfileFieldsToUI();
+  updateGate1LivePreview();
+}, 300);
+

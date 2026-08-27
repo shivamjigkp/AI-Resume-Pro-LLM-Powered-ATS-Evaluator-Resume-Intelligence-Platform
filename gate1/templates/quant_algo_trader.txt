@@ -1,0 +1,24 @@
+Subject: Quant / Algorithmic Trading Application at {{company}} — {{sender_name}}
+
+Hi {{recruiter_name}},
+
+I'm {{sender_name}}, a B.Tech student ({{branch}}) at {{college}} and Founder of Mastermind Research Technologies, specializing in quantitative trading algorithms and low-latency systems.
+
+I've been closely following {{company}}'s leadership in the market, and I am writing to explore {{role}} opportunities on your team.
+
+Key Highlights of My Work:
+• Algorithmic Trading Systems: Designed and backtested price-action algorithms (Pine Script v5 + Python) with live backtesting dashboards, Monte Carlo risk metrics, and sub-200ms API execution.
+• ML & Financial Engineering: Built predictive demand and price forecasting pipelines using XGBoost, TensorFlow, and Pandas.
+• Job Simulations: Completed simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets).
+• Certifications: Stanford Machine Learning, UC San Diego Algorithmic Toolbox / DSA, NISM Securities Markets.
+
+Links to My Code & Portfolio:
+GitHub: {{sender_github}}
+LinkedIn: {{sender_linkedin}}
+{{other_links}}
+
+My resume is attached. I'd love a quick 10-minute conversation to discuss how I can contribute to {{company}}'s trading and technology initiatives.
+
+Best regards,
+{{sender_name}}
+{{sender_phone}} | {{sender_email}}

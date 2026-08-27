@@ -169,15 +169,21 @@ def run_campaign(start_row: int, end_row: int, mode: str, sender_profile: Dict,
             else:
                 tmpl = load_template(role)
             context = {
-                "recruiter_name": name or "there",
+                "recruiter_name": name or "Hiring Team",
                 "company": company or "your company",
+                "company_name": company or "your company",
                 "role": role or "the open position",
-                "sender_name": sender_profile.get("name", ""),
-                "sender_email": sender_profile.get("email", ""),
-                "sender_phone": sender_profile.get("phone", ""),
-                "sender_linkedin": sender_profile.get("linkedin", ""),
-                "sender_github": sender_profile.get("github", ""),
-                "experience_summary": sender_profile.get("experience_summary") or sender_profile.get("total_experience", ""),
+                "sender_name": sender_profile.get("name", "Shivam Gupta"),
+                "my_name": sender_profile.get("name", "Shivam Gupta"),
+                "sender_email": sender_profile.get("email", "quantxcoder@gmail.com"),
+                "sender_phone": sender_profile.get("phone", "+91-8081513780"),
+                "sender_linkedin": sender_profile.get("linkedin", "https://linkedin.com/in/shivam-gupta-05209a279"),
+                "sender_github": sender_profile.get("github", "https://github.com/shivamjigkp"),
+                "college": sender_profile.get("college", "MMMUT, Gorakhpur"),
+                "branch": sender_profile.get("branch", "ECE – Data Science & Machine Learning"),
+                "other_links": sender_profile.get("other_links", ""),
+                "experience_summary": sender_profile.get("experience_summary") or "• Completed job simulations with Goldman Sachs, J.P. Morgan, and Bank of America.
+• Certifications: Stanford Machine Learning, UC San Diego Algorithmic Toolbox / DSA, NISM.",
             }
             rendered = render_template(tmpl, context)
             custom_subject, body = split_subject_and_body(rendered)

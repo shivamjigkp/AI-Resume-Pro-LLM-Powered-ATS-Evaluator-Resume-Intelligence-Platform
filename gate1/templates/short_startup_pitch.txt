@@ -1,0 +1,18 @@
+Subject: Quick intro / {{role}} at {{company}} — {{sender_name}}
+
+Hi {{recruiter_name}},
+
+I'm {{sender_name}}, a software engineer & founder with hands-on experience in full-stack platforms (Next.js, FastAPI), ML pipelines, and algorithmic trading systems.
+
+I'm eager to contribute to {{company}}'s mission as a {{role}} (internship or full-time).
+
+Key Proof of Work:
+• Full-stack platforms in production with sub-200ms response times.
+• Quant trading algorithms & risk analytics dashboard.
+• GitHub: {{sender_github}} | LinkedIn: {{sender_linkedin}}
+
+My resume is attached. I'm ready to build a 24-hour trial project or jump on a 10-minute introductory call.
+
+Best,
+{{sender_name}}
+{{sender_phone}} | {{sender_email}}

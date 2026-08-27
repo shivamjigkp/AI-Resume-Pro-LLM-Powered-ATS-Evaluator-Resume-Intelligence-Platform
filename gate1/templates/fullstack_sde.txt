@@ -1,0 +1,25 @@
+Subject: Full-Stack / SDE Application for {{company}} — {{sender_name}}
+
+Hi {{recruiter_name}},
+
+I hope you're having a great week.
+
+I'm {{sender_name}}, a B.Tech student ({{branch}}) at {{college}} and Founder of Mastermind Research Technologies. I build scalable, high-performance web platforms and API microservices.
+
+I noticed {{company}} is building impactful products and wanted to express my interest in {{role}} opportunities.
+
+Technical Highlights:
+• Next.js 15, React, TypeScript, FastAPI, PostgreSQL, Supabase, and Tailwind CSS.
+• Engineered production platforms handling high-throughput user interactions and sub-200ms response times.
+• Solved 140+ algorithmic challenges across LeetCode and GeeksforGeeks.
+
+My resume is attached. Please feel free to check out my repositories:
+GitHub: {{sender_github}}
+LinkedIn: {{sender_linkedin}}
+{{other_links}}
+
+I'd welcome the chance to discuss how my skill set aligns with {{company}}'s engineering roadmap.
+
+Warm regards,
+{{sender_name}}
+{{sender_phone}} | {{sender_email}}
