@@ -1,29 +1,27 @@
-Subject: Application for {{role}} at {{company}} — Shivam Gupta
+Subject: Application for Opportunities at {{company}} — Shivam Gupta
 
 Dear {{recruiter_name}},
 
-I hope you're doing well.
+I hope you are doing well.
 
-I'm Shivam Gupta, a B.Tech student (ECE – Data Science & Machine Learning) at MMMUT, Gorakhpur, with hands-on project experience in machine learning, full-stack development, algorithmic backtesting, and quantitative trading.
+I am Shivam Gupta, a B.Tech student in Electronics & Communication Engineering (ECE), specializing in Data Science and Machine Learning at MMMUT, Gorakhpur. I am writing to express my strong interest in internship and entry-level opportunities at {{company}} across Software Development, Full-Stack Engineering, AI/ML, Data, Fintech, and Quantitative/Algorithmic Trading.
 
-I'm writing to express interest in {{role}} opportunities (internship or entry-level) at {{company}}, and to introduce myself in case a relevant opening comes up on your team.
+I bring a hands-on, builder-oriented background in developing real-world software products, machine learning applications, and financial analytics solutions. I am also the Founder of Mastermind Research Technologies, an MSME/Udyam-registered technology venture focused on AI/ML, software, and web-development solutions, and I run Mastermind Algo Trader, a YouTube-based trading education platform sharing practical insights on algorithmic trading, price action, risk management, and market analysis.
 
-A quick snapshot of my work:
-- Built and deployed end-to-end ML pipelines (XGBoost, TensorFlow, Scikit-learn) for forecasting problems, deployed via Flask/FastAPI on AWS and Docker, with experiments tracked in MLflow
-- Full-stack projects in production: a Next.js/FastAPI/Supabase platform, an electricity demand forecasting app, and a weather intelligence app
-- Designed and backtested a price-action algorithmic trading strategy (Pine Script v5 + Python), including a live backtesting dashboard with Monte Carlo simulation, AdaBoost, and risk metrics
-- Completed job simulations with Goldman Sachs (Risk Management), J.P. Morgan (Quantitative Research), and Bank of America (Global Markets Sales & Trading)
-- Certifications: Machine Learning – Regression & Classification (Stanford Online), Algorithmic Toolbox / DSA (UC San Diego), NISM Securities Markets Certification
+A brief overview of my work:
+• Full-Stack & Web Engineering: Built and deployed production-oriented full-stack applications using Next.js, React, FastAPI, TypeScript, JavaScript, Supabase/PostgreSQL, REST APIs, Cloudflare, Vercel, and Render. Shipped multiple healthcare & institutional platforms including a production hospital platform for Rajendra Hospital, Gorakhpur (appointment workflows, symptom-triage matcher, PM-JAY cashless calculator, appointment passes) and the MMMUT Hockey portal.
+• Enterprise & Outreach Platforms: Developed platforms for Mastermind Research Technologies and Mastermind Algo Trader with secure authentication, cloud deployment, payment webhooks, and live trading-signal workflows. Built this LLM-powered ATS resume intelligence and outreach platform with automated lead sync, Google Sheets integration, and Gmail API outreach.
+• Machine Learning & Data Engineering: Engineered end-to-end ML pipelines for forecasting, prediction, and analytics using Python, Pandas, NumPy, Scikit-learn, TensorFlow, XGBoost, Flask/FastAPI, Docker, AWS, and MLflow across electricity-demand forecasting, weather intelligence, and stock-price prediction.
+• Algorithmic Trading & Quantitative Systems: Designed, tested, and backtested rule-based algorithmic strategies (Pine Script v5, Python, FastAPI, TradingView, Chartink) with liquidity-sweep detection, EMA crossover logic, live signals, and risk analytics.
+• Competitions & Industry Simulations: Achieved Rank 3 and won the XM Global Daily Trading Competition in algorithmic trading, and cleared both phases of the FundingPips prop-firm challenge. Completed virtual job simulations in Risk Management (Goldman Sachs), Quantitative Research (J.P. Morgan), and Global Markets Sales & Trading (Bank of America).
 
-Across these projects, I've consistently focused on translating data into deployable, production-ready solutions rather than just models on paper.
+I am especially interested in opportunities where I can combine engineering, data, and analytical thinking—whether through building scalable software products, AI-powered applications, data platforms, or fintech and quantitative solutions.
 
-My resume is attached for your reference. You're welcome to look through my work here:
+My resume is attached for your consideration. You can also review my work here:
 GitHub: https://github.com/shivamjigkp
 LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
 
-I'm available to start immediately and open to both internship and full-time opportunities, whichever fits best with your current openings.
-
-I'd really appreciate a few minutes of your time to discuss any suitable openings at {{company}}, or to be considered for future roles. Thank you for your time and consideration.
+I would be grateful for the opportunity to be considered for any suitable current or future role at {{company}}. Thank you for your time and consideration.
 
 Warm regards,
 Shivam Gupta

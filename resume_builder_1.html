@@ -7219,17 +7219,11 @@ async function syncGate1LiveTemplateEditor(){
 
   localStorage.setItem('rsai_active_template', tplId);
 
-  // Set instant default while fetching
-  if(!ta.value.trim()){
-    ta.value = MASTER_TEMPLATE_1_FALLBACK;
-    if(subInp) subInp.value = 'Application for Opportunities at {company} — Shivam Gupta';
-  }
-
   try {
     const res = await fetch('/api/gate1/templates/' + encodeURIComponent(tplId));
     const data = await res.json();
-    if(data.status === 'success' && data.template && data.template.content){
-      const raw = data.template.content;
+    if(data.status === 'success' && data.content){
+      const raw = data.content;
       const lines = raw.split('\n');
       if(lines[0].toLowerCase().startsWith('subject:')){
         if(subInp) subInp.value = lines[0].substring(8).trim();
@@ -7237,14 +7231,12 @@ async function syncGate1LiveTemplateEditor(){
       } else {
         ta.value = raw.trim();
       }
-    } else if(tplId === '1_mastermind_comprehensive' || tplId === 'default') {
+    } else {
       ta.value = MASTER_TEMPLATE_1_FALLBACK;
-      if(subInp) subInp.value = 'Application for Opportunities at {company} — Shivam Gupta';
+      if(subInp) subInp.value = 'Application for Opportunities at {{company}} — Shivam Gupta';
     }
   } catch(e){
-    if(tplId === '1_mastermind_comprehensive' || tplId === 'default'){
-      ta.value = MASTER_TEMPLATE_1_FALLBACK;
-    }
+    ta.value = MASTER_TEMPLATE_1_FALLBACK;
   }
 
   updateGate1LivePreview();
