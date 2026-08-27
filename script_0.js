@@ -2693,7 +2693,7 @@ function saveAsDefaultResume(){
   if(already && !confirm('Default 1 is already saved — overwrite it with your current resume?')) return;
   localStorage.setItem('rsai_default_resume', JSON.stringify(D));
   localStorage.setItem('rsai_default_resume_savedAt', new Date().toLocaleDateString());
-  updateDefaultResumeUI();
+  updatePresetQuickUI();
   toast(already?'⭐ Default 1 updated':'⭐ Saved as Default 1', 'success');
 }
 
@@ -3917,7 +3917,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     }catch(e){loadSample();return;}
   }else{loadSample();return;}
   populateForm();render();liveATS();updateTabNav();
-  updateDefaultResumeUI();
+  updatePresetQuickUI();
   const initName = AIK.gemini ? 'Google Gemini' : (AIK.groq ? 'Groq Cloud' : (AIK.nvidia ? 'NVIDIA NIM' : (AIK.openrouter ? 'OpenRouter' : (AIK.customKey ? 'Custom Endpoint' : (AIK.enableFreeAI !== false ? 'Free Online AI' : 'Offline Parser')))));
   updateAIBadge(initName, hasAnyKey());
   if(hasAnyKey()){
@@ -5316,4 +5316,181 @@ document.addEventListener('click', function(e){
     p.style.display = 'none';
   }
 });
+
+
+
+// ════════════════════════════════════════════════════════════════
+// ⭐ 10-SLOT NAMED RESUME PRESETS MANAGER
+// ════════════════════════════════════════════════════════════════
+function getPresetSlots(){
+  try{
+    const raw = localStorage.getItem('rsai_preset_slots');
+    let slots = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(slots) || slots.length < 10){
+      const newSlots = [];
+      for(let i=1; i<=10; i++){
+        const existing = (slots && slots.find(s => s && s.id === i)) || null;
+        if(existing){
+          newSlots.push(existing);
+        } else if(i === 1 && localStorage.getItem('rsai_default_resume')){
+          // Migrate old Default 1 into Slot 1
+          newSlots.push({
+            id: 1,
+            name: "Default 1 (Shivam Gupta)",
+            savedAt: localStorage.getItem('rsai_default_resume_savedAt') || new Date().toLocaleDateString(),
+            data: JSON.parse(localStorage.getItem('rsai_default_resume'))
+          });
+        } else {
+          newSlots.push({ id: i, name: `Slot ${i}`, savedAt: '', data: null });
+        }
+      }
+      slots = newSlots;
+      localStorage.setItem('rsai_preset_slots', JSON.stringify(slots));
+    }
+    return slots;
+  }catch(e){
+    return Array.from({length:10}, (_,i)=>({id:i+1, name:`Slot ${i+1}`, savedAt:'', data:null}));
+  }
+}
+
+function savePresetSlots(slots){
+  try{
+    localStorage.setItem('rsai_preset_slots', JSON.stringify(slots));
+    // Keep Slot 1 synced with old Default 1 for backwards compatibility
+    if(slots[0] && slots[0].data){
+      localStorage.setItem('rsai_default_resume', JSON.stringify(slots[0].data));
+      localStorage.setItem('rsai_default_resume_savedAt', slots[0].savedAt);
+    }
+  }catch(e){}
+}
+
+function updatePresetQuickUI(){
+  const slots = getPresetSlots();
+  const sel = document.getElementById('presetQuickSelect');
+  const status = document.getElementById('quickPresetStatus');
+  if(!sel) return;
+
+  const currentVal = parseInt(sel.value || '1');
+  
+  // Populate dropdown options
+  sel.innerHTML = slots.map(s => {
+    const label = s.data ? `Slot ${s.id}: ${s.name || 'Saved Resume'} (${s.savedAt})` : `Slot ${s.id}: ${s.name || 'Empty'} (Empty)`;
+    return `<option value="${s.id}" ${s.id === currentVal ? 'selected' : ''}>${label}</option>`;
+  }).join('');
+
+  const targetSlot = slots.find(s => s.id === currentVal);
+  if(status && targetSlot){
+    status.innerHTML = targetSlot.data 
+      ? `✅ <strong>${targetSlot.name}</strong> saved on ${targetSlot.savedAt} (${targetSlot.data.basics?.name || 'Resume Data'})` 
+      : `⚪ <strong>${targetSlot.name}</strong> is currently empty. Click <strong>Save Here</strong> to save your current resume.`;
+  }
+
+  renderPresetGridList();
+}
+
+function togglePresetGrid(){
+  const grid = document.getElementById('presetGridContainer');
+  if(grid) grid.style.display = grid.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderPresetGridList(){
+  const list = document.getElementById('presetSlotsList');
+  if(!list) return;
+  const slots = getPresetSlots();
+
+  list.innerHTML = slots.map(s => `
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;background:#fff;padding:6px 8px;border-radius:6px;border:1px solid #fde68a;">
+      <span style="font-weight:900;font-size:11px;color:#92400e;width:48px;">Slot ${s.id}:</span>
+      <input type="text" value="${(s.name||'').replace(/"/g,'&quot;')}" placeholder="Name (e.g. Accenture ML)" style="flex:1;padding:4px 8px;font-size:11px;border:1px solid #cbd5e1;border-radius:4px;font-weight:600;" onchange="updatePresetName(${s.id}, this.value)">
+      <span style="font-size:9.5px;color:#78716c;width:75px;text-align:right;">${s.savedAt ? s.savedAt : 'Empty'}</span>
+      <button type="button" class="btn btn-purple btn-xs" style="padding:3px 8px;font-size:10px;" onclick="loadSlotById(${s.id})">⚡ Load</button>
+      <button type="button" class="btn btn-orange btn-xs" style="padding:3px 8px;font-size:10px;" onclick="saveSlotById(${s.id})">💾 Save</button>
+      ${s.data ? `<button type="button" class="btn btn-outline btn-xs" style="padding:3px 6px;font-size:10px;color:#ef4444;border-color:#fca5a5;" onclick="clearSlotById(${s.id})" title="Clear Slot">❌</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function updatePresetName(slotId, newName){
+  const slots = getPresetSlots();
+  const s = slots.find(x => x.id === slotId);
+  if(s){
+    s.name = newName || `Slot ${slotId}`;
+    savePresetSlots(slots);
+    updatePresetQuickUI();
+    toast(`Renamed Slot ${slotId} to "${s.name}"`, 'info', 2000);
+  }
+}
+
+function loadQuickSelectedPreset(){
+  const sel = document.getElementById('presetQuickSelect');
+  const slotId = parseInt(sel?.value || '1');
+  loadSlotById(slotId);
+}
+
+function saveQuickSelectedPreset(){
+  const sel = document.getElementById('presetQuickSelect');
+  const slotId = parseInt(sel?.value || '1');
+  saveSlotById(slotId);
+}
+
+function loadSlotById(slotId){
+  const slots = getPresetSlots();
+  const s = slots.find(x => x.id === slotId);
+  if(!s || !s.data){
+    toast(`Slot ${slotId} is empty! Save a resume here first.`, 'warning');
+    return;
+  }
+  const hasCurrentContent = D && (D.basics?.name || (D.exp||[]).length || (D.proj||[]).length);
+  if(hasCurrentContent && !confirm(`Load "${s.name}"? This will replace whatever is currently filled in.`)) return;
+
+  try {
+    D = JSON.parse(JSON.stringify(s.data));
+    if(!D.basics) D.basics={};
+    if(!Array.isArray(D.exp)) D.exp=[];
+    if(!Array.isArray(D.proj)) D.proj=[];
+    if(!Array.isArray(D.ach)) D.ach=[];
+    if(!Array.isArray(D.certs)) D.certs=[];
+    if(!Array.isArray(D.eduExtra)) D.eduExtra=[];
+    if(!D.sectionVisibility) D.sectionVisibility=defaultVisibility();
+    populateForm(); render(); liveATS();
+    swTab('basics');
+    toast(`📂 Loaded "${s.name}" (Slot ${slotId}) successfully!`, 'success', 3500);
+  } catch(err) {
+    toast(`Failed to load Slot ${slotId}`, 'error');
+  }
+}
+
+function saveSlotById(slotId){
+  const slots = getPresetSlots();
+  let s = slots.find(x => x.id === slotId);
+  if(!s){
+    s = { id: slotId, name: `Slot ${slotId}`, savedAt: '', data: null };
+    slots.push(s);
+  }
+  syncFormToD();
+  const defaultName = D.basics?.name ? `${D.basics.name} Resume` : `Slot ${slotId} Resume`;
+  if(s.name === `Slot ${slotId}` || !s.name){
+    const promptName = prompt(`Enter a name for Slot ${slotId}:`, defaultName);
+    if(promptName) s.name = promptName;
+  }
+
+  s.data = JSON.parse(JSON.stringify(D));
+  s.savedAt = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  savePresetSlots(slots);
+  updatePresetQuickUI();
+  toast(`⭐ Saved current resume to "${s.name}" (Slot ${slotId})!`, 'success', 3500);
+}
+
+function clearSlotById(slotId){
+  if(!confirm(`Are you sure you want to clear Slot ${slotId}?`)) return;
+  const slots = getPresetSlots();
+  const s = slots.find(x => x.id === slotId);
+  if(s){
+    s.data = null;
+    s.savedAt = '';
+    savePresetSlots(slots);
+    updatePresetQuickUI();
+    toast(`Cleared Slot ${slotId}`, 'info', 2000);
+  }
+}
 
