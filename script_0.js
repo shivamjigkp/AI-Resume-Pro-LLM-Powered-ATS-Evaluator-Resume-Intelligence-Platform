@@ -6122,3 +6122,75 @@ setTimeout(() => {
   populateTemplateDropdown();
 }, 200);
 
+
+
+// ════════════════════════════════════════════════════════════════
+// 📄 UNIVERSAL GATE 1 RESUME PDF SELECTOR & UPLOADER
+// ════════════════════════════════════════════════════════════════
+async function refreshGate1Resumes(){
+  const sel = document.getElementById('gate1DefaultResume');
+  const status = document.getElementById('gate1ResumeStatus');
+  if(!sel) return;
+
+  sel.innerHTML = '<option value="auto">Auto (Latest PDF / Role-matched)</option>';
+
+  // 1. Add Saved Profile Presets (Slots 1 to 10)
+  try {
+    const slots = getPresetSlots();
+    slots.filter(s => s.data).forEach(s => {
+      sel.innerHTML += `<option value="slot_${s.id}">⭐ Profile Slot ${s.id}: ${s.name} (${s.savedAt})</option>`;
+    });
+  } catch(e){}
+
+  // 2. Fetch server PDFs from output_resumes/ and resume/
+  try {
+    const res = await fetch('/api/gate1/resumes');
+    const data = await res.json();
+    if(data.status === 'success' && Array.isArray(data.resumes) && data.resumes.length > 0){
+      data.resumes.forEach(r => {
+        sel.innerHTML += `<option value="${r.filename}">📄 ${r.filename}</option>`;
+      });
+      if(status) status.textContent = `✅ Loaded ${data.resumes.length} PDF resumes from server.`;
+    } else {
+      sel.innerHTML += '<option value="resume.pdf">📄 resume.pdf (Default)</option>';
+      if(status) status.textContent = '📄 Using default resume.pdf';
+    }
+  } catch(err) {
+    sel.innerHTML += '<option value="resume.pdf">📄 resume.pdf (Default)</option>';
+  }
+}
+
+async function uploadGate1PdfFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const status = document.getElementById('gate1ResumeStatus');
+
+  if(status) status.textContent = `⏳ Uploading "${file.name}" to server...`;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch('/api/gate1/upload-resume', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if(data.status === 'success'){
+      toast(`📁 Uploaded "${file.name}" successfully!`, 'success', 3500);
+      await refreshGate1Resumes();
+      const sel = document.getElementById('gate1DefaultResume');
+      if(sel) sel.value = file.name;
+      if(status) status.textContent = `✅ Selected uploaded resume: "${file.name}"`;
+    } else {
+      toast('Failed to upload resume PDF', 'error');
+    }
+  } catch(err) {
+    toast(`Local file "${file.name}" ready as attachment`, 'info');
+    await refreshGate1Resumes();
+  }
+}
+
+// Auto call on Gate 1 open
+setTimeout(refreshGate1Resumes, 250);
+

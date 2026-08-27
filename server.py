@@ -580,18 +580,44 @@ def save_gate1_template(name):
 
 @app.route("/api/gate1/resumes", methods=["GET"])
 def list_gate1_resumes():
-    """Lists PDFs available in output_resumes/ for the Gate 1 resume picker,
-    most-recently-modified first."""
-    from config import OUTPUT_RESUMES_DIR
-    output_dir = os.path.join(BASE_DIR, OUTPUT_RESUMES_DIR)
+    """Lists all PDFs from output_resumes/, resume/, and root."""
     items = []
-    if os.path.isdir(output_dir):
-        for f in os.listdir(output_dir):
-            if f.lower().endswith(".pdf"):
-                full = os.path.join(output_dir, f)
-                items.append({"filename": f, "modified": os.path.getmtime(full)})
-    items.sort(key=lambda x: x["modified"], reverse=True)
+    seen = set()
+    
+    search_dirs = [
+        os.path.join(BASE_DIR, "output_resumes"),
+        os.path.join(BASE_DIR, "resume"),
+        BASE_DIR
+    ]
+    
+    for d in search_dirs:
+        if os.path.isdir(d):
+            for f in os.listdir(d):
+                if f.lower().endswith(".pdf") and f not in seen:
+                    seen.add(f)
+                    full = os.path.join(d, f)
+                    try:
+                        items.append({"filename": f, "path": full, "modified": os.path.getmtime(full)})
+                    except Exception:
+                        pass
+                        
+    items.sort(key=lambda x: x.get("modified", 0), reverse=True)
     return jsonify({"status": "success", "resumes": items})
+
+@app.route("/api/gate1/upload-resume", methods=["POST"])
+def upload_gate1_resume_endpoint():
+    """Uploads a PDF resume from user's computer to output_resumes/."""
+    if 'file' not in request.files:
+        return jsonify({"status": "error", "detail": "No file uploaded"}), 400
+    f = request.files['file']
+    if not f.filename or not f.filename.lower().endswith('.pdf'):
+        return jsonify({"status": "error", "detail": "Please upload a valid PDF file"}), 400
+        
+    out_dir = os.path.join(BASE_DIR, "output_resumes")
+    os.makedirs(out_dir, exist_ok=True)
+    save_path = os.path.join(out_dir, f.filename)
+    f.save(save_path)
+    return jsonify({"status": "success", "filename": f.filename, "message": f"Uploaded {f.filename} successfully"})
 
 
 @app.route("/api/gate1/send-emails", methods=["POST"])
