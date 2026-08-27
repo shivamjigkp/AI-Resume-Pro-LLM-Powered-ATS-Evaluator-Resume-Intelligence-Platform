@@ -5302,3 +5302,18 @@ function changeCompactSpacing(val){
   try{ localStorage.setItem('rsai_compact_spacing', val); }catch(e){}
 }
 
+
+
+function togglePageLayoutPopover(e){
+  if(e) e.stopPropagation();
+  const p = document.getElementById('pageLayoutPopover');
+  if(p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e){
+  const p = document.getElementById('pageLayoutPopover');
+  if(p && p.style.display === 'block' && !p.contains(e.target) && !e.target.closest('[onclick*="togglePageLayoutPopover"]')){
+    p.style.display = 'none';
+  }
+});
+

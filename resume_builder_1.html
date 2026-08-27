@@ -513,41 +513,52 @@ body.allow-page-split #paper .rb li {
     <button class="btn btn-outline" onclick="document.getElementById('fInput').click()">📁 Upload Resume</button>
     <input type="file" id="fInput" style="display:none" accept=".pdf,.docx,.doc,.txt,.json" onchange="handleUpload(event)">
     <button class="btn btn-tpl" onclick="openTplModal()">🎨 <span id="tplLabel">Modern Tech</span></button>
-    <div class="sel-pill" title="Compact spacing to fit everything on 1 page without spillover">
-      ⚡ <select id="compactSpacingSel" onchange="changeCompactSpacing(this.value)">
-        <option value="normal">Spacing: Normal</option>
-        <option value="compact" selected>Spacing: Compact (Fit 1 Page)</option>
-      </select>
+    <div class="sel-pill" style="position:relative;">
+      <button type="button" class="btn btn-outline btn-sm" style="font-weight:700;gap:4px;border-color:#a78bfa;color:#6d28d9;background:#f5f3ff;" onclick="togglePageLayoutPopover(event)">
+        📐 Page Layout & PDF Settings ▾
+      </button>
+
+      <!-- PAGE LAYOUT POPOVER PANEL -->
+      <div id="pageLayoutPopover" class="no-print" style="display:none;position:absolute;top:110%;left:0;z-index:9999;width:310px;background:#fff;border:1.5px solid #a78bfa;border-radius:10px;box-shadow:0 15px 35px rgba(109,40,217,0.25);padding:14px;">
+        <div style="font-weight:800;font-size:12px;color:#5b21b6;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #ede9fe;display:flex;justify-content:space-between;align-items:center;">
+          <span>📐 Page Layout & PDF Controls</span>
+          <span style="font-size:10px;cursor:pointer;color:#6b7280;" onclick="document.getElementById('pageLayoutPopover').style.display='none'">✕</span>
+        </div>
+
+        <!-- 1. Page Mode -->
+        <div style="margin-bottom:10px;">
+          <label style="font-size:10.5px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">📄 Page Target Length:</label>
+          <select id="modeSelect" onchange="changeMode(this.value)" style="width:100%;padding:5px 8px;font-size:11px;border:1px solid #cbd5e1;border-radius:6px;">
+            <option value="auto" selected>Full (Auto - Unlimited)</option>
+            <option value="1">1 Page (Fit to 1 Single Sheet)</option>
+            <option value="2">2 Pages</option>
+            <option value="3">3 Pages</option>
+          </select>
+        </div>
+
+        <!-- 2. Compact Spacing -->
+        <div style="margin-bottom:10px;">
+          <label style="font-size:10.5px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">⚡ PDF Spacing & Fit:</label>
+          <select id="compactSpacingSel" onchange="changeCompactSpacing(this.value)" style="width:100%;padding:5px 8px;font-size:11px;border:1px solid #cbd5e1;border-radius:6px;">
+            <option value="normal">Normal Spacing (Standard)</option>
+            <option value="compact" selected>Compact (Fit 1 Page - Recommended)</option>
+          </select>
+        </div>
+
+        <!-- 3. Page Break Splitting Rule -->
+        <div style="margin-bottom:8px;">
+          <label style="font-size:10.5px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">✂️ Page Item Break Rule:</label>
+          <select id="pageBreakSel" onchange="changePageBreakRule(this.value)" style="width:100%;padding:5px 8px;font-size:11px;border:1px solid #cbd5e1;border-radius:6px;">
+            <option value="avoid" selected>Avoid Split (Keep Items Clean & Intact)</option>
+            <option value="allow">Allow Split (Fill Bottom Gap Completely)</option>
+          </select>
+        </div>
+
+        <div style="font-size:9.5px;color:#6b7280;line-height:1.35;background:#f8fafc;padding:6px;border-radius:6px;margin-top:6px;">
+          💡 <strong>Quick Guide:</strong> For 1-page resumes, choose <em>1 Page</em> + <em>Compact Spacing</em> for best PDF fit without empty gaps!
+        </div>
+      </div>
     </div>
-    <div class="sel-pill" title="Control whether project/experience items split across pages to fill empty gaps">
-      ✂️ <select id="pageBreakSel" onchange="changePageBreakRule(this.value)">
-        <option value="avoid" selected>Break: Avoid Split (Clean)</option>
-        <option value="allow">Break: Allow Split (Fill Gap)</option>
-      </select>
-    </div>
-    <div class="sel-pill">📄 <select onchange="changeMode(this.value)" id="modeSelect">
-      <option value="auto" selected>Full (Auto)</option>
-      <option value="1">1 Page</option>
-      <option value="2">2 Pages</option>
-      <option value="3">3 Pages</option>
-      <option value="4">4 Pages</option>
-      <option value="5">5 Pages</option>
-    </select></div>
-    <div class="sel-pill">🔤 <select id="fontSel" onchange="changeFont(this.value)">
-      <option value="'Inter',sans-serif">Inter</option>
-      <option value="'Roboto',sans-serif">Roboto</option>
-      <option value="'Times New Roman',serif">Times NR</option>
-      <option value="'Merriweather',serif">Merriweather</option>
-      <option value="'JetBrains Mono',monospace">Mono</option>
-    </select></div>
-    <div class="sel-pill">🎨 <select id="colorSel" onchange="changeTheme(this.value)">
-      <option value="#1e3a8a">Blue</option>
-      <option value="#0f172a">Charcoal</option>
-      <option value="#047857">Emerald</option>
-      <option value="#4338ca">Indigo</option>
-      <option value="#881337">Crimson</option>
-    </select></div>
-  </div>
   <div class="nav-r">
     <div id="activeAIBadge" style="font-size:10px;font-weight:800;padding:4px 9px;border-radius:12px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openApiModal()" title="Current Active AI Engine (Click to manage keys)">
       🤖 <span id="activeAIName">Auto AI</span>
@@ -6936,6 +6947,21 @@ function changeCompactSpacing(val){
   }
   try{ localStorage.setItem('rsai_compact_spacing', val); }catch(e){}
 }
+
+
+
+function togglePageLayoutPopover(e){
+  if(e) e.stopPropagation();
+  const p = document.getElementById('pageLayoutPopover');
+  if(p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e){
+  const p = document.getElementById('pageLayoutPopover');
+  if(p && p.style.display === 'block' && !p.contains(e.target) && !e.target.closest('[onclick*="togglePageLayoutPopover"]')){
+    p.style.display = 'none';
+  }
+});
 
 </script>
 
