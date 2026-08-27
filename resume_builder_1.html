@@ -323,22 +323,86 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
 
 /* ════ PRINT ════ */
 @media print{
-  body,.workspace,.right{background:transparent!important;padding:0!important;height:auto!important;overflow:visible!important}
-  nav,.left,.preview-toolbar,.pagebreak,.overlay,.no-print{display:none!important}
-  /* Undo the on-screen narrow-window scale box entirely — print always uses
-     the resume's natural full-width layout, never the shrunk screen preview. */
-  .paper-scale-box{position:static!important;width:auto!important;height:auto!important}
-  .paper{position:static!important;transform:none!important;box-shadow:none!important;margin:0!important;padding:8mm 10mm 6mm!important;width:100%!important;max-width:100%!important;min-height:auto!important;max-height:none!important;overflow:visible!important}
-  @page{size:A4 portrait;margin:0}
-  .ri,.rs{page-break-inside:avoid}
+  html, body {
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  nav, .left, .preview-toolbar, .pagebreak, .overlay, .no-print, .no-print-section {
+    display: none !important;
+  }
+  .workspace, .right {
+    display: block !important;
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .paper-wrap {
+    display: block !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+  .paper-scale-box {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+  .paper {
+    display: block !important;
+    position: static !important;
+    transform: none !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    padding: 8mm 10mm 6mm !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    box-sizing: border-box !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  .ri, .rs, .rh {
+    page-break-inside: avoid;
+  }
 
-  /* By default (no SGResume print in progress) only the main resume prints. */
-  #sgSection{display:none!important}
-  #gate1Section{display:none!important}
-  /* When printing the SGResume panel, flip it: hide the main resume, show
-     only the SGResume paper, full width, same as above. */
-  body.print-sg #paperWrap{display:none!important}
-  body.print-sg #sgSection,body.print-sg #sgPaperWrap{display:block!important}
+  /* By default only main resume prints */
+  #sgSection, #gate1Section { display: none !important; }
+
+  /* SGResume print overrides */
+  body.print-sg #paperWrap { display: none !important; }
+  body.print-sg #sgSection, body.print-sg #sgPaperWrap { display: block !important; }
+  body.print-sg #sgPaper {
+    display: block !important;
+    position: static !important;
+    transform: none !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    padding: 8mm 10mm 6mm !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    box-sizing: border-box !important;
+  }
 }
 
 /* ════ MISC ════ */
@@ -432,7 +496,7 @@ textarea{resize:vertical;min-height:54px;line-height:1.5}
     <button class="btn btn-purple" onclick="openApiModal()">🔑 API Key</button>
     <button class="btn btn-outline" onclick="exportJSON()">💾 Export</button>
     <button class="btn btn-preview-toggle" id="previewToggleBtn" onclick="togglePreview()" title="Show or hide the live resume preview">👁️ Hide Preview</button>
-    <button class="btn btn-primary" onclick="window.print()">🖨️ Print PDF</button>
+    <button class="btn btn-primary" onclick="triggerMainPrint()">🖨️ Print PDF</button>
   </div>
 </nav>
 
@@ -6749,6 +6813,25 @@ function getAuthHeaders(){
     'Content-Type': 'application/json',
     'X-Outreach-PIN': pin
   };
+}
+
+
+
+function triggerMainPrint(){
+  document.body.classList.remove('print-sg');
+  const box = document.getElementById('paperScaleBox');
+  const paper = document.getElementById('paper');
+  if(box){
+    box.style.width = '';
+    box.style.height = '';
+  }
+  if(paper){
+    paper.style.transform = '';
+  }
+  window.print();
+  setTimeout(() => {
+    if(typeof scalePaper === 'function') scalePaper();
+  }, 300);
 }
 
 </script>

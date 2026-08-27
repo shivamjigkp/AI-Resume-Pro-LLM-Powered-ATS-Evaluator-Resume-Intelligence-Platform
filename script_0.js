@@ -5239,3 +5239,22 @@ function getAuthHeaders(){
   };
 }
 
+
+
+function triggerMainPrint(){
+  document.body.classList.remove('print-sg');
+  const box = document.getElementById('paperScaleBox');
+  const paper = document.getElementById('paper');
+  if(box){
+    box.style.width = '';
+    box.style.height = '';
+  }
+  if(paper){
+    paper.style.transform = '';
+  }
+  window.print();
+  setTimeout(() => {
+    if(typeof scalePaper === 'function') scalePaper();
+  }, 300);
+}
+
