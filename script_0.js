@@ -3963,7 +3963,12 @@ function syncFormToD(){
     otherLink:g('iOtherLink'),
     summary:g('iSummary')
   };
-  D.skills={lang:g('sLang'),tools:g('sTools'),domain:g('sDomain'),cloud:g('sCloud'),course:g('sCourse')};
+  if(!D.skills) D.skills={};
+  D.skills.lang = g('sLang');
+  D.skills.tools = g('sTools');
+  D.skills.domain = g('sDomain');
+  D.skills.cloud = g('sCloud');
+  D.skills.course = g('sCourse');
   D.edu={uni:g('iUni'),deg:g('iDeg'),yrs:g('iYrs'),gpa:g('iGPA')};
   D.eduExtra=g('iEduExtra').split('\n').filter(x=>x.trim());
   D.ach=g('iAch').split('\n').filter(x=>x.trim());

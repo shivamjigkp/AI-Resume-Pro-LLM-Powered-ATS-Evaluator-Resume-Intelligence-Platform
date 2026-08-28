@@ -777,16 +777,17 @@ body.allow-page-split #paper .rb li {
 
     <!-- SKILLS -->
         <!-- SKILLS -->
+        <!-- SKILLS -->
     <div class="pane" id="pane-skills">
       <div class="vis-toggle-row">
         <span style="font-weight:800;font-size:12.5px">Technical Skills</span>
         <span id="visBtn-skills"></span>
       </div>
-      <div class="fg"><label>Languages / Programming</label><input id="sLang" placeholder="C, C++, Python, Verilog..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
-      <div class="fg"><label>Tools & Frameworks</label><input id="sTools" placeholder="MATLAB, React, Docker..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
-      <div class="fg"><label>Core Domain / Stack</label><input id="sDomain" placeholder="RTL Design, Embedded, Full Stack..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
-      <div class="fg"><label>Cloud / Databases</label><input id="sCloud" placeholder="Firebase, AWS, PostgreSQL..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
-      <div class="fg"><label>Coursework</label><input id="sCourse" placeholder="Microprocessors, VLSI, DSP, AI Fundamentals..." oninput="syncSkillsInputsToD();render();liveATS()"></div>
+      <div class="fg"><label>Languages / Programming</label><input id="sLang" placeholder="C, C++, Python, Verilog..." oninput="if(!D.skills)D.skills={};D.skills.lang=this.value;render();liveATS()"></div>
+      <div class="fg"><label>Tools & Frameworks</label><input id="sTools" placeholder="MATLAB, React, Docker..." oninput="if(!D.skills)D.skills={};D.skills.tools=this.value;render();liveATS()"></div>
+      <div class="fg"><label>Core Domain / Stack</label><input id="sDomain" placeholder="RTL Design, Embedded, Full Stack..." oninput="if(!D.skills)D.skills={};D.skills.domain=this.value;render();liveATS()"></div>
+      <div class="fg"><label>Cloud / Databases</label><input id="sCloud" placeholder="Firebase, AWS, PostgreSQL..." oninput="if(!D.skills)D.skills={};D.skills.cloud=this.value;render();liveATS()"></div>
+      <div class="fg"><label>Coursework</label><input id="sCourse" placeholder="Microprocessors, VLSI, DSP, AI Fundamentals..." oninput="if(!D.skills)D.skills={};D.skills.course=this.value;render();liveATS()"></div>
       
       <!-- Additional / Custom Skill Categories -->
       <div style="margin-top:14px;padding-top:10px;border-top:1.5px dashed #cbd5e1;">
@@ -5673,7 +5674,12 @@ function syncFormToD(){
     otherLink:g('iOtherLink'),
     summary:g('iSummary')
   };
-  D.skills={lang:g('sLang'),tools:g('sTools'),domain:g('sDomain'),cloud:g('sCloud'),course:g('sCourse')};
+  if(!D.skills) D.skills={};
+  D.skills.lang = g('sLang');
+  D.skills.tools = g('sTools');
+  D.skills.domain = g('sDomain');
+  D.skills.cloud = g('sCloud');
+  D.skills.course = g('sCourse');
   D.edu={uni:g('iUni'),deg:g('iDeg'),yrs:g('iYrs'),gpa:g('iGPA')};
   D.eduExtra=g('iEduExtra').split('\n').filter(x=>x.trim());
   D.ach=g('iAch').split('\n').filter(x=>x.trim());
