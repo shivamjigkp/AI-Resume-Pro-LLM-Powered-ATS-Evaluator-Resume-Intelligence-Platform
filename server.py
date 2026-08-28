@@ -638,6 +638,10 @@ def send_emails_endpoint():
     try:
         start_row = int(body.get("start_row", 2))
         end_row = int(body.get("end_row", 10))
+        if start_row < 2:
+            start_row = 2
+        if end_row < start_row:
+            end_row = start_row
     except (TypeError, ValueError):
         return jsonify({"status": "error", "detail": "start_row and end_row must be numbers"}), 400
 

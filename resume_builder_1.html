@@ -8146,8 +8146,10 @@ async function runGate1Action(mode){
     if(!confirm('⚠️ ARE YOU SURE? This will SEND emails directly to the recipients via Gmail API without drafting.')) return;
   }
 
-  const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
-  const endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  let startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
+  let endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  if(isNaN(startRow) || startRow < 2) startRow = 2;
+  if(isNaN(endRow) || endRow < startRow) endRow = startRow;
   
   // Get active sheet ID from input box OR dropdown
   const sheetUrlInp = document.getElementById('gate1SheetUrlInput');
