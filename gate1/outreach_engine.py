@@ -114,14 +114,12 @@ def run_campaign(start_row: int, end_row: int, mode: str, sender_profile: Dict,
             details.append({"row": row_num, "email": "", "company": company, "status": "failed", "error": "Missing email address"})
             continue
 
-                try:
+        try:
             # Build template
             if custom_body and custom_body.strip():
                 tmpl_text = custom_body.strip()
                 if custom_subject and not tmpl_text.lower().startswith("subject:"):
-                    tmpl_text = f"Subject: {custom_subject}
-
-" + tmpl_text
+                    tmpl_text = f"Subject: {custom_subject}\n\n" + tmpl_text
             elif template_name:
                 tmpl_text = load_template_by_name(template_name)
             else:
