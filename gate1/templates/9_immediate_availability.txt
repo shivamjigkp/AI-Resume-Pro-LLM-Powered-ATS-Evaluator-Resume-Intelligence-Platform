@@ -1,4 +1,4 @@
-Subject: Immediate Availability for {{role}} at {{company}} — Shivam Gupta
+Subject: Immediate Availability for {{role}} at {{company}}
 
 Dear {{recruiter_name}},
 

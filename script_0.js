@@ -6437,12 +6437,22 @@ async function runGate1Action(mode){
 
   const startRow = parseInt(document.getElementById('gate1StartRow')?.value || '2');
   const endRow = parseInt(document.getElementById('gate1EndRow')?.value || '10');
+  
+  // Get active sheet ID from input box OR dropdown
+  const sheetUrlInp = document.getElementById('gate1SheetUrlInput');
   const sheetSel = document.getElementById('gate1ActiveSheet');
-  const sheetId = extractCleanSheetId(sheetSel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const rawSheet = (sheetUrlInp && sheetUrlInp.value.trim()) ? sheetUrlInp.value.trim() : (sheetSel?.value || '1lYkZAjqQQQGKTkxkLGUpNmcs4Wu68tPXo6JRa0PDimI');
+  const sheetId = extractCleanSheetId(rawSheet);
+
   const tplSel = document.getElementById('gate1DefaultTemplate');
-  const templateName = tplSel?.value || 'default';
+  const templateName = tplSel?.value || '1';
   const resumeSel = document.getElementById('gate1DefaultResume');
   const resumeFilename = resumeSel?.value || 'auto';
+
+  // Extract custom Subject and Body exactly from the live composer fields
+  const customSubject = document.getElementById('gate1EmailSubject')?.value?.trim() || '';
+  const customBody = document.getElementById('gate1LiveTemplateContent')?.value?.trim() || '';
+  const forceDraft = document.getElementById('gate1ForceDraftCheckbox')?.checked ?? true;
 
   const senderProfile = {
     name: D.basics?.name || 'Shivam Gupta',
@@ -6473,6 +6483,9 @@ async function runGate1Action(mode){
         end_row: endRow,
         sheet_id: sheetId,
         template_name: templateName,
+        subject: customSubject,
+        template_body: customBody,
+        force_draft: forceDraft,
         resume_filename: resumeFilename,
         sender_profile: senderProfile
       })
@@ -6480,18 +6493,18 @@ async function runGate1Action(mode){
 
     const data = await res.json();
     if(res.ok && data.status === 'success'){
-      updateGate1Progress(totalRows, totalRows, `✅ Campaign Complete! ${data.detail || 'Processed successfully.'}`, true, 0);
+      updateGate1Progress(totalRows, totalRows, `✅ Campaign Complete! ${data.message || data.detail || 'Processed successfully.'}`, true, 0);
       toast(`🎉 Gate 1: ${mode === 'draft' ? 'Drafts created in Gmail!' : 'Emails sent successfully!'} Check Gmail.`, 'success', 6000);
       // Refresh leads table to show updated status
       setTimeout(fetchAndRenderGate1Leads, 1500);
     } else {
       const errMsg = data.detail || data.error || 'Campaign failed to execute.';
       updateGate1Progress(0, totalRows, `❌ Error: ${errMsg}`, false, 1);
-      toast(`Gate 1: ${errMsg}`, 'error', 6000);
+      toast(`❌ Campaign Error: ${errMsg}`, 'error', 6000);
     }
   } catch(err) {
     updateGate1Progress(0, totalRows, `❌ Network Error: ${err.message}`, false, 1);
-    toast(`Network error connecting to backend: ${err.message}`, 'error');
+    toast(`Failed to connect to backend server: ${err.message}`, 'error', 6000);
   } finally {
     if(draftBtn) draftBtn.disabled = false;
     if(sendBtn) sendBtn.disabled = false;

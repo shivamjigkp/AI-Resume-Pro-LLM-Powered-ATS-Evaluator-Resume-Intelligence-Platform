@@ -1,4 +1,4 @@
-Subject: Fintech & Quantitative Tech Application at {{company}} — Shivam Gupta
+Subject: Fintech & Quantitative Tech Application at {{company}}
 
 Dear {{recruiter_name}},
 

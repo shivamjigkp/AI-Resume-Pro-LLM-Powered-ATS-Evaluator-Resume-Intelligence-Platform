@@ -1,4 +1,4 @@
-Subject: Full-Stack SDE Application for {{company}} — Shivam Gupta
+Subject: Full-Stack SDE Application for {{company}}
 
 Dear {{recruiter_name}},
 

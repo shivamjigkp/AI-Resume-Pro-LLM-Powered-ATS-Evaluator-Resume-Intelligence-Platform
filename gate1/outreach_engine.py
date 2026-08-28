@@ -114,22 +114,28 @@ def run_campaign(start_row: int, end_row: int, mode: str, sender_profile: Dict,
             details.append({"row": row_num, "email": "", "company": company, "status": "failed", "error": "Missing email address"})
             continue
 
-        try:
+                try:
             # Build template
             if custom_body and custom_body.strip():
                 tmpl_text = custom_body.strip()
                 if custom_subject and not tmpl_text.lower().startswith("subject:"):
-                    tmpl_text = f"Subject: {custom_subject}\n\n" + tmpl_text
+                    tmpl_text = f"Subject: {custom_subject}
+
+" + tmpl_text
             elif template_name:
                 tmpl_text = load_template_by_name(template_name)
             else:
                 tmpl_text = load_template(role)
 
+            target_company = company if (company and company.strip()) else "your team"
+            target_role = role if (role and role.strip()) else "Software Development / Quantitative Analyst"
+            target_recruiter = name if (name and name.strip() and name.lower() != "none") else "Hiring Team"
+
             context = {
-                "recruiter_name": name or "Hiring Team",
-                "company": company or "your company",
-                "company_name": company or "your company",
-                "role": role or "Software Development / Quantitative Analyst",
+                "recruiter_name": target_recruiter,
+                "company": target_company,
+                "company_name": target_company,
+                "role": target_role,
                 "sender_name": sender_profile.get("name", "Shivam Gupta"),
                 "my_name": sender_profile.get("name", "Shivam Gupta"),
                 "sender_email": sender_profile.get("email", "quantxcoder@gmail.com"),
@@ -144,9 +150,12 @@ def run_campaign(start_row: int, end_row: int, mode: str, sender_profile: Dict,
 
             rendered = render_template(tmpl_text, context)
             extracted_sub, body = split_subject_and_body(rendered)
-            final_subject = extracted_sub or custom_subject or f"Application for {role or 'Opportunities'} at {company or 'your company'} — Shivam Gupta"
             
-            # Replace tags in final_subject as well
+            # Prioritize custom_subject from the live editor
+            raw_subject = custom_subject if (custom_subject and custom_subject.strip()) else (extracted_sub or f"Application for {target_role} at {target_company}")
+            
+            # Replace tags in final_subject
+            final_subject = raw_subject
             for k, v in context.items():
                 final_subject = final_subject.replace("{{" + k + "}}", str(v) if v else "")
 

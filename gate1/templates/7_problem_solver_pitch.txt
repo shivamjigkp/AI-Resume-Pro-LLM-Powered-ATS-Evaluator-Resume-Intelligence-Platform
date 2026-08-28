@@ -1,4 +1,4 @@
-Subject: Ideas for {{company}}'s engineering & {{role}} application — Shivam Gupta
+Subject: Ideas for {{company}}'s engineering & {{role}} application
 
 Dear {{recruiter_name}},
 

@@ -1,4 +1,4 @@
-Subject: Application for Data Analyst / BI Role at {{company}} — Shivam Gupta
+Subject: Application for Data Analyst / BI Role at {{company}}
 
 Dear {{recruiter_name}},
 

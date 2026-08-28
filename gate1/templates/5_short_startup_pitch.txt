@@ -1,4 +1,4 @@
-Subject: Quick intro / {{role}} at {{company}} — Shivam Gupta
+Subject: Quick intro / {{role}} at {{company}}
 
 Dear {{recruiter_name}},
 

@@ -1,4 +1,4 @@
-Subject: Application for Opportunities at {{company}} — Shivam Gupta
+Subject: Application for Opportunities at {{company}}
 
 Dear {{recruiter_name}},
 

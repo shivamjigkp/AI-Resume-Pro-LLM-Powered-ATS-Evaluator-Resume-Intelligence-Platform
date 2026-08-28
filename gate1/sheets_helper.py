@@ -20,6 +20,7 @@ def _get_sheets_service():
 def read_lead_rows(sheet_id: str, start_row: int, end_row: int, sheet_tab: str = "Leads") -> Tuple[List[Dict], List[str]]:
     """
     Reads rows [start_row, end_row] inclusive from the Google Sheet.
+    Uses intelligent fuzzy header matching so headers like 'Company Name', 'Email Address', 'Recruiter Name' work 100%.
     Returns (leads_list, headers_lower).
     """
     service = _get_sheets_service()
@@ -44,12 +45,24 @@ def read_lead_rows(sheet_id: str, start_row: int, end_row: int, sheet_tab: str =
     header = values[0]
     header_lower = [str(h).strip().lower() for h in header]
 
-    def col_val(row_cells, col_name, default=""):
-        if col_name in header_lower:
-            idx = header_lower.index(col_name)
-            if idx < len(row_cells):
-                return str(row_cells[idx]).strip()
-        return default
+    def find_col_idx(patterns: List[str]) -> int:
+        for p in patterns:
+            for idx, h in enumerate(header_lower):
+                if p == h or (len(p) > 2 and p in h):
+                    return idx
+        return -1
+
+    email_idx = find_col_idx(["email", "email address", "e-mail", "recruiter email", "contact email", "mail"])
+    name_idx = find_col_idx(["recruiter name", "recruiter_name", "name", "contact name", "hr name", "person", "contact"])
+    company_idx = find_col_idx(["company name", "company_name", "company", "organization", "firm", "startup", "comp"])
+    role_idx = find_col_idx(["role", "job title", "position", "job role", "profile", "job", "title"])
+    status_idx = find_col_idx(["status", "email status", "campaign status", "outreach status", "state"])
+
+    # Fallback to column positions if headers didn't match
+    if email_idx == -1: email_idx = 1 if len(header_lower) > 1 else 0
+    if company_idx == -1: company_idx = 2 if len(header_lower) > 2 else -1
+    if role_idx == -1: role_idx = 3 if len(header_lower) > 3 else -1
+    if status_idx == -1: status_idx = 4 if len(header_lower) > 4 else -1
 
     leads = []
     # 1-based row indexing matching sheet row numbers
@@ -58,12 +71,18 @@ def read_lead_rows(sheet_id: str, start_row: int, end_row: int, sheet_tab: str =
         if row_idx >= len(values):
             break
         row_cells = values[row_idx]
-        
-        email = col_val(row_cells, "email")
-        name = col_val(row_cells, "name", "Hiring Team")
-        company = col_val(row_cells, "company", "")
-        role = col_val(row_cells, "role", "")
-        status = col_val(row_cells, "status", "Pending")
+
+        def get_val(idx, default=""):
+            if idx >= 0 and idx < len(row_cells):
+                val = str(row_cells[idx]).strip()
+                return val if val else default
+            return default
+
+        email = get_val(email_idx)
+        name = get_val(name_idx, "Hiring Team")
+        company = get_val(company_idx, "")
+        role = get_val(role_idx, "")
+        status = get_val(status_idx, "Pending")
 
         leads.append({
             "row": i,

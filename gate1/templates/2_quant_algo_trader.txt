@@ -1,4 +1,4 @@
-Subject: Quant / Algorithmic Trading Application at {{company}} — Shivam Gupta
+Subject: Quant / Algorithmic Trading Application at {{company}}
 
 Dear {{recruiter_name}},
 

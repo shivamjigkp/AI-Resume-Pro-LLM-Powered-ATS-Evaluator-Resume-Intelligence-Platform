@@ -1,4 +1,4 @@
-Subject: Re: Application for {{role}} at {{company}} — Shivam Gupta
+Subject: Re: Application for {{role}} at {{company}}
 
 Dear {{recruiter_name}},
 
