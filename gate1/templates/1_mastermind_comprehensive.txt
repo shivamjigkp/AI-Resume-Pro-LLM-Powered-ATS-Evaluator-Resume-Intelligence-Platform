@@ -1,4 +1,4 @@
-Subject: Application for Opportunities at {{company}}
+Subject: Application for Intern or Job Opportunities at {{company}}
 
 Dear {{recruiter_name}},
 

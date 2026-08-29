@@ -1,4 +1,4 @@
-Subject: Application for Intern or Job Opportunities at {{company}}
+Subject: Application for Opportunities at {{company}}
 
 Dear {{recruiter_name}},
 
@@ -23,7 +23,6 @@ LinkedIn: https://linkedin.com/in/shivam-gupta-05209a279
 
 Would you be open to a brief 5-minute introductory conversation this week, or could you kindly connect me with the relevant hiring manager at {{company}}?
 Thank you for your time and consideration.
-
 
 Warm regards,
 Shivam Gupta
