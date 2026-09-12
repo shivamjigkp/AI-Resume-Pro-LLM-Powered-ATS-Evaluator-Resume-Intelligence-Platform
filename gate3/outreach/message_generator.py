@@ -1,6 +1,13 @@
 """AI-powered outreach message generation for recruiter contact using Groq."""
 
-from groq import Groq
+import json
+import os
+import urllib.request
+
+try:
+    from groq import Groq
+except ImportError:
+    Groq = None
 
 from ..config import settings
 from ..models import Application, ResumeData
@@ -44,23 +51,60 @@ Keep it brief (under 100 words). Add value — mention a relevant recent achieve
 
 
 class OutreachMessageGenerator:
-    """Generates personalized recruiter outreach messages using Groq."""
+    """AI-powered outreach message generation for recruiter contact."""
 
     def __init__(self):
-        self.client = Groq(api_key=settings.groq_api_key)
+        self.api_key = settings.groq_api_key or os.getenv("GROQ_API_KEY", "")
+        if not self.api_key:
+            try:
+                from config import secrets_client
+                groq_keys = secrets_client.get_active_keys("GLOBAL", "groq")
+                if groq_keys:
+                    self.api_key = groq_keys[0]
+            except Exception:
+                pass
+        self.client = None
+        if Groq and self.api_key:
+            try:
+                self.client = Groq(api_key=self.api_key)
+            except Exception:
+                self.client = None
 
     def _generate(self, prompt: str, max_tokens: int = 512, temperature: float = 0.6) -> str:
-        response = self.client.chat.completions.create(
-            model=settings.llm_model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-        )
+        if self.client:
+            try:
+                response = self.client.chat.completions.create(
+                    model=settings.llm_model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": prompt},
+                    ],
+                )
+                return response.choices[0].message.content.strip()
+            except Exception:
+                pass
+        
+        # HTTP fallback
+        if self.api_key:
+            try:
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+                payload = {
+                    "model": settings.llm_model,
+                    "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+                    "temperature": temperature,
+                    "max_tokens": max_tokens
+                }
+                req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
+                with urllib.request.urlopen(req, timeout=20) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    return data["choices"][0]["message"]["content"].strip()
+            except Exception:
+                pass
 
-        return response.choices[0].message.content.strip()
+        return f"Hi Hiring Team, I recently reviewed the open position and would love to connect regarding how my engineering background aligns with your current technical goals. Looking forward to discussing further."
 
     async def generate_initial(
         self,

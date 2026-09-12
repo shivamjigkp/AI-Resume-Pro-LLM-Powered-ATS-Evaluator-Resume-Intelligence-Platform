@@ -1,0 +1,40 @@
+{
+  "contact": {
+    "name": "Shivam Gupta",
+    "email": "quantxcoder@gmail.com",
+    "phone": "+91-8081513780",
+    "linkedin": "https://linkedin.com/in/shivam-gupta-05209a279",
+    "github": "https://github.com/shivamjigkp",
+    "website": "",
+    "location": ""
+  },
+  "summary": "Full-Stack Software Engineer & ML Specialist with experience in high-performance web systems and algorithmic pipelines.",
+  "experience": [],
+  "education": [],
+  "skills": {
+    "languages": [
+      "Python",
+      "TypeScript",
+      "JavaScript",
+      "C++",
+      "SQL"
+    ],
+    "frameworks": [
+      "FastAPI",
+      "Next.js",
+      "React",
+      "Node.js"
+    ],
+    "tools": [
+      "Docker",
+      "PostgreSQL",
+      "Supabase",
+      "Git",
+      "AWS"
+    ],
+    "platforms": [],
+    "certifications": [],
+    "other": []
+  },
+  "projects": []
+}

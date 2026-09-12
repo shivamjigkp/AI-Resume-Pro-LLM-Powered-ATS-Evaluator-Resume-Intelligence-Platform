@@ -15,8 +15,17 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from rich.console import Console
-from rich.table import Table
+try:
+    from rich.console import Console
+    from rich.table import Table
+except ImportError:
+    class Console:
+        def print(self, *args, **kwargs):
+            print(*args)
+    class Table:
+        def __init__(self, *args, **kwargs): pass
+        def add_column(self, *args, **kwargs): pass
+        def add_row(self, *args, **kwargs): pass
 
 from .config import settings
 from .database import Database
@@ -190,7 +199,7 @@ class Orchestrator:
             applications.append(app)
 
             console.print(
-                f"    [green]✓ Resume customized. Match: {analysis.get('recommendation', 'N/A')}[/green]"
+                f"    [green][OK] Resume customized. Match: {analysis.get('recommendation', 'N/A')}[/green]"
             )
 
         return applications

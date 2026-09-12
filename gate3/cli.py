@@ -161,7 +161,7 @@ def init(
         )
 
         output_path.write_text(template.model_dump_json(indent=2))
-        console.print(f"[green]✓ Resume template created at {output_path}[/green]")
+        console.print(f"[green][OK] Resume template created at {output_path}[/green]")
     else:
         console.print(f"[yellow]Resume already exists at {output_path}[/yellow]")
 
@@ -189,7 +189,7 @@ def init(
             "min_score": 50,
         }
         config_path.write_text(json.dumps(config, indent=2))
-        console.print(f"[green]✓ Search config created at {config_path}[/green]")
+        console.print(f"[green][OK] Search config created at {config_path}[/green]")
     else:
         console.print(f"[yellow]Search config already exists at {config_path}[/yellow]")
 

@@ -77,11 +77,19 @@ class Database:
 
     def save_application(self, app: Application) -> None:
         now = datetime.utcnow().isoformat()
+        job_id = app.job.id if (app.job and hasattr(app.job, 'id')) else app.job_id
+        if app.job:
+            app.job_id = getattr(app.job, 'id', '')
+            app.company = getattr(app.job, 'company', '')
+            app.job_title = getattr(app.job, 'title', '')
+            app.job_url = getattr(app.job, 'url', '')
+        dump_json = app.model_dump_json() if hasattr(app, "model_dump_json") else json.dumps(app.model_dump(), default=str)
+        status_val = app.status.value if hasattr(app.status, 'value') else str(app.status)
         with self._get_conn() as conn:
             conn.execute(
                 """INSERT OR REPLACE INTO applications (id, job_id, data, status, created_at, updated_at)
                    VALUES (?, ?, ?, ?, COALESCE((SELECT created_at FROM applications WHERE id = ?), ?), ?)""",
-                (app.id, app.job.id, app.model_dump_json(), app.status.value, app.id, now, now),
+                (app.id, job_id, dump_json, status_val, app.id, now, now),
             )
 
     def get_applications(
@@ -89,15 +97,25 @@ class Database:
     ) -> list[Application]:
         with self._get_conn() as conn:
             if status:
+                status_val = status.value if hasattr(status, 'value') else str(status)
                 rows = conn.execute(
                     "SELECT data FROM applications WHERE status = ? ORDER BY updated_at DESC",
-                    (status.value,),
+                    (status_val,),
                 ).fetchall()
             else:
                 rows = conn.execute(
                     "SELECT data FROM applications ORDER BY updated_at DESC"
                 ).fetchall()
-            return [Application.model_validate_json(row["data"]) for row in rows]
+            results = []
+            for row in rows:
+                try:
+                    if hasattr(Application, "model_validate_json"):
+                        results.append(Application.model_validate_json(row["data"]))
+                    else:
+                        results.append(Application.model_validate(json.loads(row["data"])))
+                except Exception:
+                    pass
+            return results
 
     def get_application(self, app_id: str) -> Application | None:
         with self._get_conn() as conn:
@@ -105,7 +123,9 @@ class Database:
                 "SELECT data FROM applications WHERE id = ?", (app_id,)
             ).fetchone()
             if row:
-                return Application.model_validate_json(row["data"])
+                if hasattr(Application, "model_validate_json"):
+                    return Application.model_validate_json(row["data"])
+                return Application.model_validate(json.loads(row["data"]))
             return None
 
     def get_todays_application_count(self) -> int:

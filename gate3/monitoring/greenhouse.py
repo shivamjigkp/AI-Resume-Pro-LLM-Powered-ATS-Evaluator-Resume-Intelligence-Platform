@@ -7,7 +7,12 @@ Endpoint: https://boards-api.greenhouse.io/v1/boards/{company}/jobs
 
 from datetime import datetime, timedelta
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    httpx = None
+    import urllib.request
+    import json
 
 from ..models import JobPosting, JobSource
 from .base import JobMonitor

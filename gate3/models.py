@@ -1,17 +1,56 @@
-"""Core data models for the resume agent system."""
+"""Core data models for the resume agent system with zero-dependency fallback."""
 
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field
+try:
+    from pydantic import BaseModel, Field
+except ImportError:
+    class BaseModel:
+        def __init__(self, **kwargs):
+            # Set default annotations if any
+            for field, val in self.__class__.__dict__.items():
+                if not field.startswith("_") and not callable(val):
+                    setattr(self, field, val)
+            for k, v in kwargs.items():
+                setattr(self, k, v)
 
+        def model_dump(self, mode="python"):
+            d = {}
+            for k, v in self.__dict__.items():
+                if k.startswith("_"):
+                    continue
+                if hasattr(v, "model_dump"):
+                    d[k] = v.model_dump(mode=mode)
+                elif isinstance(v, list):
+                    d[k] = [x.model_dump(mode=mode) if hasattr(x, "model_dump") else (x.value if hasattr(x, 'value') else x) for x in v]
+                elif hasattr(v, "value"):
+                    d[k] = v.value
+                elif isinstance(v, datetime):
+                    d[k] = v.isoformat() if mode == "json" else v
+                else:
+                    d[k] = v
+            return d
 
-# ── Resume Schema (extended JSON Resume) ──────────────────────────────────────
+        def dict(self, *args, **kwargs):
+            return self.model_dump()
 
+        @classmethod
+        def model_validate(cls, obj):
+            if isinstance(obj, dict):
+                return cls(**obj)
+            return obj
+
+    def Field(default=None, default_factory=None, **kwargs):
+        if default_factory is not None:
+            return default_factory()
+        return default
+
+# ── Resume Schema ─────────────────────────────────────────────────────────────
 
 class ContactInfo(BaseModel):
-    name: str
-    email: str
+    name: str = ""
+    email: str = ""
     phone: str = ""
     linkedin: str = ""
     github: str = ""
@@ -20,59 +59,54 @@ class ContactInfo(BaseModel):
 
 
 class ResumeBullet(BaseModel):
-    text: str
-    tags: list[str] = Field(default_factory=list)
-    metrics: dict[str, str | int | float] | None = None
+    text: str = ""
+    tags: list = Field(default_factory=list)
+    metrics: dict | None = None
 
 
 class Experience(BaseModel):
-    company: str
-    title: str
-    start_date: str
+    company: str = ""
+    title: str = ""
+    start_date: str = ""
     end_date: str = "Present"
     location: str = ""
-    bullets: list[ResumeBullet] = Field(default_factory=list)
+    bullets: list = Field(default_factory=list)
 
 
 class Education(BaseModel):
-    institution: str
-    degree: str
+    institution: str = ""
+    degree: str = ""
     field_of_study: str = ""
     start_date: str = ""
     end_date: str = ""
     gpa: str = ""
-    highlights: list[str] = Field(default_factory=list)
+    highlights: list = Field(default_factory=list)
 
 
 class Project(BaseModel):
-    name: str
-    description: str
+    name: str = ""
+    description: str = ""
     url: str = ""
-    technologies: list[str] = Field(default_factory=list)
-    highlights: list[str] = Field(default_factory=list)
+    technologies: list = Field(default_factory=list)
+    highlights: list = Field(default_factory=list)
 
 
 class Skills(BaseModel):
-    languages: list[str] = Field(default_factory=list)
-    frameworks: list[str] = Field(default_factory=list)
-    tools: list[str] = Field(default_factory=list)
-    platforms: list[str] = Field(default_factory=list)
-    certifications: list[str] = Field(default_factory=list)
-    other: list[str] = Field(default_factory=list)
+    languages: list = Field(default_factory=list)
+    frameworks: list = Field(default_factory=list)
+    tools: list = Field(default_factory=list)
+    platforms: list = Field(default_factory=list)
+    certifications: list = Field(default_factory=list)
+    other: list = Field(default_factory=list)
 
 
 class ResumeData(BaseModel):
-    """Source-of-truth resume data. All customizations derive from this."""
-
-    contact: ContactInfo
+    contact: ContactInfo = Field(default_factory=ContactInfo)
     summary: str = ""
-    experience: list[Experience] = Field(default_factory=list)
-    education: list[Education] = Field(default_factory=list)
+    experience: list = Field(default_factory=list)
+    education: list = Field(default_factory=list)
     skills: Skills = Field(default_factory=Skills)
-    projects: list[Project] = Field(default_factory=list)
-
-
-# ── Job Posting ───────────────────────────────────────────────────────────────
+    projects: list = Field(default_factory=list)
 
 
 class JobSource(str, Enum):
@@ -85,84 +119,84 @@ class JobSource(str, Enum):
 
 
 class JobPosting(BaseModel):
-    """A discovered job posting."""
-
-    id: str = Field(description="Unique identifier (source_externalid)")
-    title: str
-    company: str
+    id: str = ""
+    title: str = ""
+    company: str = ""
     location: str = ""
-    description: str
-    url: str
-    source: JobSource
+    description: str = ""
+    url: str = ""
+    source: JobSource = JobSource.MANUAL
     salary_min: int | None = None
     salary_max: int | None = None
     posted_at: datetime | None = None
     discovered_at: datetime = Field(default_factory=datetime.utcnow)
-    tags: list[str] = Field(default_factory=list)
-    remote: bool | None = None
+    department: str = ""
+    requirements: list = Field(default_factory=list)
+    keywords: list = Field(default_factory=list)
+    raw_data: dict = Field(default_factory=dict)
 
 
-# ── Application Tracking ─────────────────────────────────────────────────────
+class SearchConfig(BaseModel):
+    keywords: list = Field(default_factory=list)
+    locations: list = Field(default_factory=lambda: ["remote", "US", "United States"])
+    sources: list = Field(
+        default_factory=lambda: [JobSource.GREENHOUSE, JobSource.LEVER, JobSource.ADZUNA]
+    )
+    greenhouse_companies: list = Field(default_factory=list)
+    lever_companies: list = Field(default_factory=list)
+    min_salary: int | None = None
+    max_days_old: int = 7
+    exclude_keywords: list = Field(default_factory=list)
 
 
 class ApplicationStatus(str, Enum):
     DISCOVERED = "discovered"
-    RESUME_CUSTOMIZED = "resume_customized"
+    MATCHED = "matched"
+    TAILORED = "tailored"
+    RESUME_CUSTOMIZED = "tailored"
+    READY = "ready"
     APPLIED = "applied"
-    FOLLOW_UP_SENT = "follow_up_sent"
+    FAILED = "failed"
     INTERVIEW = "interview"
     REJECTED = "rejected"
     OFFER = "offer"
-    WITHDRAWN = "withdrawn"
 
 
 class Application(BaseModel):
-    """Tracks an individual job application."""
-
-    id: str = Field(description="Unique application ID")
-    job: JobPosting
-    status: ApplicationStatus = ApplicationStatus.DISCOVERED
+    id: str = ""
+    job: JobPosting | None = None
+    job_id: str = ""
+    job_title: str = ""
+    company: str = ""
+    job_url: str = ""
     resume_path: str = ""
     cover_letter_path: str = ""
-    applied_at: datetime | None = None
-    follow_up_dates: list[datetime] = Field(default_factory=list)
-    recruiter_name: str = ""
-    recruiter_email: str = ""
-    recruiter_linkedin: str = ""
-    notes: str = ""
+    status: ApplicationStatus = ApplicationStatus.DISCOVERED
     match_score: float = 0.0
     customization_summary: str = ""
+    notes: str = ""
+    recruiter_name: str = ""
+    applied_at: datetime | None = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-# ── Outreach ──────────────────────────────────────────────────────────────────
-
-
-class OutreachType(str, Enum):
+class OutreachChannel(str, Enum):
     EMAIL = "email"
     LINKEDIN = "linkedin"
 
+OutreachType = OutreachChannel
+
 
 class OutreachMessage(BaseModel):
-    """A recruiter outreach message."""
-
-    application_id: str
-    type: OutreachType
-    recipient: str
+    id: str = ""
+    application_id: str = ""
+    recipient_name: str = ""
+    recipient_email: str = ""
+    recipient_linkedin: str = ""
+    channel: OutreachChannel = OutreachChannel.EMAIL
     subject: str = ""
-    body: str
+    body: str = ""
+    status: str = "draft"
     sent_at: datetime | None = None
-    is_follow_up: bool = False
-    follow_up_number: int = 0
-
-
-class SearchConfig(BaseModel):
-    """Configuration for automated job scans."""
-
-    keywords: list[str] = Field(default_factory=list)
-    location: str = ""
-    remote_only: bool = False
-    country: str = "us"
-    greenhouse_companies: list[str] = Field(default_factory=list)
-    lever_companies: list[str] = Field(default_factory=list)
-    min_score: float = 60.0
-
+    created_at: datetime = Field(default_factory=datetime.utcnow)

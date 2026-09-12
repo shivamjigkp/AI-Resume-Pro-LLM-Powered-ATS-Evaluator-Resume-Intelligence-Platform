@@ -1,0 +1,17 @@
+{
+  "match_score": 82.0,
+  "matched_keywords": [
+    "python",
+    "software",
+    "engineer",
+    "api",
+    "database",
+    "backend"
+  ],
+  "missing_keywords": [],
+  "changes_made": [
+    "Optimized summary for target role",
+    "Highlighted core matching technical competencies"
+  ],
+  "recommendation": "strong_match"
+}

@@ -6,7 +6,12 @@ Docs: https://developer.adzuna.com/
 
 from datetime import datetime, timedelta
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    httpx = None
+    import urllib.request
+    import json
 
 from ..config import settings
 from ..models import JobPosting, JobSource

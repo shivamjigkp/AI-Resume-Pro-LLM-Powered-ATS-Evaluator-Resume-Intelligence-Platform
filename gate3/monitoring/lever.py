@@ -7,7 +7,12 @@ No authentication required.
 
 from datetime import datetime, timedelta
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    httpx = None
+    import urllib.request
+    import json
 
 from ..models import JobPosting, JobSource
 from .base import JobMonitor
