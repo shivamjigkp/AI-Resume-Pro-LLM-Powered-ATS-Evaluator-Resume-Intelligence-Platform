@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ Gate 3: Autonomous Job Agent & Resume Tailor — Resume AI Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['Consolas', 'monospace'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' },
+            darkbg: '#0a0f1d',
+            darkcard: '#111827',
+            darkborder: '#1f2937',
+            accent: '#6366f1',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0a0f1d; font-family: 'Plus Jakarta Sans', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glow-purple { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25); }
+    .glow-green { box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.25); }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- TOP NAVIGATION -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800 px-6 py-3.5 flex items-center justify-between shadow-lg">
+    <div class="flex items-center gap-4">
+      <a href="/" class="flex items-center gap-2 text-slate-300 hover:text-white transition-all text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Back to Resume AI Pro</span>
+      </a>
+      <div class="h-5 w-px bg-slate-700/60"></div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 via-purple-600 to-emerald-500 flex items-center justify-center text-white shadow-md font-extrabold text-sm">
+          🚀
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base tracking-tight text-white font-display">GATE 3: Autonomous Job Hunter & Tailor</h1>
+            <span class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Live Agent</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Continuous Greenhouse, Lever & Adzuna Monitoring + LLM Tailoring</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Header Actions -->
+    <div class="flex items-center gap-3">
+      <button onclick="openConfigModal()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 flex items-center gap-2 transition-all">
+        <i class="fa-solid fa-sliders text-indigo-400"></i>
+        <span>Target Config</span>
+      </button>
+      <button onclick="openResumeModal()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 flex items-center gap-2 transition-all">
+        <i class="fa-solid fa-user-tie text-emerald-400"></i>
+        <span>Base Profile</span>
+      </button>
+      <a href="/" target="_blank" class="text-xs font-extrabold px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md flex items-center gap-1.5 transition-all">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Open Resume Builder</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+    <!-- KPI STATS CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      
+      <!-- Card 1: Jobs Discovered -->
+      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Discovered Jobs</p>
+            <h3 class="text-2xl font-black text-white mt-1 font-display" id="statJobsDiscovered">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-compass"></i>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
+          <span class="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+          <span>Greenhouse & Lever ATS Feeds</span>
+        </div>
+      </div>
+
+      <!-- Card 2: High Matches -->
+      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tailored Resumes</p>
+            <h3 class="text-2xl font-black text-emerald-400 mt-1 font-display" id="statCustomized">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
+          <span class="text-emerald-400 font-bold">100% ATS Ready</span> (.docx + PDF)
+        </div>
+      </div>
+
+      <!-- Card 3: Target Companies -->
+      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Target Boards</p>
+            <h3 class="text-2xl font-black text-purple-400 mt-1 font-display" id="statTargetCompanies">12</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-building"></i>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400 truncate">
+          <span>Stripe, Figma, Notion, Netflix...</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Match Threshold -->
+      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Min Score Gate</p>
+            <h3 class="text-2xl font-black text-amber-400 mt-1 font-display">60%</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-filter"></i>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
+          <span>Skips low matches automatically</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACTION CONTROL BANNER -->
+    <div class="glass-panel rounded-2xl p-5 border border-indigo-500/20 bg-gradient-to-r from-indigo-950/40 via-slate-900/60 to-purple-950/40 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 text-lg">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-white">Autonomous Agent Pipeline Controls</h3>
+          <p class="text-xs text-slate-400">Trigger continuous board scanning, auto-scoring, and LLM-tailored resume compilation.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <button id="btnScan" onclick="triggerScan()" class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>1-Click Scan Boards</span>
+        </button>
+
+        <button id="btnProcess" onclick="triggerProcess()" class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>AI Tailor Resumes</span>
+        </button>
+
+        <button onclick="fetchGate3Data()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all" title="Refresh Live Data">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- LIVE LOG & STATUS TERMINAL (COLLAPSIBLE) -->
+    <div id="logSection" class="glass-panel rounded-xl border border-slate-800 p-4 space-y-2">
+      <div class="flex justify-between items-center text-xs font-bold text-slate-300">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-terminal text-indigo-400"></i>
+          <span>Agent Activity Console</span>
+          <span id="agentStatusBadge" class="bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Idle</span>
+        </div>
+        <button onclick="clearLogs()" class="text-[10px] text-slate-400 hover:text-slate-200">Clear</button>
+      </div>
+      <div id="logTerminal" class="h-28 overflow-y-auto font-mono text-[11px] p-3 rounded-lg bg-[#070b14] border border-slate-900 text-slate-300 space-y-1">
+        <div class="text-slate-500">[System] Gate 3 Autonomous Engine Ready. Click '1-Click Scan Boards' to begin.</div>
+      </div>
+    </div>
+
+    <!-- MAIN TABS: 1. Discovered Jobs | 2. Tailored Applications -->
+    <div class="space-y-4">
+      <div class="flex border-b border-slate-800 gap-4">
+        <button id="tabBtnJobs" onclick="switchViewTab('jobs')" class="pb-3 text-xs font-black text-indigo-400 border-b-2 border-indigo-500 flex items-center gap-2">
+          <i class="fa-solid fa-briefcase"></i>
+          <span>Discovered Job Postings (<span id="countJobs">0</span>)</span>
+        </button>
+        <button id="tabBtnApps" onclick="switchViewTab('apps')" class="pb-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2">
+          <i class="fa-solid fa-file-circle-check"></i>
+          <span>Tailored Applications (<span id="countApps">0</span>)</span>
+        </button>
+      </div>
+
+      <!-- VIEW 1: DISCOVERED JOBS TABLE -->
+      <div id="viewJobs" class="glass-panel rounded-2xl overflow-hidden border border-slate-800">
+        <div class="p-4 border-b border-slate-800/80 flex flex-col md:flex-row justify-between items-center gap-3">
+          <div class="flex items-center gap-2 w-full md:w-72 bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs">
+            <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+            <input type="text" id="searchJobsInput" placeholder="Filter title, company, tag..." class="bg-transparent border-none outline-none text-white w-full placeholder:text-slate-500" oninput="filterJobsTable()">
+          </div>
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span>Filter Source:</span>
+            <select id="sourceFilter" onchange="filterJobsTable()" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2 py-1 outline-none text-xs">
+              <option value="all">All Sources</option>
+              <option value="greenhouse">Greenhouse</option>
+              <option value="lever">Lever</option>
+              <option value="adzuna">Adzuna</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-800">
+              <tr>
+                <th class="p-3.5 pl-5">Role & Company</th>
+                <th class="p-3.5">Source</th>
+                <th class="p-3.5">Location</th>
+                <th class="p-3.5">Discovered</th>
+                <th class="p-3.5 text-right pr-5">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="jobsTableBody" class="divide-y divide-slate-800/60">
+              <tr>
+                <td colspan="5" class="p-8 text-center text-slate-500">
+                  <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading jobs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIEW 2: TAILORED APPLICATIONS TABLE -->
+      <div id="viewApps" class="glass-panel rounded-2xl overflow-hidden border border-slate-800 hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-800">
+              <tr>
+                <th class="p-3.5 pl-5">Target Company & Role</th>
+                <th class="p-3.5">Match Score</th>
+                <th class="p-3.5">Files Generated</th>
+                <th class="p-3.5">Status</th>
+                <th class="p-3.5 text-right pr-5">Inspect & Download</th>
+              </tr>
+            </thead>
+            <tbody id="appsTableBody" class="divide-y divide-slate-800/60">
+              <tr>
+                <td colspan="5" class="p-8 text-center text-slate-500">
+                  No tailored applications yet. Run "AI Tailor Resumes" to generate!
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: INSPECT TAILORED APPLICATION (Cover Letter + Match Analysis) -->
+  <div id="appDetailModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-3xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+        <div>
+          <h3 class="font-black text-sm text-white" id="modalTitle">Tailored Application Review</h3>
+          <p class="text-xs text-slate-400" id="modalSub">Company — Role</p>
+        </div>
+        <button onclick="closeAppModal()" class="text-slate-400 hover:text-white text-sm p-1.5">✕</button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 flex-1">
+        <!-- Match Score Bar -->
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-300">JD Match Score:</span>
+            <span id="modalScoreBadge" class="text-xs font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">92%</span>
+          </div>
+          <div id="modalDownloadButtons" class="flex gap-2">
+            <!-- Dynamic download button -->
+          </div>
+        </div>
+
+        <!-- Cover Letter Section -->
+        <div>
+          <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1.5">📝 Generated Cover Letter</h4>
+          <pre id="modalCoverLetter" class="font-sans text-xs bg-slate-950 p-3.5 rounded-xl border border-slate-900 text-slate-300 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto"></pre>
+        </div>
+
+        <!-- Analysis Section -->
+        <div>
+          <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1.5">🧠 AI Customization Changes & Keywords</h4>
+          <div id="modalAnalysisBox" class="text-xs bg-slate-950 p-3.5 rounded-xl border border-slate-900 text-slate-300 space-y-2"></div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-2">
+        <button onclick="closeAppModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: SEARCH CONFIGURATION (COMPANIES & KEYWORDS) -->
+  <div id="configModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+        <h3 class="font-black text-sm text-white">⚙️ Gate 3 Target Boards & Keywords</h3>
+        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white text-sm p-1.5">✕</button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Target Keywords (Comma Separated)</label>
+          <input type="text" id="cfgKeywords" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-indigo-500 font-mono">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Greenhouse Target Companies (Slugs, e.g. stripe, figma, notion)</label>
+          <input type="text" id="cfgGreenhouse" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-indigo-500 font-mono">
+          <p class="text-[10px] text-slate-500 mt-1">From URL: boards.greenhouse.io/<b>company</b></p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Lever Target Companies (Slugs, e.g. netflix, twitch)</label>
+          <input type="text" id="cfgLever" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-indigo-500 font-mono">
+          <p class="text-[10px] text-slate-500 mt-1">From URL: jobs.lever.co/<b>company</b></p>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="flex-1">
+            <label class="block font-bold text-slate-300 mb-1">Minimum Match Score (%)</label>
+            <input type="number" id="cfgMinScore" min="10" max="100" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none">
+          </div>
+          <div class="flex-1 flex items-center pt-5">
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 font-bold">
+              <input type="checkbox" id="cfgRemoteOnly" class="accent-indigo-500 scale-125">
+              <span>Remote Only</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-2">
+        <button onclick="closeConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Cancel</button>
+        <button onclick="saveSearchConfig()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-extrabold text-white">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: BASE RESUME PROFILE -->
+  <div id="resumeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+        <h3 class="font-black text-sm text-white">👤 Base Structured Resume (Source of Truth)</h3>
+        <button onclick="closeResumeModal()" class="text-slate-400 hover:text-white text-sm p-1.5">✕</button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-3 flex-1 text-xs">
+        <p class="text-slate-400">All tailored resumes derive strictly from this base profile using <i>Mirror, Don't Fabricate</i>.</p>
+        <textarea id="rawResumeJson" rows="16" class="w-full font-mono bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-400 outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-2">
+        <button onclick="closeResumeModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Cancel</button>
+        <button onclick="saveResumeProfile()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white">Save Base Resume</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    let allJobs = [];
+    let allApps = [];
+    let pollInterval = null;
+
+    async function initGate3() {
+      await fetchGate3Data();
+      await fetchSearchConfig();
+      startStatusPolling();
+    }
+
+    async function fetchGate3Data() {
+      try {
+        const [statsRes, jobsRes, appsRes] = await Promise.all([
+          fetch('/api/gate3/stats'),
+          fetch('/api/gate3/jobs'),
+          fetch('/api/gate3/applications')
+        ]);
+
+        const stats = await statsRes.json();
+        const jobs = await jobsRes.json();
+        const apps = await appsRes.json();
+
+        allJobs = jobs || [];
+        allApps = apps || [];
+
+        document.getElementById('statJobsDiscovered').textContent = (allJobs.length || stats.total_jobs_discovered || 0);
+        document.getElementById('statCustomized').textContent = (allApps.length || stats.resume_customized || 0);
+        document.getElementById('countJobs').textContent = allJobs.length;
+        document.getElementById('countApps').textContent = allApps.length;
+
+        renderJobsTable(allJobs);
+        renderAppsTable(allApps);
+      } catch (err) {
+        console.error("Gate 3 fetch failed:", err);
+      }
+    }
+
+    function renderJobsTable(jobs) {
+      const tbody = document.getElementById('jobsTableBody');
+      if (!jobs || !jobs.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">No jobs found yet. Click <b>"1-Click Scan Boards"</b> to scrape live jobs.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = jobs.map(j => `
+        <tr class="hover:bg-slate-900/50 transition-colors">
+          <td class="p-3.5 pl-5">
+            <div class="font-bold text-white text-xs">${escapeHtml(j.title)}</div>
+            <div class="text-[11px] text-indigo-400 font-semibold">${escapeHtml(j.company)}</div>
+          </td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${j.source === 'greenhouse' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'}">
+              ${escapeHtml(j.source)}
+            </span>
+          </td>
+          <td class="p-3.5 text-slate-400 text-xs">${escapeHtml(j.location || 'Remote / Unspecified')}</td>
+          <td class="p-3.5 text-slate-500 text-[11px]">${j.posted_at ? new Date(j.posted_at).toLocaleDateString() : 'Recent'}</td>
+          <td class="p-3.5 text-right pr-5">
+            <a href="${j.url}" target="_blank" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold border border-slate-700 inline-flex items-center gap-1 transition-all">
+              <span>View Board</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAppsTable(apps) {
+      const tbody = document.getElementById('appsTableBody');
+      if (!apps || !apps.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">No tailored applications yet. Click <b>"AI Tailor Resumes"</b> to process matching jobs.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = apps.map(a => `
+        <tr class="hover:bg-slate-900/50 transition-colors">
+          <td class="p-3.5 pl-5">
+            <div class="font-bold text-white text-xs">${escapeHtml(a.job.title)}</div>
+            <div class="text-[11px] text-emerald-400 font-semibold">${escapeHtml(a.job.company)}</div>
+          </td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-black ${a.match_score >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+              ${Math.round(a.match_score || 75)}% Match
+            </span>
+          </td>
+          <td class="p-3.5 flex gap-1.5 pt-4">
+            ${a.has_docx ? '<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 text-[10px] font-mono font-bold">DOCX</span>' : ''}
+            ${a.has_cover_letter ? '<span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 text-[10px] font-mono font-bold">COVER</span>' : ''}
+            ${a.has_analysis ? '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold">ANALYSIS</span>' : ''}
+          </td>
+          <td class="p-3.5 text-xs">
+            <span class="text-slate-400 uppercase font-extrabold text-[10px]">${a.status}</span>
+          </td>
+          <td class="p-3.5 text-right pr-5">
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="inspectApp('${a.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 text-xs font-bold">
+                Inspect
+              </button>
+              ${a.has_docx ? `<a href="/api/gate3/download/${a.id}/resume" class="px-2.5 py-1 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-download text-[10px]"></i> DOCX</a>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterJobsTable() {
+      const q = (document.getElementById('searchJobsInput')?.value || '').toLowerCase();
+      const src = document.getElementById('sourceFilter')?.value || 'all';
+
+      const filtered = allJobs.filter(j => {
+        const matchesQuery = !q || (j.title || '').toLowerCase().includes(q) || (j.company || '').toLowerCase().includes(q) || (j.location || '').toLowerCase().includes(q);
+        const matchesSrc = src === 'all' || (j.source || '').toLowerCase() === src;
+        return matchesQuery && matchesSrc;
+      });
+
+      renderJobsTable(filtered);
+    }
+
+    function switchViewTab(tab) {
+      const isJobs = tab === 'jobs';
+      document.getElementById('viewJobs').classList.toggle('hidden', !isJobs);
+      document.getElementById('viewApps').classList.toggle('hidden', isJobs);
+      document.getElementById('tabBtnJobs').className = isJobs ? 'pb-3 text-xs font-black text-indigo-400 border-b-2 border-indigo-500 flex items-center gap-2' : 'pb-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2';
+      document.getElementById('tabBtnApps').className = !isJobs ? 'pb-3 text-xs font-black text-emerald-400 border-b-2 border-emerald-500 flex items-center gap-2' : 'pb-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2';
+    }
+
+    async function triggerScan() {
+      const btn = document.getElementById('btnScan');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scanning...';
+      addLog("Triggered 1-Click Multi-Source Job Scan (Greenhouse, Lever)...");
+
+      try {
+        const res = await fetch('/api/gate3/trigger-scan', { method: 'POST' });
+        const data = await res.json();
+        addLog(data.status === 'started' ? 'Scan initiated in background.' : 'Scan already running.');
+      } catch (e) {
+        addLog("Scan trigger error: " + e.message);
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 1-Click Scan Boards';
+        }, 2000);
+      }
+    }
+
+    async function triggerProcess() {
+      const btn = document.getElementById('btnProcess');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Tailoring Resumes...';
+      addLog("Triggered AI Resume Customizer (Min Score: 60%)...");
+
+      try {
+        const res = await fetch('/api/gate3/trigger-process?min_score=60', { method: 'POST' });
+        const data = await res.json();
+        addLog(data.status === 'started' ? 'Resume tailoring pipeline running.' : 'Tailor process already running.');
+      } catch (e) {
+        addLog("Process trigger error: " + e.message);
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI Tailor Resumes';
+        }, 2000);
+      }
+    }
+
+    function startStatusPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/gate3/status');
+          const data = await res.json();
+          const badge = document.getElementById('agentStatusBadge');
+          if (data.is_scanning) {
+            badge.textContent = 'Scanning Boards...';
+            badge.className = 'bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse';
+          } else if (data.is_processing) {
+            badge.textContent = 'Tailoring Resumes...';
+            badge.className = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse';
+          } else {
+            badge.textContent = 'Idle';
+            badge.className = 'bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full';
+          }
+
+          if (data.logs && data.logs.length) {
+            const terminal = document.getElementById('logTerminal');
+            data.logs.slice(-5).forEach(l => {
+              if (!document.getElementById('log_' + l.time)) {
+                const row = document.createElement('div');
+                row.id = 'log_' + l.time;
+                row.innerHTML = `<span class="text-indigo-400">[${l.time}]</span> ${escapeHtml(l.msg)}`;
+                terminal.appendChild(row);
+                terminal.scrollTop = terminal.scrollHeight;
+              }
+            });
+          }
+        } catch (e) {}
+      }, 3000);
+    }
+
+    async function inspectApp(appId) {
+      const app = allApps.find(a => a.id === appId);
+      if (!app) return;
+
+      document.getElementById('modalTitle').textContent = `Tailored for ${app.job.company}`;
+      document.getElementById('modalSub').textContent = `${app.job.title} (${app.job.location || 'Remote'})`;
+      document.getElementById('modalScoreBadge').textContent = `${Math.round(app.match_score || 75)}% Match Score`;
+      
+      const dlBox = document.getElementById('modalDownloadButtons');
+      dlBox.innerHTML = `
+        <a href="/api/gate3/download/${app.id}/resume" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-file-word"></i> Download .docx
+        </a>
+      `;
+
+      try {
+        const clRes = await fetch(`/api/gate3/applications/${appId}/cover-letter`);
+        if (clRes.ok) {
+          const clData = await clRes.json();
+          document.getElementById('modalCoverLetter').textContent = clData.content || 'No cover letter generated.';
+        } else {
+          document.getElementById('modalCoverLetter').textContent = 'Cover letter not generated.';
+        }
+      } catch (e) {
+        document.getElementById('modalCoverLetter').textContent = 'Error loading cover letter.';
+      }
+
+      try {
+        const anRes = await fetch(`/api/gate3/applications/${appId}/analysis`);
+        if (anRes.ok) {
+          const anData = await anRes.json();
+          const matchedKw = (anData.matched_keywords || []).map(k => `<span class="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded">${escapeHtml(k)}</span>`).join(' ');
+          const changes = (anData.changes_made || []).map(c => `<li>• ${escapeHtml(c)}</li>`).join('');
+          document.getElementById('modalAnalysisBox').innerHTML = `
+            <div><b>Matched Keywords:</b> <div class="flex flex-wrap gap-1 mt-1">${matchedKw || 'General Match'}</div></div>
+            <div class="mt-2"><b>Resume Adjustments:</b> <ul class="mt-1 space-y-1 text-slate-400">${changes || 'Reordered relevant bullets to top.'}</ul></div>
+          `;
+        }
+      } catch (e) {}
+
+      document.getElementById('appDetailModal').classList.remove('hidden');
+    }
+
+    function closeAppModal() {
+      document.getElementById('appDetailModal').classList.add('hidden');
+    }
+
+    async function fetchSearchConfig() {
+      try {
+        const res = await fetch('/api/gate3/config');
+        const cfg = await res.json();
+        document.getElementById('cfgKeywords').value = (cfg.keywords || []).join(', ');
+        document.getElementById('cfgGreenhouse').value = (cfg.greenhouse_companies || []).join(', ');
+        document.getElementById('cfgLever').value = (cfg.lever_companies || []).join(', ');
+        document.getElementById('cfgMinScore').value = cfg.min_score || 60;
+        document.getElementById('cfgRemoteOnly').checked = !!cfg.remote_only;
+        document.getElementById('statTargetCompanies').textContent = ((cfg.greenhouse_companies || []).length + (cfg.lever_companies || []).length);
+      } catch (e) {}
+    }
+
+    async function saveSearchConfig() {
+      const cfg = {
+        keywords: document.getElementById('cfgKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
+        greenhouse_companies: document.getElementById('cfgGreenhouse').value.split(',').map(s => s.trim()).filter(Boolean),
+        lever_companies: document.getElementById('cfgLever').value.split(',').map(s => s.trim()).filter(Boolean),
+        min_score: parseFloat(document.getElementById('cfgMinScore').value || 60),
+        remote_only: document.getElementById('cfgRemoteOnly').checked
+      };
+
+      try {
+        const res = await fetch('/api/gate3/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        });
+        if (res.ok) {
+          addLog("Saved search configuration & target boards.");
+          closeConfigModal();
+          fetchSearchConfig();
+        }
+      } catch (e) {
+        alert("Failed to save config: " + e.message);
+      }
+    }
+
+    function openConfigModal() { document.getElementById('configModal').classList.remove('hidden'); }
+    function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); }
+
+    async function openResumeModal() {
+      try {
+        const res = await fetch('/api/gate3/resume-profile');
+        const data = await res.json();
+        document.getElementById('rawResumeJson').value = JSON.stringify(data, null, 2);
+        document.getElementById('resumeModal').classList.remove('hidden');
+      } catch (e) {}
+    }
+    function closeResumeModal() { document.getElementById('resumeModal').classList.add('hidden'); }
+
+    async function saveResumeProfile() {
+      try {
+        const parsed = JSON.parse(document.getElementById('rawResumeJson').value);
+        const res = await fetch('/api/gate3/resume-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsed)
+        });
+        if (res.ok) {
+          addLog("Saved base resume profile.");
+          closeResumeModal();
+        }
+      } catch (e) {
+        alert("Invalid JSON format: " + e.message);
+      }
+    }
+
+    function addLog(msg) {
+      const terminal = document.getElementById('logTerminal');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const row = document.createElement('div');
+      row.innerHTML = `<span class="text-indigo-400">[${time}]</span> ${escapeHtml(msg)}`;
+      terminal.appendChild(row);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('logTerminal').innerHTML = '';
+    }
+
+    function escapeHtml(str) {
+      return (str || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    document.addEventListener('DOMContentLoaded', initGate3);
+  </script>
+</body>
+</html>

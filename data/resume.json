@@ -1,0 +1,183 @@
+{
+  "contact": {
+    "name": "Shivam Gupta",
+    "email": "quantxcoder@gmail.com",
+    "phone": "+91-8081513780",
+    "linkedin": "LinkedIn (link in resume header)",
+    "github": "GitHub (link in resume header)",
+    "website": "",
+    "location": "Gorakhpur, India"
+  },
+  "summary": "B.Tech student (ECE - Data Science & Machine Learning) at MMMUT Gorakhpur with hands-on experience in AI/ML, full-stack web development, and algorithmic trading, spanning internships, a self-founded MSME-registered tech venture, and an active YouTube trading education channel.",
+  "experience": [
+    {
+      "company": "Mastermind Research Technologies",
+      "title": "AI/ML Intern",
+      "start_date": "2026-05",
+      "end_date": "2026-08",
+      "location": "Remote",
+      "bullets": [
+        {
+          "text": "Worked on ML & AI-based projects covering data preprocessing, feature engineering, model development, and evaluation",
+          "tags": ["ml", "ai", "data-preprocessing"],
+          "metrics": null
+        },
+        {
+          "text": "Developed practical solutions using Python, Pandas, NumPy, and Scikit-learn",
+          "tags": ["python", "pandas", "numpy", "scikit-learn"],
+          "metrics": null
+        },
+        {
+          "text": "Applied ML techniques on real-world datasets for prediction, classification, and data-driven analysis",
+          "tags": ["ml", "prediction", "classification"],
+          "metrics": null
+        },
+        {
+          "text": "Executed end-to-end ML workflows: data preparation, model training, evaluation, prediction",
+          "tags": ["ml-workflow"],
+          "metrics": null
+        },
+        {
+          "text": "Gained hands-on experience in AI/ML research, experimentation, and solution development",
+          "tags": ["research", "ai", "ml"],
+          "metrics": null
+        }
+      ]
+    },
+    {
+      "company": "Flikt (Startup)",
+      "title": "Full Stack Developer Intern",
+      "start_date": "2025-12",
+      "end_date": "2026-02",
+      "location": "Remote",
+      "bullets": [
+        {
+          "text": "Developed responsive and user-friendly web application features using React.js, JavaScript, HTML, and CSS, ensuring cross-device compatibility and an improved user experience",
+          "tags": ["react", "javascript", "html", "css", "frontend"],
+          "metrics": null
+        },
+        {
+          "text": "Integrated REST APIs, identified and resolved application bugs, and optimized performance to enhance functionality and responsiveness",
+          "tags": ["rest-api", "debugging", "performance"],
+          "metrics": null
+        },
+        {
+          "text": "Collaborated with the development team using Git/GitHub in an Agile development environment, contributing to feature implementation, code reviews, and project delivery",
+          "tags": ["git", "github", "agile", "collaboration"],
+          "metrics": null
+        }
+      ]
+    },
+    {
+      "company": "Mastermind Algo Trader (YouTube)",
+      "title": "Founder & Content Creator",
+      "start_date": "2024",
+      "end_date": "Present",
+      "location": "Remote",
+      "bullets": [
+        {
+          "text": "Founded and manage an active trading education community on YouTube; design and deploy automated trading strategies for algorithmic execution",
+          "tags": ["leadership", "algo-trading", "youtube"],
+          "metrics": null
+        },
+        {
+          "text": "Applied backtesting and model evaluation on historical data using Chartink and TradingView; conducted live trading sessions and created educational content on algorithmic and rule-based strategies",
+          "tags": ["backtesting", "chartink", "tradingview", "content-creation"],
+          "metrics": null
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Madan Mohan Malaviya University of Technology, Gorakhpur",
+      "degree": "B.Tech",
+      "field_of_study": "Electronics & Communication Engineering (Data Science & Machine Learning)",
+      "start_date": "2023",
+      "end_date": "2027",
+      "gpa": "7.57/10.00",
+      "highlights": []
+    },
+    {
+      "institution": "Pt. Deen Dayal Upadhyaya Sanatan Dharm Vidyalaya, Kanpur",
+      "degree": "Class XII (CBSE)",
+      "field_of_study": "",
+      "start_date": "",
+      "end_date": "2022",
+      "gpa": "94%",
+      "highlights": []
+    },
+    {
+      "institution": "Pt. Deen Dayal Upadhyaya Sanatan Dharm Vidyalaya, Kanpur",
+      "degree": "Class X (CBSE)",
+      "field_of_study": "",
+      "start_date": "",
+      "end_date": "2020",
+      "gpa": "91.67%",
+      "highlights": []
+    }
+  ],
+  "skills": {
+    "languages": ["C", "C++", "Python", "JavaScript", "SQL", "HTML", "CSS"],
+    "frameworks": ["React", "Next.js", "Scikit-learn", "TensorFlow", "Flask", "FastAPI", "MLflow", "Pandas", "NumPy", "Matplotlib", "Seaborn", "Pine Script v5"],
+    "tools": ["GitHub", "VS Code", "Docker", "Arduino IDE"],
+    "platforms": ["AWS", "Supabase", "Render", "Vercel"],
+    "certifications": [
+      "AI Fundamentals — Google",
+      "AI Fundamentals and the Cloud — AWS",
+      "Machine Learning: Regression and Classification — Stanford Online",
+      "NumPy, SciPy, Matplotlib & Pandas: Machine Learning — SARA Academy",
+      "Algorithmic Toolbox (DSA with C++) — UC San Diego (Coursera)",
+      "Web Development: CSS, Bootstrap, JS, React — Udemy",
+      "SQL (Advanced) — HackerRank",
+      "Goldman Sachs – Risk Management Job Simulation",
+      "J.P. Morgan – Quantitative Research Job Simulation",
+      "Bank of America – Global Markets Sales & Trading Analyst Job Simulation",
+      "Microsoft Azure Data Fundamentals (DP-900) — Infosys Springboard",
+      "NISM Securities Markets Certification — NISM"
+    ],
+    "other": ["Chartink", "TradingView", "Monte Carlo Simulation", "AdaBoost", "XGBoost", "Time Series Forecasting", "Backtesting", "Risk Management", "Quantitative Analysis", "Credit Analysis", "Commodity Pricing", "Portfolio Management", "Stock Market Analysis", "Convolutional Neural Networks (CNN)"]
+  },
+  "projects": [
+    {
+      "name": "Mastermind Research Technologies & Mastermind Algo Trader",
+      "description": "MSME (Udyam) registered AI, software & research company offering AI/ML and web development services, linked with a subscription-based trading signals and education platform",
+      "tags": ["nextjs", "fastapi", "cloudflare", "vercel", "render", "supabase", "cashfree"]
+    },
+    {
+      "name": "MMMUT Hockey Team Website",
+      "description": "Official website for MMMUT's hockey team with a full-stack admin dashboard (10+ modules) for managing players, coaches, matches, gallery, news, and events; built as Hockey Technical Member Head",
+      "tags": ["react", "vite", "supabase", "vercel", "rls"]
+    },
+    {
+      "name": "Personal Portfolio Website",
+      "description": "Single-page, dependency-free portfolio with dark/light theme, command palette, animated stats, scroll-reveal animations, and a Supabase-backed contact form",
+      "tags": ["html", "css", "javascript", "supabase", "vercel"]
+    },
+    {
+      "name": "Algo Strategy Backtesting Dashboard",
+      "description": "5-point A-B-C-D-E liquidity sweep reversal detector and EMA crossover strategy (Pine Script v5) with a Python/FastAPI backtesting and visualization backend, generating live trade signals for subscribers",
+      "tags": ["pine-script", "python", "fastapi", "backtesting"]
+    },
+    {
+      "name": "Electricity Demand Forecasting",
+      "description": "XGBoost model forecasting hourly electricity demand using 5 years of weather/calendar data, served via a Flask backend on Render",
+      "tags": ["xgboost", "flask", "forecasting"]
+    },
+    {
+      "name": "Weather Intelligence App",
+      "description": "React frontend with an ML backend for temperature forecasting, rain prediction, and anomaly detection",
+      "tags": ["react", "ml", "render", "vercel"]
+    },
+    {
+      "name": "CNN Filter Visualization",
+      "description": "Coursera guided project visualizing internal convolutional filters of a CNN using TensorFlow",
+      "tags": ["cnn", "tensorflow"]
+    },
+    {
+      "name": "Tesla Stock Price Prediction using Facebook Prophet",
+      "description": "Coursera guided project performing time-series forecasting of Tesla stock price",
+      "tags": ["prophet", "time-series", "forecasting"]
+    }
+  ]
+}

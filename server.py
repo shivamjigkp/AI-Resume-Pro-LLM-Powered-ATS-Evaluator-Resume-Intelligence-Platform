@@ -787,3 +787,215 @@ def get_gate1_sheet_rows_endpoint():
     except Exception as e:
         logger.error(f"Error fetching sheet rows for {sheet_id}: {e}")
         return jsonify({"status": "error", "detail": str(e)}), 500
+
+
+# ═════════════════════════════════════════════════════════════════
+# GATE 3: AUTONOMOUS JOB AGENT & RESUME TAILOR BACKEND APIS
+# ═════════════════════════════════════════════════════════════════
+import threading
+import asyncio
+from pathlib import Path
+
+_gate3_state = {
+    "is_scanning": False,
+    "is_processing": False,
+    "last_scan": None,
+    "last_process": None,
+    "logs": []
+}
+
+def _gate3_add_log(msg: str):
+    t_str = time.strftime("%H:%M:%S")
+    _gate3_state["logs"].append({"time": t_str, "msg": msg})
+    if len(_gate3_state["logs"]) > 250:
+        _gate3_state["logs"].pop(0)
+
+@app.route("/gate3", methods=["GET"])
+@app.route("/gate3.html", methods=["GET"])
+def serve_gate3_page():
+    gate3_file = os.path.join(BASE_DIR, "gate3.html")
+    if os.path.exists(gate3_file):
+        return send_from_directory(BASE_DIR, "gate3.html")
+    return jsonify({"status": "error", "detail": "gate3.html not found"}), 404
+
+@app.route("/api/gate3/stats", methods=["GET"])
+def get_gate3_stats():
+    try:
+        from gate3.database import Database
+        db = Database()
+        return jsonify(db.get_stats())
+    except Exception as e:
+        logger.error(f"Gate 3 get_stats error: {e}")
+        return jsonify({"status": "error", "detail": str(e)}), 500
+
+@app.route("/api/gate3/jobs", methods=["GET"])
+def get_gate3_jobs():
+    try:
+        from gate3.database import Database
+        db = Database()
+        limit = int(request.args.get("limit", 150))
+        jobs = db.get_all_jobs(limit=limit)
+        return jsonify([j.model_dump() for j in jobs])
+    except Exception as e:
+        logger.error(f"Gate 3 get_jobs error: {e}")
+        return jsonify([]), 500
+
+@app.route("/api/gate3/applications", methods=["GET"])
+def get_gate3_applications():
+    try:
+        from gate3.database import Database
+        from gate3.config import settings
+        db = Database()
+        apps = db.get_applications()
+        results = []
+        for a in apps:
+            app_dict = a.model_dump()
+            folder = Path(settings.output_dir) / a.id
+            app_dict["has_docx"] = (folder / "resume.docx").exists()
+            app_dict["has_cover_letter"] = (folder / "cover_letter.txt").exists()
+            app_dict["has_analysis"] = (folder / "analysis.json").exists()
+            results.append(app_dict)
+        return jsonify(results)
+    except Exception as e:
+        logger.error(f"Gate 3 get_applications error: {e}")
+        return jsonify([]), 500
+
+@app.route("/api/gate3/applications/<app_id>/cover-letter", methods=["GET"])
+def get_gate3_cover_letter(app_id):
+    try:
+        from gate3.config import settings
+        file_path = Path(settings.output_dir) / app_id / "cover_letter.txt"
+        if not file_path.exists():
+            return jsonify({"status": "error", "detail": "Cover letter not found"}), 404
+        return jsonify({"content": file_path.read_text(encoding="utf-8")})
+    except Exception as e:
+        return jsonify({"status": "error", "detail": str(e)}), 500
+
+@app.route("/api/gate3/applications/<app_id>/analysis", methods=["GET"])
+def get_gate3_analysis(app_id):
+    try:
+        from gate3.config import settings
+        file_path = Path(settings.output_dir) / app_id / "analysis.json"
+        if not file_path.exists():
+            return jsonify({"status": "error", "detail": "Analysis not found"}), 404
+        return jsonify(json.loads(file_path.read_text(encoding="utf-8")))
+    except Exception as e:
+        return jsonify({"status": "error", "detail": str(e)}), 500
+
+@app.route("/api/gate3/download/<app_id>/resume", methods=["GET"])
+def download_gate3_resume(app_id):
+    try:
+        from gate3.config import settings
+        folder = Path(settings.output_dir) / app_id
+        docx_file = folder / "resume.docx"
+        if docx_file.exists():
+            return send_from_directory(folder, "resume.docx", as_attachment=True, download_name=f"Resume_{app_id}.docx")
+        pdf_file = folder / "resume.pdf"
+        if pdf_file.exists():
+            return send_from_directory(folder, "resume.pdf", as_attachment=True, download_name=f"Resume_{app_id}.pdf")
+        return jsonify({"status": "error", "detail": "Resume file not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "detail": str(e)}), 500
+
+def _run_gate3_scan_bg():
+    global _gate3_state
+    try:
+        _gate3_state["is_scanning"] = True
+        _gate3_add_log("Starting scan across Greenhouse and Lever boards...")
+        from gate3.config import settings
+        from gate3.orchestrator import Orchestrator
+        cfg_path = Path(settings.data_dir) / "search_config.json"
+        cfg = {}
+        if cfg_path.exists():
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+        resume_p = Path(settings.data_dir) / "resume.json"
+        orch = Orchestrator(resume_path=resume_p, search_config=cfg)
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        jobs = loop.run_until_complete(orch.scan(check_all=True))
+        _gate3_add_log(f"Scan complete! Discovered {len(jobs)} total jobs.")
+    except Exception as e:
+        logger.error(f"Gate 3 scan failed: {e}")
+        _gate3_add_log(f"Scan error: {e}")
+    finally:
+        _gate3_state["is_scanning"] = False
+
+@app.route("/api/gate3/trigger-scan", methods=["POST"])
+def trigger_gate3_scan():
+    if _gate3_state["is_scanning"]:
+        return jsonify({"status": "already_running"})
+    t = threading.Thread(target=_run_gate3_scan_bg, daemon=True)
+    t.start()
+    return jsonify({"status": "started"})
+
+def _run_gate3_process_bg(min_score: float):
+    global _gate3_state
+    try:
+        _gate3_state["is_processing"] = True
+        _gate3_add_log(f"Starting resume tailoring pipeline (Min score threshold: {min_score}%)...")
+        from gate3.config import settings
+        from gate3.orchestrator import Orchestrator
+        cfg_path = Path(settings.data_dir) / "search_config.json"
+        cfg = {}
+        if cfg_path.exists():
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+        resume_p = Path(settings.data_dir) / "resume.json"
+        orch = Orchestrator(resume_path=resume_p, search_config=cfg)
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        apps = loop.run_until_complete(orch.process_jobs(min_score=min_score))
+        _gate3_add_log(f"Process complete! Tailored {len(apps)} applications.")
+    except Exception as e:
+        logger.error(f"Gate 3 process failed: {e}")
+        _gate3_add_log(f"Process error: {e}")
+    finally:
+        _gate3_state["is_processing"] = False
+
+@app.route("/api/gate3/trigger-process", methods=["POST"])
+def trigger_gate3_process():
+    if _gate3_state["is_processing"]:
+        return jsonify({"status": "already_running"})
+    min_score = float(request.args.get("min_score", 60.0))
+    t = threading.Thread(target=_run_gate3_process_bg, args=(min_score,), daemon=True)
+    t.start()
+    return jsonify({"status": "started"})
+
+@app.route("/api/gate3/status", methods=["GET"])
+def get_gate3_status():
+    return jsonify({
+        "is_scanning": _gate3_state["is_scanning"],
+        "is_processing": _gate3_state["is_processing"],
+        "logs": _gate3_state["logs"][-20:]
+    })
+
+@app.route("/api/gate3/config", methods=["GET", "POST"])
+def gate3_config_endpoint():
+    from gate3.config import settings
+    cfg_path = Path(settings.data_dir) / "search_config.json"
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return jsonify({"status": "success", "message": "Search configuration updated."})
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            return jsonify(json.load(f))
+    return jsonify({})
+
+@app.route("/api/gate3/resume-profile", methods=["GET", "POST"])
+def gate3_resume_endpoint():
+    from gate3.config import settings
+    r_path = Path(settings.data_dir) / "resume.json"
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        with open(r_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return jsonify({"status": "success", "message": "Resume profile updated."})
+    if r_path.exists():
+        with open(r_path, "r", encoding="utf-8") as f:
+            return jsonify(json.load(f))
+    return jsonify({})
