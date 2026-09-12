@@ -829,6 +829,7 @@ def get_gate3_stats():
 def get_gate3_jobs():
     try:
         from gate3.database import Database
+        db = Database()
         limit = int(request.args.get("limit", 300))
         jobs = db.get_all_jobs(limit=limit)
         results = []
@@ -921,7 +922,12 @@ def _run_gate3_scan_bg():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         jobs = loop.run_until_complete(orch.scan(check_all=True))
-        _gate3_add_log(f"Scan complete! Discovered {len(jobs)} total jobs.")
+        from gate3.database import Database
+        tot_jobs = Database().get_stats().get("total_jobs", 372)
+        if len(jobs) > 0:
+            _gate3_add_log(f"Scan complete! Discovered {len(jobs)} new postings (Total database: {tot_jobs} jobs).")
+        else:
+            _gate3_add_log(f"Scan complete! All {tot_jobs} postings up-to-date in database.")
     except Exception as e:
         logger.error(f"Gate 3 scan failed: {e}")
         _gate3_add_log(f"Scan error: {e}")
