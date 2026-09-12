@@ -1,729 +1,1131 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚡ Gate 3: Autonomous Job Agent & Resume Tailor — Resume AI Pro</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <title>🚀 Gate 3: Autonomous Job Agent & AI Tailor — Resume AI Pro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['Consolas', 'monospace'],
-            display: ['"Space Grotesk"', 'sans-serif'],
-          },
-          colors: {
-            brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' },
-            darkbg: '#0a0f1d',
-            darkcard: '#111827',
-            darkborder: '#1f2937',
-            accent: '#6366f1',
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #0a0f1d; font-family: 'Plus Jakarta Sans', sans-serif; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0b0f19; }
-    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #374151; }
-    .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .glow-purple { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25); }
-    .glow-green { box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.25); }
+    :root {
+      --bg: #090D16;
+      --bg-alt: #0D1322;
+      --card-bg: rgba(16, 24, 40, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(255, 255, 255, 0.18);
+      
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      
+      --cyan: #0EA5A6;
+      --cyan-glow: rgba(14, 165, 166, 0.25);
+      --orange: #FF7A45;
+      --orange-glow: rgba(255, 122, 69, 0.25);
+      --emerald: #10B981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --purple: #8B5CF6;
+      --purple-glow: rgba(139, 92, 246, 0.25);
+      --danger: #EF4444;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(14, 165, 166, 0.14) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(255, 122, 69, 0.10) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.10) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 13.5px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #060910; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    /* Top Navigation */
+    .navbar {
+      height: 60px;
+      background: rgba(9, 13, 22, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-left { display: flex; align-items: center; gap: 14px; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .brand-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--cyan), #3B82F6);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 15px var(--cyan-glow);
+    }
+    .brand-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.3px;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34D399;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge-live::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10B981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      font-family: inherit;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0EA5A6, #0284C7);
+      color: #FFF;
+      box-shadow: 0 4px 14px var(--cyan-glow);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #14B8A6, #0369A1);
+      box-shadow: 0 6px 20px var(--cyan-glow);
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, #FF7A45, #EA580C);
+      color: #FFF;
+      box-shadow: 0 4px 14px var(--orange-glow);
+    }
+    .btn-orange:hover {
+      background: linear-gradient(135deg, #FB923C, #C2410C);
+      box-shadow: 0 6px 20px var(--orange-glow);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: #FFF;
+      box-shadow: 0 4px 14px var(--emerald-glow);
+    }
+    .btn-emerald:hover {
+      background: linear-gradient(135deg, #34D399, #047857);
+      box-shadow: 0 6px 20px var(--emerald-glow);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--card-border-hover);
+      color: #FFF;
+    }
+
+    .btn-sm { padding: 5px 10px; font-size: 11.5px; border-radius: 6px; }
+
+    /* Main Container */
+    .container {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Glass Card */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      border-color: var(--card-border-hover);
+    }
+
+    /* Hero Bar */
+    .hero-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(14, 165, 166, 0.10), rgba(139, 92, 246, 0.06)), var(--card-bg);
+      border: 1px solid rgba(14, 165, 166, 0.25);
+    }
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFF;
+      margin-bottom: 6px;
+    }
+    .hero-subtitle {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      max-width: 780px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 20px;
+    }
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-label { font-size: 11.5px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-val { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 800; color: #FFF; line-height: 1.2; margin: 2px 0; }
+    .stat-sub { font-size: 11.5px; color: var(--text-muted); }
+
+    /* 2 Column Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+    }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .hero-panel { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 7px 16px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      background: rgba(14, 165, 166, 0.15);
+      color: #2DD4BF;
+      border-color: rgba(14, 165, 166, 0.35);
+    }
+    .tab-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFF;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    th {
+      background: rgba(13, 19, 34, 0.95);
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .pill-greenhouse { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .pill-lever { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .pill-adzuna { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .pill-orange { background: rgba(255, 122, 69, 0.15); color: #FB923C; border: 1px solid rgba(255, 122, 69, 0.3); }
+    .pill-score { background: rgba(139, 92, 246, 0.15); color: #C084FC; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 800; }
+
+    /* Terminal Console */
+    .terminal {
+      background: #060911;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 11.5px;
+      height: 340px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .term-line {
+      display: flex;
+      gap: 8px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+    .term-time { color: var(--text-dim); flex-shrink: 0; }
+    .term-msg { color: #CBD5E1; }
+    .term-msg.success { color: #34D399; }
+    .term-msg.error { color: #F87171; }
+    .term-msg.highlight { color: #38BDF8; }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: #FFF;
+      font-size: 12.5px;
+      outline: none;
+      font-family: inherit;
+    }
+    .search-input:focus { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan-glow); }
+
+    .select-input {
+      background: #0D1322;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: #FFF;
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4, 7, 13, 0.82);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal {
+      background: #0D1322;
+      border: 1px solid var(--card-border-hover);
+      border-radius: var(--radius-xl);
+      max-width: 720px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      transform: scale(0.96);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-backdrop.open .modal { transform: scale(1); }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFF;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .modal-close:hover { color: #FFF; }
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    textarea.form-control {
+      width: 100%;
+      background: #060911;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      color: #E2E8F0;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      padding: 12px;
+      outline: none;
+      resize: vertical;
+    }
+    textarea.form-control:focus { border-color: var(--cyan); }
+
+    /* Empty state */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+    .empty-state-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.6; }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+<body>
 
   <!-- TOP NAVIGATION -->
-  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800 px-6 py-3.5 flex items-center justify-between shadow-lg">
-    <div class="flex items-center gap-4">
-      <a href="/" class="flex items-center gap-2 text-slate-300 hover:text-white transition-all text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60">
-        <i class="fa-solid fa-arrow-left"></i>
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/" class="back-btn">
+        <span>←</span>
         <span>Back to Resume AI Pro</span>
       </a>
-      <div class="h-5 w-px bg-slate-700/60"></div>
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 via-purple-600 to-emerald-500 flex items-center justify-center text-white shadow-md font-extrabold text-sm">
-          🚀
-        </div>
+      <div style="width: 1px; height: 20px; background: var(--card-border);"></div>
+      <div class="brand-chip">
+        <div class="brand-icon">🚀</div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-extrabold text-base tracking-tight text-white font-display">GATE 3: Autonomous Job Hunter & Tailor</h1>
-            <span class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Live Agent</span>
+          <div class="brand-title">
+            GATE 3: Autonomous Job Agent
+            <span class="badge-live">LIVE MONITORING</span>
           </div>
-          <p class="text-[11px] text-slate-400">Continuous Greenhouse, Lever & Adzuna Monitoring + LLM Tailoring</p>
         </div>
       </div>
     </div>
-
-    <!-- Right Header Actions -->
-    <div class="flex items-center gap-3">
-      <button onclick="openConfigModal()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 flex items-center gap-2 transition-all">
-        <i class="fa-solid fa-sliders text-indigo-400"></i>
-        <span>Target Config</span>
-      </button>
-      <button onclick="openResumeModal()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 flex items-center gap-2 transition-all">
-        <i class="fa-solid fa-user-tie text-emerald-400"></i>
-        <span>Base Profile</span>
-      </button>
-      <a href="/" target="_blank" class="text-xs font-extrabold px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md flex items-center gap-1.5 transition-all">
-        <i class="fa-solid fa-file-lines"></i>
-        <span>Open Resume Builder</span>
-      </a>
+    <div class="nav-right">
+      <button class="btn btn-outline btn-sm" onclick="openConfigModal()">⚙️ Target Config</button>
+      <button class="btn btn-outline btn-sm" onclick="openProfileModal()">👤 Base Profile</button>
+      <a href="/" class="btn btn-primary btn-sm">📄 Open Resume Builder</a>
     </div>
-  </header>
+  </nav>
 
-  <!-- MAIN CONTENT CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+  <!-- MAIN CONTAINER -->
+  <div class="container">
 
-    <!-- KPI STATS CARDS -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      
-      <!-- Card 1: Jobs Discovered -->
-      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Discovered Jobs</p>
-            <h3 class="text-2xl font-black text-white mt-1 font-display" id="statJobsDiscovered">0</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-base">
-            <i class="fa-solid fa-compass"></i>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
-          <span class="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-          <span>Greenhouse & Lever ATS Feeds</span>
-        </div>
+    <!-- HERO PANEL -->
+    <div class="card hero-panel">
+      <div>
+        <div class="hero-title">Automated Job Hunter & Intelligent Resume Tailor</div>
+        <div class="hero-subtitle">Continuous multi-source board scraping (Greenhouse, Lever, Adzuna) + JD keyword extraction + ATS score gate & instant customization.</div>
       </div>
-
-      <!-- Card 2: High Matches -->
-      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tailored Resumes</p>
-            <h3 class="text-2xl font-black text-emerald-400 mt-1 font-display" id="statCustomized">0</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-base">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
-          <span class="text-emerald-400 font-bold">100% ATS Ready</span> (.docx + PDF)
-        </div>
-      </div>
-
-      <!-- Card 3: Target Companies -->
-      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Target Boards</p>
-            <h3 class="text-2xl font-black text-purple-400 mt-1 font-display" id="statTargetCompanies">12</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-base">
-            <i class="fa-solid fa-building"></i>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400 truncate">
-          <span>Stripe, Figma, Notion, Netflix...</span>
-        </div>
-      </div>
-
-      <!-- Card 4: Match Threshold -->
-      <div class="glass-panel rounded-xl p-4 relative overflow-hidden group hover:border-slate-700 transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Min Score Gate</p>
-            <h3 class="text-2xl font-black text-amber-400 mt-1 font-display">60%</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-base">
-            <i class="fa-solid fa-filter"></i>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
-          <span>Skips low matches automatically</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ACTION CONTROL BANNER -->
-    <div class="glass-panel rounded-2xl p-5 border border-indigo-500/20 bg-gradient-to-r from-indigo-950/40 via-slate-900/60 to-purple-950/40 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 text-lg">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
-        <div>
-          <h3 class="text-sm font-black text-white">Autonomous Agent Pipeline Controls</h3>
-          <p class="text-xs text-slate-400">Trigger continuous board scanning, auto-scoring, and LLM-tailored resume compilation.</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-3 w-full md:w-auto">
-        <button id="btnScan" onclick="triggerScan()" class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all">
-          <i class="fa-solid fa-magnifying-glass"></i>
+      <div class="hero-actions">
+        <button id="btn-scan" class="btn btn-primary" onclick="triggerScan()">
+          <span>🔍</span>
           <span>1-Click Scan Boards</span>
         </button>
-
-        <button id="btnProcess" onclick="triggerProcess()" class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>AI Tailor Resumes</span>
-        </button>
-
-        <button onclick="fetchGate3Data()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all" title="Refresh Live Data">
-          <i class="fa-solid fa-rotate"></i>
+        <button id="btn-process" class="btn btn-orange" onclick="triggerProcess()">
+          <span>⚡</span>
+          <span>Process & Tailor Resumes</span>
         </button>
       </div>
     </div>
 
-    <!-- LIVE LOG & STATUS TERMINAL (COLLAPSIBLE) -->
-    <div id="logSection" class="glass-panel rounded-xl border border-slate-800 p-4 space-y-2">
-      <div class="flex justify-between items-center text-xs font-bold text-slate-300">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-terminal text-indigo-400"></i>
-          <span>Agent Activity Console</span>
-          <span id="agentStatusBadge" class="bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Idle</span>
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+      <div class="card stat-card">
+        <div class="stat-icon" style="background: rgba(14, 165, 166, 0.15); color: #2DD4BF;">🎯</div>
+        <div class="stat-info">
+          <div class="stat-label">Discovered Jobs</div>
+          <div class="stat-val" id="stat-jobs">0</div>
+          <div class="stat-sub">Greenhouse & Lever ATS Feeds</div>
         </div>
-        <button onclick="clearLogs()" class="text-[10px] text-slate-400 hover:text-slate-200">Clear</button>
       </div>
-      <div id="logTerminal" class="h-28 overflow-y-auto font-mono text-[11px] p-3 rounded-lg bg-[#070b14] border border-slate-900 text-slate-300 space-y-1">
-        <div class="text-slate-500">[System] Gate 3 Autonomous Engine Ready. Click '1-Click Scan Boards' to begin.</div>
+      <div class="card stat-card">
+        <div class="stat-icon" style="background: rgba(255, 122, 69, 0.15); color: #FB923C;">📄</div>
+        <div class="stat-info">
+          <div class="stat-label">Tailored Resumes</div>
+          <div class="stat-val" id="stat-tailored">0</div>
+          <div class="stat-sub">100% ATS Ready (.docx + PDF)</div>
+        </div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15); color: #C084FC;">🏢</div>
+        <div class="stat-info">
+          <div class="stat-label">Target Companies</div>
+          <div class="stat-val" id="stat-boards">0</div>
+          <div class="stat-sub">Stripe, Figma, Notion, Netflix...</div>
+        </div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">🛡️</div>
+        <div class="stat-info">
+          <div class="stat-label">Min Score Gate</div>
+          <div class="stat-val">60%</div>
+          <div class="stat-sub">Quality & Keyword Match Filter</div>
+        </div>
       </div>
     </div>
 
-    <!-- MAIN TABS: 1. Discovered Jobs | 2. Tailored Applications -->
-    <div class="space-y-4">
-      <div class="flex border-b border-slate-800 gap-4">
-        <button id="tabBtnJobs" onclick="switchViewTab('jobs')" class="pb-3 text-xs font-black text-indigo-400 border-b-2 border-indigo-500 flex items-center gap-2">
-          <i class="fa-solid fa-briefcase"></i>
-          <span>Discovered Job Postings (<span id="countJobs">0</span>)</span>
-        </button>
-        <button id="tabBtnApps" onclick="switchViewTab('apps')" class="pb-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2">
-          <i class="fa-solid fa-file-circle-check"></i>
-          <span>Tailored Applications (<span id="countApps">0</span>)</span>
-        </button>
-      </div>
+    <!-- MAIN 2-COL WORKSPACE -->
+    <div class="main-grid">
 
-      <!-- VIEW 1: DISCOVERED JOBS TABLE -->
-      <div id="viewJobs" class="glass-panel rounded-2xl overflow-hidden border border-slate-800">
-        <div class="p-4 border-b border-slate-800/80 flex flex-col md:flex-row justify-between items-center gap-3">
-          <div class="flex items-center gap-2 w-full md:w-72 bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs">
-            <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
-            <input type="text" id="searchJobsInput" placeholder="Filter title, company, tag..." class="bg-transparent border-none outline-none text-white w-full placeholder:text-slate-500" oninput="filterJobsTable()">
-          </div>
-          <div class="flex items-center gap-2 text-xs text-slate-400">
-            <span>Filter Source:</span>
-            <select id="sourceFilter" onchange="filterJobsTable()" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2 py-1 outline-none text-xs">
-              <option value="all">All Sources</option>
+      <!-- LEFT: TABS & TABLES -->
+      <div class="card">
+        <div class="tabs-bar">
+          <button class="tab-btn active" id="tab-btn-jobs" onclick="switchTab('jobs')">🔍 Discovered Jobs (<span id="count-jobs">0</span>)</button>
+          <button class="tab-btn" id="tab-btn-apps" onclick="switchTab('apps')">✨ Tailored Applications (<span id="count-apps">0</span>)</button>
+        </div>
+
+        <!-- JOBS VIEW -->
+        <div id="view-jobs">
+          <div class="filter-bar">
+            <input type="text" id="filter-job-text" class="search-input" placeholder="Search by title or company..." oninput="renderJobsTable()" />
+            <select id="filter-job-board" class="select-input" onchange="renderJobsTable()">
+              <option value="ALL">All Boards</option>
               <option value="greenhouse">Greenhouse</option>
               <option value="lever">Lever</option>
               <option value="adzuna">Adzuna</option>
             </select>
+            <button class="btn btn-outline btn-sm" onclick="loadJobs()">↻ Refresh</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Role Title</th>
+                  <th>Location</th>
+                  <th>Board</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jobs-tbody">
+                <tr><td colspan="5" class="empty-state">Loading live jobs feed...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-900/60 text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-800">
-              <tr>
-                <th class="p-3.5 pl-5">Role & Company</th>
-                <th class="p-3.5">Source</th>
-                <th class="p-3.5">Location</th>
-                <th class="p-3.5">Discovered</th>
-                <th class="p-3.5 text-right pr-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="jobsTableBody" class="divide-y divide-slate-800/60">
-              <tr>
-                <td colspan="5" class="p-8 text-center text-slate-500">
-                  <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading jobs...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- APPLICATIONS VIEW -->
+        <div id="view-apps" style="display: none;">
+          <div class="filter-bar">
+            <input type="text" id="filter-app-text" class="search-input" placeholder="Search applications..." oninput="renderAppsTable()" />
+            <button class="btn btn-outline btn-sm" onclick="loadApplications()">↻ Refresh</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Role & Company</th>
+                  <th>Match Score</th>
+                  <th>Status</th>
+                  <th>Generated Files</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="apps-tbody">
+                <tr><td colspan="5" class="empty-state">No tailored applications yet. Click "Process & Tailor Resumes" above.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+
       </div>
 
-      <!-- VIEW 2: TAILORED APPLICATIONS TABLE -->
-      <div id="viewApps" class="glass-panel rounded-2xl overflow-hidden border border-slate-800 hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-900/60 text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-800">
-              <tr>
-                <th class="p-3.5 pl-5">Target Company & Role</th>
-                <th class="p-3.5">Match Score</th>
-                <th class="p-3.5">Files Generated</th>
-                <th class="p-3.5">Status</th>
-                <th class="p-3.5 text-right pr-5">Inspect & Download</th>
-              </tr>
-            </thead>
-            <tbody id="appsTableBody" class="divide-y divide-slate-800/60">
-              <tr>
-                <td colspan="5" class="p-8 text-center text-slate-500">
-                  No tailored applications yet. Run "AI Tailor Resumes" to generate!
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- RIGHT: LIVE AGENT LOGS & STATUS -->
+      <div class="card" style="display: flex; flex-direction: column;">
+        <div class="section-header">
+          <div class="section-title">
+            <span>⚡</span>
+            <span>Live Agent Console</span>
+          </div>
+          <span id="agent-status-badge" class="pill pill-greenhouse">IDLE</span>
+        </div>
+
+        <div class="terminal" id="term-logs">
+          <div class="term-line">
+            <span class="term-time">[System]</span>
+            <span class="term-msg">Gate 3 Agent initialized. Ready for scan/tailoring.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; display: flex; gap: 8px;">
+          <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="clearLogs()">Clear Console</button>
+          <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="loadStats()">Sync Stats</button>
         </div>
       </div>
 
     </div>
 
-  </main>
+  </div>
 
-  <!-- MODAL 1: INSPECT TAILORED APPLICATION (Cover Letter + Match Analysis) -->
-  <div id="appDetailModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-3xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
-        <div>
-          <h3 class="font-black text-sm text-white" id="modalTitle">Tailored Application Review</h3>
-          <p class="text-xs text-slate-400" id="modalSub">Company — Role</p>
-        </div>
-        <button onclick="closeAppModal()" class="text-slate-400 hover:text-white text-sm p-1.5">✕</button>
+  <!-- CONFIG MODAL -->
+  <div class="modal-backdrop" id="modal-config">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Target Boards & Keywords Configuration</div>
+        <button class="modal-close" onclick="closeModal('modal-config')">✕</button>
       </div>
-
-      <div class="p-5 overflow-y-auto space-y-4 flex-1">
-        <!-- Match Score Bar -->
-        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-300">JD Match Score:</span>
-            <span id="modalScoreBadge" class="text-xs font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">92%</span>
-          </div>
-          <div id="modalDownloadButtons" class="flex gap-2">
-            <!-- Dynamic download button -->
-          </div>
-        </div>
-
-        <!-- Cover Letter Section -->
-        <div>
-          <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1.5">📝 Generated Cover Letter</h4>
-          <pre id="modalCoverLetter" class="font-sans text-xs bg-slate-950 p-3.5 rounded-xl border border-slate-900 text-slate-300 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto"></pre>
-        </div>
-
-        <!-- Analysis Section -->
-        <div>
-          <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1.5">🧠 AI Customization Changes & Keywords</h4>
-          <div id="modalAnalysisBox" class="text-xs bg-slate-950 p-3.5 rounded-xl border border-slate-900 text-slate-300 space-y-2"></div>
-        </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Edit the Greenhouse / Lever target company board slugs and search keywords in JSON format:</p>
+        <textarea id="config-json-editor" class="form-control" rows="16"></textarea>
       </div>
-
-      <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-2">
-        <button onclick="closeAppModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Close</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="closeModal('modal-config')">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveConfig()">Save Configuration</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 2: SEARCH CONFIGURATION (COMPANIES & KEYWORDS) -->
-  <div id="configModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
-        <h3 class="font-black text-sm text-white">⚙️ Gate 3 Target Boards & Keywords</h3>
-        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white text-sm p-1.5">✕</button>
+  <!-- PROFILE MODAL -->
+  <div class="modal-backdrop" id="modal-profile">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">👤 Candidate Base Profile (Master Data)</div>
+        <button class="modal-close" onclick="closeModal('modal-profile')">✕</button>
       </div>
-
-      <div class="p-5 space-y-4 text-xs">
-        <div>
-          <label class="block font-bold text-slate-300 mb-1">Target Keywords (Comma Separated)</label>
-          <input type="text" id="cfgKeywords" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-indigo-500 font-mono">
-        </div>
-
-        <div>
-          <label class="block font-bold text-slate-300 mb-1">Greenhouse Target Companies (Slugs, e.g. stripe, figma, notion)</label>
-          <input type="text" id="cfgGreenhouse" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-indigo-500 font-mono">
-          <p class="text-[10px] text-slate-500 mt-1">From URL: boards.greenhouse.io/<b>company</b></p>
-        </div>
-
-        <div>
-          <label class="block font-bold text-slate-300 mb-1">Lever Target Companies (Slugs, e.g. netflix, twitch)</label>
-          <input type="text" id="cfgLever" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-indigo-500 font-mono">
-          <p class="text-[10px] text-slate-500 mt-1">From URL: jobs.lever.co/<b>company</b></p>
-        </div>
-
-        <div class="flex items-center gap-4">
-          <div class="flex-1">
-            <label class="block font-bold text-slate-300 mb-1">Minimum Match Score (%)</label>
-            <input type="number" id="cfgMinScore" min="10" max="100" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none">
-          </div>
-          <div class="flex-1 flex items-center pt-5">
-            <label class="flex items-center gap-2 cursor-pointer text-slate-300 font-bold">
-              <input type="checkbox" id="cfgRemoteOnly" class="accent-indigo-500 scale-125">
-              <span>Remote Only</span>
-            </label>
-          </div>
-        </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">This JSON data serves as the foundation for the AI tailor to generate customized bullets:</p>
+        <textarea id="profile-json-editor" class="form-control" rows="16"></textarea>
       </div>
-
-      <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-2">
-        <button onclick="closeConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Cancel</button>
-        <button onclick="saveSearchConfig()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-extrabold text-white">Save Configuration</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="closeModal('modal-profile')">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save Profile</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: BASE RESUME PROFILE -->
-  <div id="resumeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
-        <h3 class="font-black text-sm text-white">👤 Base Structured Resume (Source of Truth)</h3>
-        <button onclick="closeResumeModal()" class="text-slate-400 hover:text-white text-sm p-1.5">✕</button>
+  <!-- COVER LETTER & INSPECTION MODAL -->
+  <div class="modal-backdrop" id="modal-doc">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="doc-modal-title">📄 Document Viewer</div>
+        <button class="modal-close" onclick="closeModal('modal-doc')">✕</button>
       </div>
-
-      <div class="p-5 overflow-y-auto space-y-3 flex-1 text-xs">
-        <p class="text-slate-400">All tailored resumes derive strictly from this base profile using <i>Mirror, Don't Fabricate</i>.</p>
-        <textarea id="rawResumeJson" rows="16" class="w-full font-mono bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-400 outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+      <div class="modal-body">
+        <pre id="doc-modal-content" style="white-space: pre-wrap; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; color: #E2E8F0;"></pre>
       </div>
-
-      <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-2">
-        <button onclick="closeResumeModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Cancel</button>
-        <button onclick="saveResumeProfile()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white">Save Base Resume</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="closeModal('modal-doc')">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- JAVASCRIPT APP LOGIC -->
+  <!-- JAVASCRIPT LOGIC -->
   <script>
-    let allJobs = [];
-    let allApps = [];
-    let pollInterval = null;
+    let rawJobs = [];
+    let rawApps = [];
+    let isPolling = false;
 
-    async function initGate3() {
-      await fetchGate3Data();
-      await fetchSearchConfig();
-      startStatusPolling();
+    async function init() {
+      await Promise.all([loadStats(), loadJobs(), loadApplications()]);
+      startPolling();
     }
 
-    async function fetchGate3Data() {
+    async function loadStats() {
       try {
-        const [statsRes, jobsRes, appsRes] = await Promise.all([
-          fetch('/api/gate3/stats'),
-          fetch('/api/gate3/jobs'),
-          fetch('/api/gate3/applications')
-        ]);
-
-        const stats = await statsRes.json();
-        const jobs = await jobsRes.json();
-        const apps = await appsRes.json();
-
-        allJobs = jobs || [];
-        allApps = apps || [];
-
-        document.getElementById('statJobsDiscovered').textContent = (allJobs.length || stats.total_jobs_discovered || 0);
-        document.getElementById('statCustomized').textContent = (allApps.length || stats.resume_customized || 0);
-        document.getElementById('countJobs').textContent = allJobs.length;
-        document.getElementById('countApps').textContent = allApps.length;
-
-        renderJobsTable(allJobs);
-        renderAppsTable(allApps);
-      } catch (err) {
-        console.error("Gate 3 fetch failed:", err);
+        const res = await fetch('/api/gate3/stats');
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('stat-jobs').textContent = d.total_jobs || 0;
+          document.getElementById('stat-tailored').textContent = d.tailored_resumes || 0;
+          document.getElementById('stat-boards').textContent = d.target_boards || 0;
+        }
+      } catch (e) {
+        console.warn('Stats fetch error', e);
       }
     }
 
-    function renderJobsTable(jobs) {
-      const tbody = document.getElementById('jobsTableBody');
-      if (!jobs || !jobs.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">No jobs found yet. Click <b>"1-Click Scan Boards"</b> to scrape live jobs.</td></tr>';
-        return;
+    async function loadJobs() {
+      try {
+        const res = await fetch('/api/gate3/jobs?limit=200');
+        if (res.ok) {
+          rawJobs = await res.json();
+          document.getElementById('count-jobs').textContent = rawJobs.length;
+          renderJobsTable();
+        }
+      } catch (e) {
+        console.warn('Jobs fetch error', e);
       }
-
-      tbody.innerHTML = jobs.map(j => `
-        <tr class="hover:bg-slate-900/50 transition-colors">
-          <td class="p-3.5 pl-5">
-            <div class="font-bold text-white text-xs">${escapeHtml(j.title)}</div>
-            <div class="text-[11px] text-indigo-400 font-semibold">${escapeHtml(j.company)}</div>
-          </td>
-          <td class="p-3.5">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${j.source === 'greenhouse' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'}">
-              ${escapeHtml(j.source)}
-            </span>
-          </td>
-          <td class="p-3.5 text-slate-400 text-xs">${escapeHtml(j.location || 'Remote / Unspecified')}</td>
-          <td class="p-3.5 text-slate-500 text-[11px]">${j.posted_at ? new Date(j.posted_at).toLocaleDateString() : 'Recent'}</td>
-          <td class="p-3.5 text-right pr-5">
-            <a href="${j.url}" target="_blank" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold border border-slate-700 inline-flex items-center gap-1 transition-all">
-              <span>View Board</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-            </a>
-          </td>
-        </tr>
-      `).join('');
     }
 
-    function renderAppsTable(apps) {
-      const tbody = document.getElementById('appsTableBody');
-      if (!apps || !apps.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">No tailored applications yet. Click <b>"AI Tailor Resumes"</b> to process matching jobs.</td></tr>';
-        return;
-      }
+    function renderJobsTable() {
+      const tbody = document.getElementById('jobs-tbody');
+      const search = (document.getElementById('filter-job-text').value || '').toLowerCase();
+      const boardFilter = document.getElementById('filter-job-board').value;
 
-      tbody.innerHTML = apps.map(a => `
-        <tr class="hover:bg-slate-900/50 transition-colors">
-          <td class="p-3.5 pl-5">
-            <div class="font-bold text-white text-xs">${escapeHtml(a.job.title)}</div>
-            <div class="text-[11px] text-emerald-400 font-semibold">${escapeHtml(a.job.company)}</div>
-          </td>
-          <td class="p-3.5">
-            <span class="px-2 py-0.5 rounded-full text-[11px] font-black ${a.match_score >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
-              ${Math.round(a.match_score || 75)}% Match
-            </span>
-          </td>
-          <td class="p-3.5 flex gap-1.5 pt-4">
-            ${a.has_docx ? '<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 text-[10px] font-mono font-bold">DOCX</span>' : ''}
-            ${a.has_cover_letter ? '<span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 text-[10px] font-mono font-bold">COVER</span>' : ''}
-            ${a.has_analysis ? '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold">ANALYSIS</span>' : ''}
-          </td>
-          <td class="p-3.5 text-xs">
-            <span class="text-slate-400 uppercase font-extrabold text-[10px]">${a.status}</span>
-          </td>
-          <td class="p-3.5 text-right pr-5">
-            <div class="flex items-center justify-end gap-1.5">
-              <button onclick="inspectApp('${a.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 text-xs font-bold">
-                Inspect
-              </button>
-              ${a.has_docx ? `<a href="/api/gate3/download/${a.id}/resume" class="px-2.5 py-1 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-download text-[10px]"></i> DOCX</a>` : ''}
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function filterJobsTable() {
-      const q = (document.getElementById('searchJobsInput')?.value || '').toLowerCase();
-      const src = document.getElementById('sourceFilter')?.value || 'all';
-
-      const filtered = allJobs.filter(j => {
-        const matchesQuery = !q || (j.title || '').toLowerCase().includes(q) || (j.company || '').toLowerCase().includes(q) || (j.location || '').toLowerCase().includes(q);
-        const matchesSrc = src === 'all' || (j.source || '').toLowerCase() === src;
-        return matchesQuery && matchesSrc;
+      const filtered = rawJobs.filter(j => {
+        const matchSearch = (j.title || '').toLowerCase().includes(search) || (j.company || '').toLowerCase().includes(search);
+        const matchBoard = boardFilter === 'ALL' || (j.source || '').toLowerCase() === boardFilter;
+        return matchSearch && matchBoard;
       });
 
-      renderJobsTable(filtered);
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">🔍</div>No matching jobs found. Click "1-Click Scan Boards" to fetch live postings.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(j => {
+        const boardClass = j.source === 'greenhouse' ? 'pill-greenhouse' : (j.source === 'lever' ? 'pill-lever' : 'pill-adzuna');
+        return `
+          <tr>
+            <td style="font-weight: 700; color: #FFF;">${escapeHtml(j.company || 'Unknown')}</td>
+            <td>
+              <div style="font-weight: 600; color: #38BDF8;">${escapeHtml(j.title || '')}</div>
+              <div style="font-size: 11px; color: var(--text-dim);">${escapeHtml(j.department || '')}</div>
+            </td>
+            <td style="color: var(--text-muted);">${escapeHtml(j.location || 'Remote / Unspecified')}</td>
+            <td><span class="pill ${boardClass}">${escapeHtml(j.source || '')}</span></td>
+            <td>
+              ${j.url ? `<a href="${j.url}" target="_blank" class="btn btn-outline btn-sm">🔗 View Job</a>` : '<span style="color: var(--text-dim);">No URL</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    function switchViewTab(tab) {
-      const isJobs = tab === 'jobs';
-      document.getElementById('viewJobs').classList.toggle('hidden', !isJobs);
-      document.getElementById('viewApps').classList.toggle('hidden', isJobs);
-      document.getElementById('tabBtnJobs').className = isJobs ? 'pb-3 text-xs font-black text-indigo-400 border-b-2 border-indigo-500 flex items-center gap-2' : 'pb-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2';
-      document.getElementById('tabBtnApps').className = !isJobs ? 'pb-3 text-xs font-black text-emerald-400 border-b-2 border-emerald-500 flex items-center gap-2' : 'pb-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2';
+    async function loadApplications() {
+      try {
+        const res = await fetch('/api/gate3/applications');
+        if (res.ok) {
+          rawApps = await res.json();
+          document.getElementById('count-apps').textContent = rawApps.length;
+          renderAppsTable();
+        }
+      } catch (e) {
+        console.warn('Apps fetch error', e);
+      }
+    }
+
+    function renderAppsTable() {
+      const tbody = document.getElementById('apps-tbody');
+      const search = (document.getElementById('filter-app-text').value || '').toLowerCase();
+
+      const filtered = rawApps.filter(a => {
+        return (a.job_title || '').toLowerCase().includes(search) || (a.company || '').toLowerCase().includes(search);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📄</div>No tailored applications yet. Click "Process & Tailor Resumes" above.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(a => {
+        const score = a.match_score ? `${Math.round(a.match_score)}%` : 'N/A';
+        return `
+          <tr>
+            <td>
+              <div style="font-weight: 700; color: #FFF;">${escapeHtml(a.company || '')}</div>
+              <div style="font-size: 11.5px; color: #38BDF8;">${escapeHtml(a.job_title || '')}</div>
+            </td>
+            <td><span class="pill pill-score">🎯 ${score} Match</span></td>
+            <td><span class="pill pill-greenhouse">${escapeHtml(a.status || 'Ready')}</span></td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                ${a.has_docx ? `<a href="/api/gate3/download/${a.id}/resume" class="btn btn-outline btn-sm">📥 .docx</a>` : ''}
+                ${a.has_cover_letter ? `<button class="btn btn-outline btn-sm" onclick="viewCoverLetter('${a.id}')">✉️ Cover Letter</button>` : ''}
+                ${a.has_analysis ? `<button class="btn btn-outline btn-sm" onclick="viewAnalysis('${a.id}')">📊 Analysis</button>` : ''}
+              </div>
+            </td>
+            <td>
+              ${a.job_url ? `<a href="${a.job_url}" target="_blank" class="btn btn-emerald btn-sm">🚀 Apply</a>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-btn-jobs').classList.toggle('active', tab === 'jobs');
+      document.getElementById('tab-btn-apps').classList.toggle('active', tab === 'apps');
+      document.getElementById('view-jobs').style.display = tab === 'jobs' ? 'block' : 'none';
+      document.getElementById('view-apps').style.display = tab === 'apps' ? 'block' : 'none';
     }
 
     async function triggerScan() {
-      const btn = document.getElementById('btnScan');
+      const btn = document.getElementById('btn-scan');
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scanning...';
-      addLog("Triggered 1-Click Multi-Source Job Scan (Greenhouse, Lever)...");
-
+      btn.innerHTML = '<span>⏳</span><span>Scanning...</span>';
       try {
         const res = await fetch('/api/gate3/trigger-scan', { method: 'POST' });
-        const data = await res.json();
-        addLog(data.status === 'started' ? 'Scan initiated in background.' : 'Scan already running.');
+        if (res.ok) {
+          appendLog('[System]', 'Job scan triggered across Greenhouse & Lever boards...', 'highlight');
+          startPolling();
+        }
       } catch (e) {
-        addLog("Scan trigger error: " + e.message);
+        appendLog('[Error]', 'Failed to trigger scan: ' + e, 'error');
       } finally {
         setTimeout(() => {
           btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 1-Click Scan Boards';
+          btn.innerHTML = '<span>🔍</span><span>1-Click Scan Boards</span>';
         }, 2000);
       }
     }
 
     async function triggerProcess() {
-      const btn = document.getElementById('btnProcess');
+      const btn = document.getElementById('btn-process');
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Tailoring Resumes...';
-      addLog("Triggered AI Resume Customizer (Min Score: 60%)...");
-
+      btn.innerHTML = '<span>⏳</span><span>Tailoring...</span>';
       try {
         const res = await fetch('/api/gate3/trigger-process?min_score=60', { method: 'POST' });
-        const data = await res.json();
-        addLog(data.status === 'started' ? 'Resume tailoring pipeline running.' : 'Tailor process already running.');
+        if (res.ok) {
+          appendLog('[System]', 'Resume tailoring process started with 60% minimum score...', 'highlight');
+          startPolling();
+        }
       } catch (e) {
-        addLog("Process trigger error: " + e.message);
+        appendLog('[Error]', 'Failed to trigger process: ' + e, 'error');
       } finally {
         setTimeout(() => {
           btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI Tailor Resumes';
+          btn.innerHTML = '<span>⚡</span><span>Process & Tailor Resumes</span>';
         }, 2000);
       }
     }
 
-    function startStatusPolling() {
-      if (pollInterval) clearInterval(pollInterval);
-      pollInterval = setInterval(async () => {
+    function startPolling() {
+      if (isPolling) return;
+      isPolling = true;
+      const interval = setInterval(async () => {
         try {
           const res = await fetch('/api/gate3/status');
-          const data = await res.json();
-          const badge = document.getElementById('agentStatusBadge');
-          if (data.is_scanning) {
-            badge.textContent = 'Scanning Boards...';
-            badge.className = 'bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse';
-          } else if (data.is_processing) {
-            badge.textContent = 'Tailoring Resumes...';
-            badge.className = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse';
-          } else {
-            badge.textContent = 'Idle';
-            badge.className = 'bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full';
+          if (res.ok) {
+            const data = await res.json();
+            const badge = document.getElementById('agent-status-badge');
+            
+            if (data.is_scanning) {
+              badge.textContent = 'SCANNING BOARDS...';
+              badge.className = 'pill pill-lever';
+            } else if (data.is_processing) {
+              badge.textContent = 'TAILORING RESUMES...';
+              badge.className = 'pill pill-orange';
+            } else {
+              badge.textContent = 'IDLE / READY';
+              badge.className = 'pill pill-greenhouse';
+            }
+
+            if (data.logs && data.logs.length > 0) {
+              renderLogs(data.logs);
+            }
+
+            if (!data.is_scanning && !data.is_processing) {
+              loadStats();
+              loadJobs();
+              loadApplications();
+            }
           }
-
-          if (data.logs && data.logs.length) {
-            const terminal = document.getElementById('logTerminal');
-            data.logs.slice(-5).forEach(l => {
-              if (!document.getElementById('log_' + l.time)) {
-                const row = document.createElement('div');
-                row.id = 'log_' + l.time;
-                row.innerHTML = `<span class="text-indigo-400">[${l.time}]</span> ${escapeHtml(l.msg)}`;
-                terminal.appendChild(row);
-                terminal.scrollTop = terminal.scrollHeight;
-              }
-            });
-          }
-        } catch (e) {}
-      }, 3000);
-    }
-
-    async function inspectApp(appId) {
-      const app = allApps.find(a => a.id === appId);
-      if (!app) return;
-
-      document.getElementById('modalTitle').textContent = `Tailored for ${app.job.company}`;
-      document.getElementById('modalSub').textContent = `${app.job.title} (${app.job.location || 'Remote'})`;
-      document.getElementById('modalScoreBadge').textContent = `${Math.round(app.match_score || 75)}% Match Score`;
-      
-      const dlBox = document.getElementById('modalDownloadButtons');
-      dlBox.innerHTML = `
-        <a href="/api/gate3/download/${app.id}/resume" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5">
-          <i class="fa-solid fa-file-word"></i> Download .docx
-        </a>
-      `;
-
-      try {
-        const clRes = await fetch(`/api/gate3/applications/${appId}/cover-letter`);
-        if (clRes.ok) {
-          const clData = await clRes.json();
-          document.getElementById('modalCoverLetter').textContent = clData.content || 'No cover letter generated.';
-        } else {
-          document.getElementById('modalCoverLetter').textContent = 'Cover letter not generated.';
+        } catch (e) {
+          console.warn('Status poll error', e);
         }
-      } catch (e) {
-        document.getElementById('modalCoverLetter').textContent = 'Error loading cover letter.';
-      }
-
-      try {
-        const anRes = await fetch(`/api/gate3/applications/${appId}/analysis`);
-        if (anRes.ok) {
-          const anData = await anRes.json();
-          const matchedKw = (anData.matched_keywords || []).map(k => `<span class="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded">${escapeHtml(k)}</span>`).join(' ');
-          const changes = (anData.changes_made || []).map(c => `<li>• ${escapeHtml(c)}</li>`).join('');
-          document.getElementById('modalAnalysisBox').innerHTML = `
-            <div><b>Matched Keywords:</b> <div class="flex flex-wrap gap-1 mt-1">${matchedKw || 'General Match'}</div></div>
-            <div class="mt-2"><b>Resume Adjustments:</b> <ul class="mt-1 space-y-1 text-slate-400">${changes || 'Reordered relevant bullets to top.'}</ul></div>
-          `;
-        }
-      } catch (e) {}
-
-      document.getElementById('appDetailModal').classList.remove('hidden');
+      }, 2500);
     }
 
-    function closeAppModal() {
-      document.getElementById('appDetailModal').classList.add('hidden');
+    function renderLogs(logs) {
+      const term = document.getElementById('term-logs');
+      term.innerHTML = logs.map(l => {
+        let cls = 'term-msg';
+        if (l.msg.includes('complete') || l.msg.includes('Tailored') || l.msg.includes('Discovered')) cls += ' success';
+        if (l.msg.includes('error') || l.msg.includes('failed')) cls += ' error';
+        return `
+          <div class="term-line">
+            <span class="term-time">[${escapeHtml(l.time)}]</span>
+            <span class="${cls}">${escapeHtml(l.msg)}</span>
+          </div>
+        `;
+      }).join('');
+      term.scrollTop = term.scrollHeight;
     }
 
-    async function fetchSearchConfig() {
+    function appendLog(tag, msg, type = '') {
+      const term = document.getElementById('term-logs');
+      const timeStr = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'term-line';
+      div.innerHTML = `<span class="term-time">[${timeStr}]</span> <span class="term-msg ${type}">${escapeHtml(tag)} ${escapeHtml(msg)}</span>`;
+      term.appendChild(div);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('term-logs').innerHTML = '<div class="term-line"><span class="term-time">[System]</span><span class="term-msg">Console cleared.</span></div>';
+    }
+
+    async function openConfigModal() {
       try {
         const res = await fetch('/api/gate3/config');
-        const cfg = await res.json();
-        document.getElementById('cfgKeywords').value = (cfg.keywords || []).join(', ');
-        document.getElementById('cfgGreenhouse').value = (cfg.greenhouse_companies || []).join(', ');
-        document.getElementById('cfgLever').value = (cfg.lever_companies || []).join(', ');
-        document.getElementById('cfgMinScore').value = cfg.min_score || 60;
-        document.getElementById('cfgRemoteOnly').checked = !!cfg.remote_only;
-        document.getElementById('statTargetCompanies').textContent = ((cfg.greenhouse_companies || []).length + (cfg.lever_companies || []).length);
-      } catch (e) {}
+        if (res.ok) {
+          const cfg = await res.json();
+          document.getElementById('config-json-editor').value = JSON.stringify(cfg, null, 2);
+          openModal('modal-config');
+        }
+      } catch (e) {
+        alert('Error loading config: ' + e);
+      }
     }
 
-    async function saveSearchConfig() {
-      const cfg = {
-        keywords: document.getElementById('cfgKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
-        greenhouse_companies: document.getElementById('cfgGreenhouse').value.split(',').map(s => s.trim()).filter(Boolean),
-        lever_companies: document.getElementById('cfgLever').value.split(',').map(s => s.trim()).filter(Boolean),
-        min_score: parseFloat(document.getElementById('cfgMinScore').value || 60),
-        remote_only: document.getElementById('cfgRemoteOnly').checked
-      };
-
+    async function saveConfig() {
       try {
+        const val = document.getElementById('config-json-editor').value;
+        const parsed = JSON.parse(val);
         const res = await fetch('/api/gate3/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cfg)
+          body: JSON.stringify(parsed)
         });
         if (res.ok) {
-          addLog("Saved search configuration & target boards.");
-          closeConfigModal();
-          fetchSearchConfig();
+          closeModal('modal-config');
+          appendLog('[Config]', 'Target boards configuration saved successfully.', 'success');
+          loadStats();
         }
       } catch (e) {
-        alert("Failed to save config: " + e.message);
+        alert('Invalid JSON or save failed: ' + e);
       }
     }
 
-    function openConfigModal() { document.getElementById('configModal').classList.remove('hidden'); }
-    function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); }
-
-    async function openResumeModal() {
+    async function openProfileModal() {
       try {
         const res = await fetch('/api/gate3/resume-profile');
-        const data = await res.json();
-        document.getElementById('rawResumeJson').value = JSON.stringify(data, null, 2);
-        document.getElementById('resumeModal').classList.remove('hidden');
-      } catch (e) {}
+        if (res.ok) {
+          const profile = await res.json();
+          document.getElementById('profile-json-editor').value = JSON.stringify(profile, null, 2);
+          openModal('modal-profile');
+        }
+      } catch (e) {
+        alert('Error loading profile: ' + e);
+      }
     }
-    function closeResumeModal() { document.getElementById('resumeModal').classList.add('hidden'); }
 
-    async function saveResumeProfile() {
+    async function saveProfile() {
       try {
-        const parsed = JSON.parse(document.getElementById('rawResumeJson').value);
+        const val = document.getElementById('profile-json-editor').value;
+        const parsed = JSON.parse(val);
         const res = await fetch('/api/gate3/resume-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(parsed)
         });
         if (res.ok) {
-          addLog("Saved base resume profile.");
-          closeResumeModal();
+          closeModal('modal-profile');
+          appendLog('[Profile]', 'Base candidate profile updated successfully.', 'success');
         }
       } catch (e) {
-        alert("Invalid JSON format: " + e.message);
+        alert('Invalid JSON or save failed: ' + e);
       }
     }
 
-    function addLog(msg) {
-      const terminal = document.getElementById('logTerminal');
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const row = document.createElement('div');
-      row.innerHTML = `<span class="text-indigo-400">[${time}]</span> ${escapeHtml(msg)}`;
-      terminal.appendChild(row);
-      terminal.scrollTop = terminal.scrollHeight;
+    async function viewCoverLetter(appId) {
+      try {
+        const res = await fetch(`/api/gate3/applications/${appId}/cover-letter`);
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('doc-modal-title').textContent = '✉️ Generated Cover Letter';
+          document.getElementById('doc-modal-content').textContent = d.content || 'No content found.';
+          openModal('modal-doc');
+        }
+      } catch (e) {
+        alert('Error fetching cover letter: ' + e);
+      }
     }
 
-    function clearLogs() {
-      document.getElementById('logTerminal').innerHTML = '';
+    async function viewAnalysis(appId) {
+      try {
+        const res = await fetch(`/api/gate3/applications/${appId}/analysis`);
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('doc-modal-title').textContent = '📊 ATS Keyword & Match Analysis';
+          document.getElementById('doc-modal-content').textContent = JSON.stringify(d, null, 2);
+          openModal('modal-doc');
+        }
+      } catch (e) {
+        alert('Error fetching analysis: ' + e);
+      }
     }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
     function escapeHtml(str) {
-      return (str || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
-    document.addEventListener('DOMContentLoaded', initGate3);
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
