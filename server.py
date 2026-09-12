@@ -689,9 +689,6 @@ def send_emails_endpoint():
         logger.error(f"Gate 1 campaign failed: {e}")
         return jsonify({"status": "error", "detail": f"Campaign error: {str(e)}"}), 500
 
-if __name__ == "__main__":
-    # Start server on local port 8000
-    app.run(host="127.0.0.1", port=8000, debug=False)
 # ==============================================================
 # EXTRA FEATURE: AGENT ROUTER (CLAUDE / MULTI-MODEL) INTEGRATION
 # ==============================================================
@@ -999,3 +996,9 @@ def gate3_resume_endpoint():
         with open(r_path, "r", encoding="utf-8") as f:
             return jsonify(json.load(f))
     return jsonify({})
+
+if __name__ == "__main__":
+    # Start server on local port 8000
+    print("🚀 Starting ResumeLLM Server on http://127.0.0.1:8000 ...")
+    print("👉 Gate 3 Dashboard: http://127.0.0.1:8000/gate3")
+    app.run(host="127.0.0.1", port=8000, debug=False)
