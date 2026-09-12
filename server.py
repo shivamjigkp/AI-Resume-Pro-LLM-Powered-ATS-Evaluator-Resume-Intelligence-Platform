@@ -829,10 +829,19 @@ def get_gate3_stats():
 def get_gate3_jobs():
     try:
         from gate3.database import Database
-        db = Database()
-        limit = int(request.args.get("limit", 150))
+        limit = int(request.args.get("limit", 300))
         jobs = db.get_all_jobs(limit=limit)
-        return jsonify([j.model_dump() for j in jobs])
+        results = []
+        for j in jobs:
+            if hasattr(j, "model_dump"):
+                results.append(j.model_dump())
+            elif hasattr(j, "dict"):
+                results.append(j.dict())
+            elif hasattr(j, "__dict__"):
+                results.append(j.__dict__)
+            elif isinstance(j, dict):
+                results.append(j)
+        return jsonify(results)
     except Exception as e:
         logger.error(f"Gate 3 get_jobs error: {e}")
         return jsonify([]), 500
