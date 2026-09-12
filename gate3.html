@@ -642,12 +642,12 @@
       <!-- LEFT: TABS & TABLES -->
       <div class="card">
         <div class="tabs-bar">
-          <button class="tab-btn active" id="tab-btn-jobs" onclick="switchTab('jobs')">🔍 Discovered Jobs (<span id="count-jobs">0</span>)</button>
-          <button class="tab-btn" id="tab-btn-apps" onclick="switchTab('apps')">✨ Tailored Applications (<span id="count-apps">0</span>)</button>
+          <button class="tab-btn" id="tab-btn-jobs" onclick="switchTab('jobs')">🔍 Discovered Jobs (<span id="count-jobs">0</span>)</button>
+          <button class="tab-btn active" id="tab-btn-apps" onclick="switchTab('apps')">✨ Tailored Applications (<span id="count-apps">0</span>)</button>
         </div>
 
         <!-- JOBS VIEW -->
-        <div id="view-jobs">
+        <div id="view-jobs" style="display: none;">
           <div class="filter-bar">
             <input type="text" id="filter-job-text" class="search-input" placeholder="Search by title or company..." oninput="renderJobsTable()" />
             <select id="filter-job-board" class="select-input" onchange="renderJobsTable()">
@@ -678,7 +678,7 @@
         </div>
 
         <!-- APPLICATIONS VIEW -->
-        <div id="view-apps" style="display: none;">
+        <div id="view-apps" style="display: block;">
           <div class="filter-bar">
             <input type="text" id="filter-app-text" class="search-input" placeholder="Search applications..." oninput="renderAppsTable()" />
             <button class="btn btn-outline btn-sm" onclick="loadApplications()">↻ Refresh</button>
@@ -711,7 +711,7 @@
             <span>⚡</span>
             <span>Live Agent Console</span>
           </div>
-          <span id="agent-status-badge" class="pill pill-greenhouse">IDLE</span>
+          <span id="agent-status-badge" class="pill pill-greenhouse">IDLE / READY</span>
         </div>
 
         <div class="terminal" id="term-logs">
@@ -799,8 +799,8 @@
         const res = await fetch('/api/gate3/stats');
         if (res.ok) {
           const d = await res.json();
-          document.getElementById('stat-jobs').textContent = d.total_jobs || 0;
-          document.getElementById('stat-tailored').textContent = d.tailored_resumes || 0;
+          document.getElementById('stat-jobs').textContent = d.total_jobs || d.total_jobs_discovered || 0;
+          document.getElementById('stat-tailored').textContent = d.tailored_resumes || d.tailored || 0;
           document.getElementById('stat-boards').textContent = d.target_boards || 0;
         }
       } catch (e) {

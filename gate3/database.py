@@ -69,7 +69,16 @@ class Database:
             rows = conn.execute(
                 "SELECT data FROM jobs WHERE processed = FALSE ORDER BY discovered_at DESC"
             ).fetchall()
-            return [JobPosting.model_validate_json(row["data"]) for row in rows]
+            results = []
+            for row in rows:
+                try:
+                    if hasattr(JobPosting, "model_validate_json"):
+                        results.append(JobPosting.model_validate_json(row["data"]))
+                    else:
+                        results.append(JobPosting.model_validate(json.loads(row["data"])))
+                except Exception:
+                    pass
+            return results
 
     def mark_job_processed(self, job_id: str) -> None:
         with self._get_conn() as conn:
@@ -141,20 +150,50 @@ class Database:
         with self._get_conn() as conn:
             stats = {}
             for status in ApplicationStatus:
+                status_val = status.value if hasattr(status, 'value') else str(status)
                 row = conn.execute(
                     "SELECT COUNT(*) as cnt FROM applications WHERE status = ?",
-                    (status.value,),
+                    (status_val,),
                 ).fetchone()
-                stats[status.value] = row["cnt"] if row else 0
-            row = conn.execute("SELECT COUNT(*) as cnt FROM jobs").fetchone()
-            stats["total_jobs_discovered"] = row["cnt"] if row else 0
+                stats[status_val] = row["cnt"] if row else 0
+            
+            row_jobs = conn.execute("SELECT COUNT(*) as cnt FROM jobs").fetchone()
+            total_jobs = row_jobs["cnt"] if row_jobs else 0
+            
+            row_apps = conn.execute("SELECT COUNT(*) as cnt FROM applications").fetchone()
+            total_apps = row_apps["cnt"] if row_apps else 0
+
+            target_boards_cnt = 9
+            cfg_path = Path(__file__).parent.parent / "data" / "search_config.json"
+            if cfg_path.exists():
+                try:
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        cfg = json.load(f)
+                        target_boards_cnt = len(cfg.get("greenhouse_companies", [])) + len(cfg.get("lever_companies", []))
+                except Exception:
+                    pass
+
+            stats["total_jobs"] = total_jobs
+            stats["total_jobs_discovered"] = total_jobs
+            stats["tailored_resumes"] = total_apps
+            stats["target_boards"] = target_boards_cnt
+            stats["ready_to_apply"] = total_apps
             return stats
 
-    def get_all_jobs(self, limit: int = 100, offset: int = 0) -> list[JobPosting]:
+    def get_all_jobs(self, limit: int = 200, offset: int = 0) -> list[JobPosting]:
         with self._get_conn() as conn:
             rows = conn.execute(
                 "SELECT data FROM jobs ORDER BY discovered_at DESC LIMIT ? OFFSET ?",
                 (limit, offset),
             ).fetchall()
-            return [JobPosting.model_validate_json(row["data"]) for row in rows]
+            results = []
+            for row in rows:
+                try:
+                    if hasattr(JobPosting, "model_validate_json"):
+                        results.append(JobPosting.model_validate_json(row["data"]))
+                    else:
+                        results.append(JobPosting.model_validate(json.loads(row["data"])))
+                except Exception:
+                    pass
+            return results
 
