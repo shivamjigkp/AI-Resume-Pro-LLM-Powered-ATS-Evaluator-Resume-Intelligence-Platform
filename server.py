@@ -1012,8 +1012,64 @@ def gate3_resume_endpoint():
             return jsonify(json.load(f))
     return jsonify({})
 
+@app.route("/api/proxy/custom_llm", methods=["POST"])
+def proxy_custom_llm():
+    try:
+        data = request.get_json(silent=True) or {}
+        target_url = data.get("url")
+        api_key = data.get("key", "")
+        payload = data.get("payload", {})
+        if not target_url:
+            return jsonify({"error": "Missing target URL"}), 400
+            
+        headers = {"Content-Type": "application/json"}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        elif "localhost" in target_url or "127.0.0.1" in target_url or "11434" in target_url:
+            headers["Authorization"] = "Bearer ollama"
+            
+        req = urllib.request.Request(
+            target_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+            return jsonify(resp_data)
+    except urllib.error.HTTPError as he:
+        err_body = he.read().decode("utf-8", errors="ignore")
+        return jsonify({"error": f"HTTP {he.code}: {err_body}"}), he.code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/proxy/custom_llm_models", methods=["POST"])
+def proxy_custom_llm_models():
+    try:
+        data = request.get_json(silent=True) or {}
+        target_url = data.get("url")
+        api_key = data.get("key", "")
+        if not target_url:
+            return jsonify({"error": "Missing target URL"}), 400
+            
+        headers = {}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+            
+        req = urllib.request.Request(
+            target_url,
+            headers=headers,
+            method="GET"
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+            return jsonify(resp_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     # Start server on local port 8000
     print("🚀 Starting ResumeLLM Server on http://127.0.0.1:8000 ...")
     print("👉 Gate 3 Dashboard: http://127.0.0.1:8000/gate3")
     app.run(host="127.0.0.1", port=8000, debug=False)
+

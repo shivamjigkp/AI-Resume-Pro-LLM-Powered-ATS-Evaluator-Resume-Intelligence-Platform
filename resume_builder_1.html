@@ -1568,15 +1568,15 @@ body.allow-page-split #paper .rb li {
         <label style="font-weight:800;font-size:11.5px;color:#6b21a8;display:block;margin-bottom:5px">🎯 Preferred Provider (manual override)</label>
         <select id="apiPreferredProvider" style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid var(--border);font-size:11.5px;background:#fff">
           <option value="auto">Auto — try all in order, fall back automatically (default)</option>
+          <option value="custom">🦙 Only Ollama (Local AI) / Custom Endpoint</option>
           <option value="gemini">Only Gemini</option>
           <option value="groq">Only Groq</option>
           <option value="nvidia">Only NVIDIA</option>
           <option value="openrouter">Only OpenRouter</option>
-          <option value="custom">Only Custom Endpoint</option>
           <option value="freeAI">Only Free AI (Pollinations)</option>
           <option value="offline">Offline Parser only (no AI, no internet calls)</option>
         </select>
-        <div style="font-size:9.5px;color:#7e22ce;margin-top:4px">If you know which key is working, pick it here directly — the app won't waste calls trying the others first (and won't eat their rate limits either).</div>
+        <div style="font-size:9.5px;color:#7e22ce;margin-top:4px">If you know which key/provider is working, pick it here directly — the app won't waste calls trying the others first.</div>
       </div>
 
       <!-- FREE AI MODE TOGGLE -->
@@ -1655,33 +1655,45 @@ body.allow-page-split #paper .rb li {
         <div id="nvidiaModelChips"></div>
       </div>
 
-      <!-- 4. OPENROUTER & CUSTOM -->
+      <!-- 4. OPENROUTER & CUSTOM/OLLAMA -->
       <div class="row2">
         <div class="fg">
           <label>4. OpenRouter Key (<a href="https://openrouter.ai/keys" target="_blank" style="color:var(--primary);text-decoration:none">openrouter.ai</a>)</label>
           <input type="password" id="apiKeyInput_openrouter" placeholder="sk-or-v1-...">
         </div>
         <div class="fg">
-          <label>5. Custom OpenAI Endpoint URL</label>
-          <input type="text" id="apiUrlInput_custom" placeholder="https://api.openai.com/v1/chat/completions">
+          <label style="display:flex;justify-content:space-between;align-items:center">
+            <span>5. Custom / Ollama Local URL</span>
+            <button type="button" onclick="fillOllamaDefaults()" class="btn btn-outline btn-xs" style="padding:1px 6px;color:#0d9488;border-color:#99f6e4;background:#f0fdfa;font-weight:700">🦙 Quick Fill Ollama (Local)</button>
+          </label>
+          <input type="text" id="apiUrlInput_custom" placeholder="http://localhost:11434/v1/chat/completions">
         </div>
       </div>
       <div class="row2">
         <div class="fg">
-          <label>Custom Key</label>
-          <input type="password" id="apiKeyInput_custom" placeholder="sk-... / api-key">
+          <label>Custom / Ollama Key (optional for Ollama)</label>
+          <input type="password" id="apiKeyInput_custom" placeholder="ollama / sk-... (leave blank for local Ollama)">
         </div>
         <div class="fg">
           <label style="display:flex;justify-content:space-between;align-items:center">
-            <span>Custom Model</span>
-            <button type="button" onclick="fetchCustomModels()" class="btn btn-outline btn-xs" style="padding:1px 6px">🔍 Fetch</button>
+            <span>Custom / Ollama Model</span>
+            <button type="button" onclick="fetchCustomModels()" class="btn btn-outline btn-xs" style="padding:1px 6px">🔍 Fetch Models</button>
           </label>
-          <input type="text" id="apiModelInput_custom" list="customModelList" placeholder="gpt-4o-mini / model-id">
-          <datalist id="customModelList"></datalist>
+          <input type="text" id="apiModelInput_custom" list="customModelList" placeholder="llama3.2 / deepseek-r1 / qwen2.5 / mistral">
+          <datalist id="customModelList">
+            <option value="llama3.2"></option>
+            <option value="llama3.1"></option>
+            <option value="deepseek-r1"></option>
+            <option value="qwen2.5"></option>
+            <option value="mistral"></option>
+            <option value="phi3"></option>
+            <option value="gemma2"></option>
+          </datalist>
           <div id="customModelStatus" style="font-size:9.5px;color:#94a3b8;margin-top:2px"></div>
           <div id="customModelChips"></div>
         </div>
       </div>
+
 
       <!-- GATE 1: GOOGLE SHEET SYNC (saved to the local Python backend, not localStorage) -->
       <div class="fg" style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-top:4px;margin-bottom:4px;">
@@ -1722,7 +1734,7 @@ let AIK=(()=>{try{return JSON.parse(localStorage.getItem('rsai_keys')||'{"enable
 if(AIK.enableFreeAI===undefined) AIK.enableFreeAI=true;
 
 function hasAnyKey(){
-  return!!(AIK.gemini||AIK.groq||AIK.nvidia||AIK.openrouter||(AIK.customUrl&&AIK.customKey)||(AIK.enableFreeAI!==false));
+  return!!(AIK.gemini||AIK.groq||AIK.nvidia||AIK.openrouter||AIK.customUrl||(AIK.enableFreeAI!==false));
 }
 let CTPL='T-modern';
 let savedFastRewrite='';  // stores AI rewrite result for apply
@@ -2024,33 +2036,76 @@ async function callFreeAI(prompt,maxTokens=4000){
 }
 
 async function callCustom(prompt,maxTokens=6000,quickTest=false){
-  if(!AIK.customUrl||!AIK.customKey) return {ok:false,skip:true};
+  if(!AIK.customUrl) return {ok:false,skip:true};
   let lastErr='';
-  const maxAttempts=quickTest?1:3;
+  const isLocal = AIK.customUrl.includes('localhost') || AIK.customUrl.includes('127.0.0.1') || AIK.customUrl.includes('11434') || AIK.customUrl.includes('ollama');
+  const activeKey = AIK.customKey || (isLocal ? 'ollama' : '');
+  const modelName = AIK.customModel || (isLocal ? 'llama3.2' : 'gpt-4o-mini');
+  const maxAttempts=quickTest?1:2;
+
   for(let attempt=1;attempt<=maxAttempts;attempt++){
+    // Try direct browser fetch first
     try{
+      const headers = {'Content-Type':'application/json'};
+      if(activeKey) headers['Authorization'] = `Bearer ${activeKey}`;
+      const payload = {
+        model: modelName,
+        messages: [{role:'user',content:prompt}],
+        temperature: 0.7,
+        max_tokens: maxTokens
+      };
       const r=await fetchWithTimeout(AIK.customUrl,{
-        method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${AIK.customKey}`},
-        body:JSON.stringify({model:AIK.customModel||'auto',messages:[{role:'user',content:prompt}],temperature:0.7,max_tokens:maxTokens})
-      },25000);
+        method:'POST',
+        headers: headers,
+        body:JSON.stringify(payload)
+      },30000);
+      
       if(r.status===429) return {ok:false,rateLimited:true,error:'Custom 429: rate-limited'};
       if(TRANSIENT_STATUSES.has(r.status)&&attempt<maxAttempts){
         lastErr=`Custom ${r.status} (server overloaded), retrying…`;
         await sleep(600*attempt);
         continue;
       }
-      if(!r.ok){const ej=await r.json().catch(()=>null);return{ok:false,error:`${r.status} ${ej?.error?.message||'request failed'}`};}
-      const d=await r.json();
-      const text=d?.choices?.[0]?.message?.content||d?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if(!text) return {ok:false,error:d?.error?.message||'empty response'};
-      return {ok:true,text,provider:'Custom Endpoint'};
-    }catch(e){lastErr=e.message;}
+      if(r.ok){
+        const d=await r.json();
+        const text=d?.choices?.[0]?.message?.content||d?.candidates?.[0]?.content?.parts?.[0]?.text||d?.message?.content;
+        if(text) return {ok:true,text,provider: isLocal ? `Ollama Local (${modelName})` : `Custom (${modelName})`};
+      }
+    }catch(directErr){
+      console.warn('Direct custom/ollama call error, falling back to server proxy...', directErr);
+    }
+
+    // Fallback to local server proxy to bypass browser CORS / Windows firewall
+    try{
+      const pr = await fetch('/api/proxy/custom_llm', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          url: AIK.customUrl,
+          key: activeKey,
+          payload: {
+            model: modelName,
+            messages: [{role:'user',content:prompt}],
+            temperature: 0.7,
+            max_tokens: maxTokens
+          }
+        })
+      });
+      if(pr.ok){
+        const pd = await pr.json();
+        const ptext = pd?.choices?.[0]?.message?.content||pd?.candidates?.[0]?.content?.parts?.[0]?.text||pd?.message?.content;
+        if(ptext) return {ok:true,text:ptext,provider: isLocal ? `Ollama Local (${modelName})` : `Custom (${modelName})`};
+        if(pd.error) lastErr = typeof pd.error === 'string' ? pd.error : JSON.stringify(pd.error);
+      }
+    }catch(proxyErr){
+      lastErr = proxyErr.message;
+    }
   }
-  return {ok:false,error:lastErr||'Custom endpoint request failed'};
+  return {ok:false,error:lastErr||(isLocal?'Ollama connection failed — ensure Ollama is running (`ollama serve`)':'Custom endpoint request failed')};
 }
 
 // Master AI caller with multi-provider failover:
-// Gemini -> Groq -> NVIDIA -> OpenRouter -> Custom -> Free Cloud AI
+// Gemini -> Groq -> NVIDIA -> OpenRouter -> Custom / Ollama -> Free Cloud AI
 // (unless the user manually picked one provider via "Preferred Provider")
 async function callAI(prompt,maxTokens){
   const allProviders=[
@@ -2058,7 +2113,7 @@ async function callAI(prompt,maxTokens){
     ['groq','Groq',callGroq],
     ['nvidia','NVIDIA',callNvidia],
     ['openrouter','OpenRouter',callOpenRouter],
-    ['custom','Custom',callCustom],
+    ['custom','Custom / Ollama',callCustom],
     ['freeAI','Free AI',callFreeAI]
   ];
   const pref=AIK.preferredProvider||'auto';
@@ -3952,7 +4007,7 @@ function saveKey(){
     AIK.groq&&'Groq',
     AIK.nvidia&&'NVIDIA',
     AIK.openrouter&&'OpenRouter',
-    (AIK.customUrl&&AIK.customKey)&&'Custom',
+    AIK.customUrl&& (AIK.customUrl.includes('11434')||AIK.customUrl.includes('ollama') ? 'Ollama Local' : 'Custom Endpoint'),
     AIK.enableFreeAI&&'Free AI Mode'
   ].filter(Boolean);
   document.getElementById('keyStatus').textContent=n.length?`✅ Saved: ${n.join(', ')} (Priority Fallback Enabled)`:'Keys cleared — using built-in offline engine';
@@ -3978,12 +4033,7 @@ function saveKey(){
 }
 
 // Tests each configured provider directly to show per-provider working state
-// Races a provider test against a hard UI-level timeout. The provider
-// functions (callGemini etc.) already have per-request timeouts via
-// fetchWithTimeout(), but they can internally retry across multiple
-// keys/models/attempts — which can compound into a multi-minute wait
-// that looks like the "Testing..." row is stuck forever. This caps
-// how long the Test Keys UI will ever wait for a single provider.
+// Races a provider test against a hard UI-level timeout.
 function withUiTimeout(promise, ms, label){
   return Promise.race([
     promise,
@@ -3993,8 +4043,6 @@ function withUiTimeout(promise, ms, label){
 
 // Renders the running per-key log for the Gemini pool test as a list of
 // lines inside the #kt-Gemini row — called after every single key attempt
-// so the panel updates live (key 1 fails → shown immediately → key 2
-// starts, etc.) instead of one generic pass/fail at the very end.
 function renderGeminiTestLog(log, stillTesting){
   const lines=log.map(a=> a.ok
     ? `<div>✅ <strong>Gemini Key ${a.key}</strong> (${a.model}) — working! (replied: "${a.text}")</div>`
@@ -4003,13 +4051,6 @@ function renderGeminiTestLog(log, stillTesting){
   return lines + (stillTesting?`<div>⏳ Testing Gemini Key ${stillTesting}...</div>`:'');
 }
 
-// Walks the FULL Gemini key pool (primary + all "Add Key to Pool" keys),
-// trying each key's model fallback chain (2.5-flash → 2.5-flash-lite →
-// flash-latest) one at a time. Unlike the old quickTest (which only ever
-// tried key 1 + 1 model and showed a single misleading failure), this
-// updates the #kt-Gemini row after EVERY key so a 404/429/quota error on
-// key 1 shows immediately and automatically rotates to key 2, 3, 4...
-// instead of ending the whole test on one error.
 async function testGeminiAllKeys(elId){
   const el=document.getElementById(elId);
   const keys=[AIK.gemini, ...(AIK.geminiKeys||[])].filter(Boolean);
@@ -4023,24 +4064,14 @@ async function testGeminiAllKeys(elId){
     let keyErr='';
     for(const model of uniqueModels){
       try{
-        // 2.5-series models "think" before answering by default, which
-        // silently eats the whole maxOutputTokens budget on a tiny test
-        // prompt (empty text back) and adds several extra seconds of
-        // latency — looking exactly like a stuck/dead key. Turn thinking
-        // off for this quick probe and give it a slightly bigger budget
-        // so the real "OK" text always has room to come back fast.
         const genConfig={temperature:0,maxOutputTokens:60};
-        // "gemini-flash-latest" is an alias that currently resolves to a
-        // 2.5-series model too, but its name has no literal "2.5" in it —
-        // the old check missed it, so it kept thinking ON and hung for
-        // the full 25s just like gemini-2.5-flash used to before the fix.
         if(/2\.5|latest/i.test(model)) genConfig.thinkingConfig={thinkingBudget:0};
         const r=await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${activeKey}`,{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({contents:[{parts:[{text:'Reply with exactly one word: OK'}]}],generationConfig:genConfig})
-        },25000); // matches production callGemini's per-request timeout — 15s was too tight and false-failed working keys
+        },25000);
         if(r.status===429){ keyErr='429: rate-limited or quota exceeded'; break; }
-        if(r.status===404){ keyErr=`model ${model} returned 404`; continue; } // try next model, same key
+        if(r.status===404){ keyErr=`model ${model} returned 404`; continue; }
         if(r.status===400||r.status===403){
           const ej=await r.json().catch(()=>null);
           keyErr=`${r.status}: ${ej?.error?.message||'invalid API key'}`; break;
@@ -4065,43 +4096,37 @@ async function testGeminiAllKeys(elId){
 async function testKeys(){
   saveKey_silent();
   const out=document.getElementById('keyTestResults');
+  const isOllama = AIK.customUrl && (AIK.customUrl.includes('11434') || AIK.customUrl.includes('ollama') || AIK.customUrl.includes('localhost'));
   const tests=[
     ['Gemini',callGemini,!!AIK.gemini||!!(AIK.geminiKeys&&AIK.geminiKeys.length)],
     ['Groq',callGroq,!!AIK.groq],
     ['NVIDIA',callNvidia,!!AIK.nvidia],
     ['OpenRouter',callOpenRouter,!!AIK.openrouter],
-    ['Custom',callCustom,!!(AIK.customUrl&&AIK.customKey)],
+    [isOllama ? 'Ollama Local' : 'Custom Endpoint',callCustom,!!AIK.customUrl],
     ['Free AI',callFreeAI,AIK.enableFreeAI!==false]
   ];
   const activeTests=tests.filter(t=>t[2]);
-  out.innerHTML=activeTests.map(t=>`<div id="kt-${t[0].replace(/\s+/g,'_')}">⏳ Testing ${t[0]}...</div>`).join('')||'<div style="color:#94a3b8">No keys configured and Free AI disabled.</div>';
+  out.innerHTML=activeTests.map(t=>`<div id="kt-${t[0].replace(/\s+/g,'_')}">⏳ Testing ${t[0]}...</div>`).join('')||'<div style="color:#94a3b8">No keys or endpoints configured and Free AI disabled.</div>';
   let passCount=0;
   for(const [name,fn,configured] of tests){
     if(!configured) continue;
     if(name==='Gemini'){
-      // Full key-pool rotation test (key 1 → 2 → 3 → 4), updating live.
       const gRes=await testGeminiAllKeys('kt-Gemini');
       if(gRes.ok) passCount++;
       continue;
     }
-    // quickTest=true: only the primary key + 1 model + 1 attempt, so
-    // the button gives a fast answer even if extra model fallback
-    // chains are configured (those still all run normally during real
-    // resume analysis via callAI()).
     const res=await withUiTimeout(fn('Reply with exactly one word: OK',30,true), 28000, name);
     const el=document.getElementById(`kt-${name.replace(/\s+/g,'_')}`);
     if(!el) continue;
     if(res.ok){ el.innerHTML=`✅ <strong>${name}</strong> (${res.provider||'OK'}) — working! (replied: "${(res.text||'').trim().slice(0,35)}")`; passCount++; }
     else el.innerHTML=`❌ <strong>${name}</strong> — ${res.error||(res.rateLimited?'rate-limited/quota exceeded':'failed')}`;
   }
-  // Final combined result — shown only once every provider has finished,
-  // so it never looks like the whole test died on one error mid-way.
   if(activeTests.length){
     const summary=document.createElement('div');
     summary.style.cssText='margin-top:8px;padding-top:6px;border-top:1px dashed #cbd5e1;font-weight:700;';
     summary.textContent=passCount>0
       ? `🏁 Check complete: ${passCount}/${activeTests.length} provider(s) working`
-      : `🏁 Check complete: 0/${activeTests.length} working — check your keys`;
+      : `🏁 Check complete: 0/${activeTests.length} working — check your keys / Ollama server`;
     out.appendChild(summary);
   }
 }
@@ -4172,31 +4197,103 @@ async function fetchNvidiaModels(){
 // always current instead of relying on a hardcoded name that goes
 // stale when the provider renames/retires a model (like Groq did with
 // llama-3.3-70b-versatile).
+function fillOllamaDefaults(){
+  const urlEl = document.getElementById('apiUrlInput_custom');
+  const keyEl = document.getElementById('apiKeyInput_custom');
+  const modelEl = document.getElementById('apiModelInput_custom');
+  if(urlEl && (!urlEl.value || urlEl.value.includes('openai.com'))) {
+    urlEl.value = 'http://localhost:11434/v1/chat/completions';
+  }
+  if(keyEl && !keyEl.value) {
+    keyEl.value = 'ollama';
+  }
+  if(modelEl && !modelEl.value) {
+    modelEl.value = 'llama3.2';
+  }
+  fetchCustomModels();
+}
+
 async function fetchCustomModels(){
   const url=document.getElementById('apiUrlInput_custom')?.value.trim();
-  const key=document.getElementById('apiKeyInput_custom')?.value.trim();
+  const key=document.getElementById('apiKeyInput_custom')?.value.trim()||'';
   const status=document.getElementById('customModelStatus');
   const list=document.getElementById('customModelList');
-  if(!url||!key){ if(status)status.textContent='⚠️ Fill in both the URL and Key above first.'; return; }
-  const modelsUrl=url.replace(/\/chat\/completions\/?$/i,'/models').replace(/\/completions\/?$/i,'/models');
-  if(status){status.style.color='#94a3b8'; status.textContent=`⏳ Fetching from ${modelsUrl}…`;}
-  try{
-    const r=await fetch(modelsUrl,{headers:{'Authorization':`Bearer ${key}`}});
-    if(!r.ok){
-      const ej=await r.json().catch(()=>null);
-      if(status){status.style.color='#dc2626'; status.textContent=`❌ ${r.status} ${ej?.error?.message||ej?.detail||'could not fetch models — check URL/key'}`;}
-      return;
+  if(!url){ if(status)status.textContent='⚠️ Fill in the Custom / Ollama URL above first.'; return; }
+  
+  const isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.includes('11434') || url.includes('ollama');
+  let modelsUrl = url.replace(/\/chat\/completions\/?$/i,'/models').replace(/\/completions\/?$/i,'/models');
+  if(!modelsUrl.includes('/v1/models') && !modelsUrl.includes('/api/tags') && isLocal){
+    if(modelsUrl.endsWith(':11434') || modelsUrl.endsWith(':11434/')){
+      modelsUrl = modelsUrl.replace(/\/$/, '') + '/v1/models';
     }
-    const d=await r.json();
-    const ids=(d?.data||[]).map(m=>m.id).filter(Boolean).sort();
-    if(!ids.length){ if(status){status.style.color='#dc2626'; status.textContent='❌ Key worked but returned no models.';} return; }
-    const notText=/embed|rerank|vision|vlm|-vl-|audio|asr|tts|whisper|guard|safety|moderation/i;
-    const ranked=[...ids.filter(i=>!notText.test(i)),...ids.filter(i=>notText.test(i))];
-    list.innerHTML=ranked.map(id=>`<option value="${id}"></option>`).join('');
-    renderModelChips('customModelChips','apiModelInput_custom',ranked);
-    if(status){status.style.color='#16a34a'; status.textContent=`✅ Found ${ids.length} models — click one below.`;}
+  }
+
+  if(status){status.style.color='#94a3b8'; status.textContent=`⏳ Fetching models from ${modelsUrl}…`;}
+  
+  let ids = [];
+  // 1. Try direct fetch first
+  try{
+    const headers = {};
+    if(key) headers['Authorization'] = `Bearer ${key}`;
+    const r=await fetch(modelsUrl,{headers});
+    if(r.ok){
+      const d=await r.json();
+      ids=(d?.data||d?.models||[]).map(m=>m.id||m.name).filter(Boolean).sort();
+    }
   }catch(e){
-    if(status){status.style.color='#dc2626'; status.textContent=`❌ Network error: ${e.message} (try the base URL without /chat/completions if this fails)`;}
+    console.warn('Direct fetch failed, trying proxy...', e);
+  }
+
+  // 2. If direct fetch returned nothing (e.g. CORS block from Ollama), try backend proxy
+  if(!ids.length){
+    try{
+      const pr = await fetch('/api/proxy/custom_llm_models', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url: modelsUrl, key: key})
+      });
+      if(pr.ok){
+        const pd = await pr.json();
+        ids=(pd?.data||pd?.models||[]).map(m=>m.id||m.name).filter(Boolean).sort();
+      }
+    }catch(pe){
+      console.warn('Proxy fetch failed too:', pe);
+    }
+  }
+
+  // 3. If Ollama native endpoint /api/tags
+  if(!ids.length && isLocal){
+    const tagsUrl = url.replace(/\/v1\/.*$/i,'/api/tags');
+    try{
+      const tr = await fetch('/api/proxy/custom_llm_models', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url: tagsUrl, key: key})
+      });
+      if(tr.ok){
+        const td = await tr.json();
+        ids = (td?.models||[]).map(m=>m.name||m.model).filter(Boolean).sort();
+      }
+    }catch(te){}
+  }
+
+  if(!ids.length){
+    if(status){
+      status.style.color='#dc2626';
+      status.textContent=isLocal
+        ? '⚠️ No models found. Make sure Ollama is running (`ollama serve`) and has a model pulled (`ollama pull llama3.2`).'
+        : '❌ Could not fetch models from endpoint. Check URL/Key.';
+    }
+    return;
+  }
+
+  const notText=/embed|rerank|vision|vlm|-vl-|audio|asr|tts|whisper|guard|safety|moderation/i;
+  const ranked=[...ids.filter(i=>!notText.test(i)),...ids.filter(i=>notText.test(i))];
+  if(list) list.innerHTML=ranked.map(id=>`<option value="${id}"></option>`).join('');
+  renderModelChips('customModelChips','apiModelInput_custom',ranked);
+  if(status){
+    status.style.color='#16a34a';
+    status.textContent=`✅ Found ${ids.length} models: ${ids.slice(0,3).join(', ')}${ids.length>3?'...':''} — click one below.`;
   }
 }
 
@@ -5711,6 +5808,9 @@ function syncFormToD(){
     if(k) cList.push({ key: k, val: v });
   });
   D.outreach.custom_mappings = cList;
+
+  // Sync custom skills categories
+  syncCustomSkillsToD();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -5859,6 +5959,7 @@ function populateForm(){
   if(certsTopChk) certsTopChk.checked=!!D.showCertsTop;
   renderExpEditor();renderProjEditor();
   renderAllLineLists();
+  renderCustomSkillsEditor();
   adjustFieldPlacements();
   updateVisToggleUI();
 }
@@ -7304,13 +7405,164 @@ document.addEventListener('click', function(e){
 
 
 
-// ════════════════════════════════════════════════════════════════
+const MASTER_SLOT2_DATA = {
+  basics: {
+    name: 'SHIVAM GUPTA',
+    loc: 'Gorakhpur',
+    phone: '8081513780',
+    email: 'coderquantx@gmail.com',
+    li: 'https://linkedin.com/in/shivam-gupta-05209a27b',
+    gh: 'https://github.com/shivamjigkp',
+    gfg: 'https://www.geeksforgeeks.org/user/coderquantx',
+    leetcode: 'https://leetcode.com/u/coderquantx',
+    port: 'https://portfolio-shivamgupta.vercel.app',
+    otherLink: 'https://www.youtube.com/@MastermindAlgoTrader',
+    summary: ''
+  },
+  skills: {
+    lang: 'C, C++, Python, JavaScript, SQL, HTML, CSS',
+    tools: 'GitHub, VS Code, Docker',
+    domain: 'Convolutional Neural Networks (CNN), React, Next.js, Scikit-learn, TensorFlow, Flask, FastAPI, MLflow, Pandas, NumPy, Matplotlib, Seaborn, Pine Script v5, LangChain, HuggingFace',
+    cloud: 'AWS, Supabase, SQL (MySQL, PostgreSQL), Render, Vercel, Cloudflare',
+    course: 'Financial Markets & Trading, Data Analytics & Machine Learning, Content Creation, Software Development'
+  },
+  showCertsTop: true,
+  customSkills: [],
+  exp: [
+    {
+      co: 'Mastermind Research Technologies',
+      role: 'AI/ML Intern',
+      date: 'May 2026 - Aug 2026',
+      loc: 'Remote',
+      links: 'https://mastermindresearch.in',
+      bullets: [
+        'ML Modeling & Accuracy: Engineered end-to-end predictive pipelines (Scikit-learn, Python), achieving 95% evaluation accuracy and reducing MSE by 50%.',
+        'Data Pipeline Optimization: Built automated ETL and feature engineering workflows in Pandas & NumPy, slashing data processing time by 30%.',
+        'Workflow Automation: Standardized full-cycle ML lifecycle (Data Prep Model Training Evaluation), accelerating delivery speed by 5x.'
+      ]
+    },
+    {
+      co: 'Flikt (Startup)',
+      role: 'Full Stack Developer Intern',
+      date: 'Dec 2025 · Feb 2026',
+      loc: 'Remote',
+      links: '',
+      bullets: [
+        'Engineered responsive and user-friendly web application features, increasing user satisfaction by 25% as measured by customer feedback, by applying React.js, JavaScript, HTML, and CSS best practices.',
+        'Optimized REST API integrations, reducing bug resolution time by 30%, by identifying and resolving application issues and streamlining performance.',
+        'Automated cross-device compatibility checks, resulting in a 95% reduction in support requests, by developing and integrating responsive design features using React.js and CSS.',
+        'Designed and implemented an Agile development workflow, increasing team efficiency by 40%, by collaborating with the development team using Git/GitHub and contributing to feature implementation, code reviews, and project delivery.'
+      ]
+    },
+    {
+      co: 'Mastermind Algo Trader',
+      role: 'Founder & Content Creator',
+      date: '2024 - Present',
+      loc: 'Remote',
+      links: 'https://youtube.com/@MastermindAlgoTrader',
+      bullets: [
+        'Founded and manage an active trading education community on YouTube; design and deploy automated trading strategies for algorithmic execution',
+        'Applied backtesting and model evaluation on historical data using Chartink and TradingView; conducted live trading sessions and created educational content on algorithmic and rule-based strategies'
+      ]
+    }
+  ],
+  proj: [
+    {
+      title: 'Mastermind Research Technologies and Mastermind Algo Trader',
+      tech: 'Next.js, FastAPI, Cloudflare, Vercel, Render, Supabase (Postgres + Auth), Cashfree, YouTube',
+      links: 'https://mastermindresearch.in | https://mastermindalgotrader.com | https://youtube.com/@MastermindAlgoTrader',
+      bullets: [
+        'MSME (Udyam) registered AI, software & research company offering AI/ML and web development services — linked with Mastermind Algo Trader, a subscription-based trading signals and education platform Remote',
+        'Automated payment processing and secured 99.9% platform uptime by deploying the infrastructure on Cloudflare and integrating Cashfree gateways via event-driven API webhooks.',
+        'Engineered a high-throughput trading education and signals platform, achieving sub-200ms response times by integrating a Next.js frontend with a FastAPI backend via REST APIs.'
+      ]
+    },
+    {
+      title: 'AI Resume Pro — LLM-Powered ATS Evaluator & Resume Intelligence Platform',
+      tech: 'Python (Flask), JavaScript, LLMs, Google Workspace APIs (Sheets, Gmail), gspread',
+      links: 'http://127.0.0.1:8000',
+      bullets: [
+        'Smart ATS Evaluator: Integrated LLMs to compute ATS scores and rewrite resume bullets, quantifying achievements and identifying missing technical skills.',
+        'Automation Platform: Built a full-stack tool streamlining B2B lead generation and personalized cold-email outreach, reducing manual effort by 80%.',
+        'Lead Discovery & Sync: Developed an engine that dynamically fetches targeted prospects, deduplicates, and seamlessly syncs data to Google Sheets via API.',
+        'Campaign Orchestration & UI: Automated bulk email campaigns using Gmail API to personalize outreach and dynamically attach optimized PDF resumes; secured SPA with Google OAuth2'
+      ]
+    },
+    {
+      title: 'Hospital Website (Rajendra Hospital Gorakhpur)',
+      tech: 'Next.js 15, TypeScript, Tailwind CSS, Payload CMS, PostgreSQL, REST/Local API',
+      links: '',
+      bullets: [
+        'Accomplished a full-stack healthcare and dynamic CMS platform as measured by delivering a comprehensive solution by building the platform using Next.js 15, TypeScript, Tailwind CSS, Payload CMS, PostgreSQL, and REST/Local API.',
+        'Engineered a Next.js 15 App Router and TypeScript architecture as measured by achieving sub-second page loads (<750ms) by optimizing the code and leveraging cutting-edge technologies.'
+      ]
+    },
+    {
+      title: 'MMMUT Hockey Website',
+      tech: 'React, Vite, Supabase (PostgreSQL, Auth, Storage), Vercel',
+      links: 'https://mmmut-hockey.vercel.app',
+      bullets: [
+        'Built the official website for MMMUT\'s hockey team as Hockey Technical Member Head, measured by 100% completion of the project and deployed within 2 weeks.',
+        'Engineered a full-stack Admin Dashboard with 10+ modules, enabling non-technical staff to manage players, coaches, matches, gallery, news, and events independently, resulting in a 5x increase in staff productivity.'
+      ]
+    },
+    {
+      title: 'Algo Strategy Backtesting Dashboard',
+      tech: 'Pine Script v5, Python, FastAPI, Chartink, TradingView, Scikit-learn',
+      links: 'https://github.com/shivamjigkp | https://algo-dashboard.vercel.app',
+      bullets: [
+        'Automated strategy execution using Pine Script v5, resulting in 98% faster backtesting times, with a 25% increase in trade signal accuracy, by implementing optimized Python/FastAPI backends.',
+        'Designed and implemented Bull & Bear zone detection, liquidity-based entry, and standard deviation volatility bands in strategies using Chartink/TradingView, reducing trade signal latency by 40ms.',
+        'Built automated trade signal generation and live strategy trade signals using Pine Script v5 and Python/FastAPI backtesting + visualization backend, supporting # users/modules/records increase by 50%.',
+        'Engineered and optimized strategies for 25% more accurate trade signals, by integrating Chartink/TradingView features and leveraging Pine Script v5 and Python/FastAPI backtesting capabilities.'
+      ]
+    },
+    {
+      title: 'Other ML & Data Science Projects',
+      tech: 'ML, Data Science',
+      links: 'PROJECT 1 | PROJECT 2 | PROJECT 3 | PROJECT 4 | PROJECT 5',
+      bullets: [
+        '1.Developed Electricity Demand Forecasting model with ML algorithms 2.Built Weather Intelligence App with real-time data visualization 3. CNN FilterVisualization 4. Tesla Stock Price Prediction 5.Portfolio'
+      ]
+    }
+  ],
+  edu: {
+    uni: 'Madan Mohan Malaviya University of Technology, Gorakhpur',
+    deg: 'B.Tech - Electronics & Communication Engg. (Data Science & Machine Learning)',
+    yrs: '2023 - 2027',
+    gpa: '7.57 / 10.00'
+  },
+  eduExtra: [
+    'Pt. Deen Dayal Upadhyaya Sanatan Dharm Vidyalaya, Kanpur (Class XII) 2022 — CBSE: 94%',
+    'Pt. Deen Dayal Upadhyaya Sanatan Dharm Vidyalaya, Kanpur (Class X) 2020 — CBSE: 91.67%'
+  ],
+  ach: [
+    'Founder, Mastermind Algo Trader 2024 - Present',
+    'Solved 1 40 + pattern - wise problems on LeetCode and 100+ on GeeksforGeeks — 350+ problems overall across coding platforms',
+    'Codability National Coding Competition (Rank 13) ; International Hackathon Participant',
+    'Rank 3 & Winner – XM Global Daily Trading Competition (Algorithmic Trading) — ₹45,000 prize — 2026',
+    'Cleared FundingPips Prop Firm Challenge (Phase 1 & 2) – Funded Account – 2025',
+    'Hockey – UP Zonal Cluster (Rank 3); Chess – Winner, KSS;'
+  ],
+  certs: [
+    'AI Fundamentals — Google',
+    'AI Fundamentals and the Cloud — AWS',
+    'Machine Learning: Regression and Classification — Stanford Online',
+    'NumPy, SciPy, Matplotlib & Pandas: Machine Learning — SARA Academy',
+    'Algorithmic Toolbox (DSA with c++ ) — UC San Diego (Coursera)',
+    'Web Development: CSS, Bootstrap, JS, React — Udemy',
+    'Goldman Sachs – Risk Management Job Simulation',
+    '• J.P. Morgan – Quantitative Research Job Simulation',
+    '• Bank of America – Global Markets Sales & Trading Analyst Job Simulation'
+  ]
+};
+
 // ⭐ 10-SLOT NAMED RESUME PRESETS MANAGER
-// ════════════════════════════════════════════════════════════════
 function getPresetSlots(){
   try{
     const raw = localStorage.getItem('rsai_preset_slots');
     let slots = raw ? JSON.parse(raw) : [];
+    let updated = false;
     if(!Array.isArray(slots) || slots.length < 10){
       const newSlots = [];
       for(let i=1; i<=10; i++){
@@ -7318,23 +7570,42 @@ function getPresetSlots(){
         if(existing){
           newSlots.push(existing);
         } else if(i === 1 && localStorage.getItem('rsai_default_resume')){
-          // Migrate old Default 1 into Slot 1
           newSlots.push({
             id: 1,
             name: "Default 1 (Shivam Gupta)",
             savedAt: localStorage.getItem('rsai_default_resume_savedAt') || new Date().toLocaleDateString(),
             data: JSON.parse(localStorage.getItem('rsai_default_resume'))
           });
+        } else if(i === 2){
+          newSlots.push({
+            id: 2,
+            name: "Mastermind AI/ML & Quant (Shivam Gupta)",
+            savedAt: "Master Profile",
+            data: MASTER_SLOT2_DATA
+          });
         } else {
           newSlots.push({ id: i, name: `Slot ${i}`, savedAt: '', data: null });
         }
       }
       slots = newSlots;
+      updated = true;
+    }
+    // Ensure Slot 2 has the Mastermind AI/ML data if empty
+    if(slots[1] && (!slots[1].data || !slots[1].data.basics || !slots[1].data.basics.name)){
+      slots[1] = {
+        id: 2,
+        name: "Mastermind AI/ML & Quant (Shivam Gupta)",
+        savedAt: "Master Profile",
+        data: MASTER_SLOT2_DATA
+      };
+      updated = true;
+    }
+    if(updated){
       localStorage.setItem('rsai_preset_slots', JSON.stringify(slots));
     }
     return slots;
   }catch(e){
-    return Array.from({length:10}, (_,i)=>({id:i+1, name:`Slot ${i+1}`, savedAt:'', data:null}));
+    return Array.from({length:10}, (_,i)=>({id:i+1, name: i===2?'Mastermind AI/ML & Quant (Shivam Gupta)':`Slot ${i+1}`, savedAt: i===2?'Master Profile':'', data: i===2?MASTER_SLOT2_DATA:null}));
   }
 }
 
@@ -8600,94 +8871,67 @@ async function saveGate1LiveTemplate(){
 // ════════════════════════════════════════════════════════════════
 // 🛠 DYNAMIC SKILLS CATEGORIES MANAGER (ADD, EDIT, DELETE, REMOVE)
 // ════════════════════════════════════════════════════════════════
-function getActiveSkillsList(){
-  if(Array.isArray(D.skillsList) && D.skillsList.length > 0){
-    return D.skillsList;
-  }
-  const s = D.skills || {};
-  const list = [];
-  if(s.lang !== undefined) list.push({ key: 'lang', label: 'Languages', val: s.lang || '' });
-  if(s.tools !== undefined) list.push({ key: 'tools', label: 'Tools & Frameworks', val: s.tools || '' });
-  if(s.domain !== undefined) list.push({ key: 'domain', label: 'Domain / Stack', val: s.domain || '' });
-  if(s.cloud !== undefined) list.push({ key: 'cloud', label: 'Cloud / Databases', val: s.cloud || '' });
-  if(s.course !== undefined) list.push({ key: 'course', label: 'Coursework', val: s.course || '' });
-  if(!list.length){
-    list.push(
-      { key: 'lang', label: 'Languages', val: 'C++, Python, TypeScript, JavaScript' },
-      { key: 'tools', label: 'Tools & Frameworks', val: 'React, Next.js, FastAPI, Docker, Git' },
-      { key: 'domain', label: 'Domain / Stack', val: 'Machine Learning, Full-Stack, Quantitative Trading' },
-      { key: 'cloud', label: 'Cloud / Databases', val: 'PostgreSQL, Supabase, AWS, Cloudflare' }
-    );
-  }
-  D.skillsList = list;
-  return list;
-}
-
-function renderSkillsEditor(){
-  const container = document.getElementById('skillsCategoriesList');
+function renderCustomSkillsEditor(){
+  const container = document.getElementById('customSkillsContainer');
   if(!container) return;
-  const list = getActiveSkillsList();
+  const list = Array.isArray(D.customSkills) ? D.customSkills : [];
+  
+  if(!list.length){
+    container.innerHTML = '<div style="font-size:10px;color:#94a3b8;font-style:italic;padding:4px 0;">No custom categories added yet. Click "+ Add Category" above to add more skill rows (e.g. Databases, Machine Learning, Methodologies).</div>';
+    return;
+  }
   
   container.innerHTML = list.map((item, idx) => `
-    <div style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:9px;margin-bottom:8px;box-shadow:0 2px 5px rgba(0,0,0,0.03);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <input type="text" value="${(item.label||'Category').replace(/"/g,'&quot;')}" placeholder="Category Name (e.g. Languages / Tools)" style="flex:1;font-size:11px;font-weight:800;color:#334155;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;max-width:200px;" oninput="updateSkillCategoryName(${idx}, this.value)">
-        <button type="button" onclick="removeSkillCategory(${idx})" title="Delete this skill category" style="background:#fee2e2;border:none;color:#dc2626;padding:3px 7px;font-size:10.5px;border-radius:4px;cursor:pointer;font-weight:700;">🗑️ Remove</button>
+    <div class="cs-row" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:7px 9px;margin-bottom:7px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
+        <input type="text" class="cs-label" value="${(item.label || '').replace(/"/g, '&quot;')}" placeholder="Category Name (e.g. Databases / Methodologies)" style="flex:1;font-size:10.5px;font-weight:800;color:#1e293b;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;" oninput="syncCustomSkillsToD();render();liveATS();">
+        <button type="button" onclick="deleteCustomSkillRow(${idx})" class="btn btn-outline btn-xs" style="color:#dc2626;border-color:#fca5a5;background:#fef2f2;padding:2px 6px;font-size:9.5px;font-weight:700;cursor:pointer;">🗑️ Delete</button>
       </div>
-      <input type="text" value="${(item.val||'').replace(/"/g,'&quot;')}" placeholder="Enter skills comma-separated (e.g. Python, React, Docker...)" style="width:100%;font-size:11px;border:1px solid #cbd5e1;border-radius:4px;padding:5px 8px;box-sizing:border-box;" oninput="updateSkillCategoryValue(${idx}, this.value)">
+      <input type="text" class="cs-val" value="${(item.val || '').replace(/"/g, '&quot;')}" placeholder="Comma-separated skills (e.g. PostgreSQL, Redis, MongoDB, GraphQL...)" style="width:100%;font-size:10.5px;border:1px solid #cbd5e1;border-radius:4px;padding:4px 7px;box-sizing:border-box;" oninput="syncCustomSkillsToD();render();liveATS();">
     </div>
   `).join('');
 }
 
-function updateSkillCategoryName(idx, newLabel){
-  const list = getActiveSkillsList();
-  if(list[idx]){
-    list[idx].label = newLabel;
-    syncSkillsToD();
-    render();
-  }
-}
-
-function updateSkillCategoryValue(idx, newVal){
-  const list = getActiveSkillsList();
-  if(list[idx]){
-    list[idx].val = newVal;
-    syncSkillsToD();
-    render();
-    liveATS();
-  }
-}
-
-function addSkillCategory(){
-  const list = getActiveSkillsList();
-  list.push({ key: 'custom_' + Date.now(), label: 'New Skill Category', val: '' });
-  D.skillsList = list;
-  syncSkillsToD();
+function addCustomSkillRow(label = '', val = ''){
+  if(!Array.isArray(D.customSkills)) D.customSkills = [];
+  D.customSkills.push({ label: label || 'New Skill Category', val: val || '' });
   renderCustomSkillsEditor();
   render();
+  liveATS();
+  setTimeout(() => {
+    const rows = document.querySelectorAll("#customSkillsContainer .cs-row");
+    if(rows.length > 0) {
+      const lastRow = rows[rows.length - 1];
+      const labelInput = lastRow.querySelector(".cs-label");
+      if(labelInput) labelInput.focus();
+    }
+  }, 50);
 }
 
-function removeSkillCategory(idx){
-  const list = getActiveSkillsList();
-  list.splice(idx, 1);
-  D.skillsList = list;
-  syncSkillsToD();
+function deleteCustomSkillRow(idx){
+  if(!Array.isArray(D.customSkills)) return;
+  D.customSkills.splice(idx, 1);
   renderCustomSkillsEditor();
   render();
   liveATS();
 }
 
-function syncSkillsToD(){
-  const list = D.skillsList || [];
-  if(!D.skills) D.skills = {};
-  list.forEach(item => {
-    if(item.key === 'lang') D.skills.lang = item.val;
-    else if(item.key === 'tools') D.skills.tools = item.val;
-    else if(item.key === 'domain') D.skills.domain = item.val;
-    else if(item.key === 'cloud') D.skills.cloud = item.val;
-    else if(item.key === 'course') D.skills.course = item.val;
+function syncCustomSkillsToD(){
+  const rows = document.querySelectorAll("#customSkillsContainer .cs-row");
+  const list = [];
+  rows.forEach(r => {
+    const l = r.querySelector(".cs-label")?.value.trim() || "";
+    const v = r.querySelector(".cs-val")?.value || "";
+    if(l || v) list.push({ label: l, val: v });
   });
+  D.customSkills = list;
 }
+
+// Aliases for compatibility
+function addSkillCategory(){ addCustomSkillRow(); }
+function removeSkillCategory(idx){ deleteCustomSkillRow(idx); }
+function renderSkillsEditor(){ renderCustomSkillsEditor(); }
+function syncSkillsToD(){ syncCustomSkillsToD(); }
 
 </script>
 
